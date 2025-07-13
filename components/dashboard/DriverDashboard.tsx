@@ -34,8 +34,8 @@ export function DriverDashboard() {
     totalStops: 12,
     completedStops: 8,
     nextStop: {
-      address: '34 New York, USA',
-      customerName: 'Blue Vision, Inc.',
+      address: 'Bandar Bukit Puchong',
+      customerName: 'Isense ASV',
       package: 'PKG-001',
       estimatedArrival: '02:30 PM'
     }

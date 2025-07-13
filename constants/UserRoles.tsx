@@ -69,7 +69,7 @@ export const ICSBOLTZ_ROLE_DEFINITIONS: Record<UserRole, RoleConfig> = {
  * TO CHANGE USER ROLE: Modify the value below to test different role permissions
  * Available roles: 'ADMIN', 'GENERAL_MANAGER', 'HEAD_OF_DEPARTMENT', 'REQUESTER', 'DRIVER'
  */
-export const ICSBOLTZ_CURRENT_USER_ROLE: UserRole = 'DRIVER';
+export const ICSBOLTZ_CURRENT_USER_ROLE: UserRole = 'REQUESTER';
 
 /**
  * Utility function to get role configuration

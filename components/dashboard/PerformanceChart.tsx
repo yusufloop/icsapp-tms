@@ -81,64 +81,14 @@ export function PerformanceChart({ data }: PerformanceChartProps) {
                       />
                     </View>
                     
-                    {/* Data points */}
-                    <View className="absolute" style={{ bottom: onTimeHeight + 8 }}>
-                      <View className="w-3 h-3 bg-warning rounded-full border-2 border-white" />
-                    </View>
-                    <View className="absolute" style={{ bottom: delayHeight + 8, left: barWidth }}>
-                      <View className="w-3 h-3 bg-destructive rounded-full border-2 border-white" />
-                    </View>
+                    
                   </View>
                 );
               })}
             </View>
             
             {/* Connecting lines */}
-            <View className="absolute inset-0">
-              {data.map((item, index) => {
-                if (index === data.length - 1) return null;
-                
-                const currentOnTime = (item.onTime / maxValue) * (chartHeight - 40);
-                const nextOnTime = (data[index + 1].onTime / maxValue) * (chartHeight - 40);
-                const currentDelay = (item.delay / maxValue) * (chartHeight - 40);
-                const nextDelay = (data[index + 1].delay / maxValue) * (chartHeight - 40);
-                
-                const xStart = (index + 0.5) * (chartWidth / data.length);
-                const xEnd = (index + 1.5) * (chartWidth / data.length);
-                
-                return (
-                  <View key={`line-${index}`}>
-                    {/* On Time Line */}
-                    <View 
-                      className="absolute bg-warning"
-                      style={{
-                        left: xStart,
-                        bottom: currentOnTime + 8,
-                        width: Math.sqrt(Math.pow(xEnd - xStart, 2) + Math.pow(nextOnTime - currentOnTime, 2)),
-                        height: 2,
-                        transform: [{ 
-                          rotate: `${Math.atan2(nextOnTime - currentOnTime, xEnd - xStart)}rad` 
-                        }]
-                      }}
-                    />
-                    
-                    {/* Delay Line */}
-                    <View 
-                      className="absolute bg-destructive"
-                      style={{
-                        left: xStart,
-                        bottom: currentDelay + 8,
-                        width: Math.sqrt(Math.pow(xEnd - xStart, 2) + Math.pow(nextDelay - currentDelay, 2)),
-                        height: 2,
-                        transform: [{ 
-                          rotate: `${Math.atan2(nextDelay - currentDelay, xEnd - xStart)}rad` 
-                        }]
-                      }}
-                    />
-                  </View>
-                );
-              })}
-            </View>
+            
           </View>
           
           {/* X-axis labels */}

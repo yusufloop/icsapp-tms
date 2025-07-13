@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
+import { MaterialIcons } from '@expo/vector-icons';
+import React from 'react';
+import { Dimensions, Text, View } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 
 const { width } = Dimensions.get('window');
 
@@ -23,6 +24,20 @@ interface RouteMapViewProps {
 }
 
 export function RouteMapView({ currentRoute }: RouteMapViewProps) {
+  // Coordinates for the specified address: 37A, Jln BP 7/12, Bandar Bukit Puchong, 47120 Puchong, Selangor
+  const destinationCoordinates = {
+    latitude: 3.0319,
+    longitude: 101.6841,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  };
+
+  // Mock current location (nearby location for demonstration)
+  const currentLocation = {
+    latitude: 3.0289,
+    longitude: 101.6801,
+  };
+
   return (
     <View>
       <Text className="text-lg font-semibold text-text-primary mb-4">
@@ -30,104 +45,64 @@ export function RouteMapView({ currentRoute }: RouteMapViewProps) {
       </Text>
       
       <PremiumCard className="mb-4">
-        {/* Map Placeholder - In production, replace with react-native-maps */}
+        {/* Real Map using react-native-maps */}
         <View 
-          className="bg-gray-100 rounded-lg mb-4 items-center justify-center relative"
+          className="rounded-lg mb-4 overflow-hidden"
           style={{ height: 200 }}
         >
-          {/* Map Background */}
-          <View className="absolute inset-0 bg-gray-200 rounded-lg">
-            {/* Street Grid Pattern */}
-            <View className="absolute top-4 left-4 right-4 bottom-4">
-              {/* Horizontal lines */}
-              <View className="absolute top-0 left-0 right-0 h-px bg-gray-300" />
-              <View className="absolute top-1/3 left-0 right-0 h-px bg-gray-300" />
-              <View className="absolute top-2/3 left-0 right-0 h-px bg-gray-300" />
-              <View className="absolute bottom-0 left-0 right-0 h-px bg-gray-300" />
-              
-              {/* Vertical lines */}
-              <View className="absolute top-0 bottom-0 left-0 w-px bg-gray-300" />
-              <View className="absolute top-0 bottom-0 left-1/3 w-px bg-gray-300" />
-              <View className="absolute top-0 bottom-0 left-2/3 w-px bg-gray-300" />
-              <View className="absolute top-0 bottom-0 right-0 w-px bg-gray-300" />
-            </View>
-            
-            {/* Route Path */}
-            <View className="absolute top-8 left-8 right-16 bottom-16">
-              <View 
-                className="absolute bg-warning rounded-full"
-                style={{ 
-                  width: 4, 
-                  height: 60,
-                  top: 20,
-                  left: 40,
-                  transform: [{ rotate: '45deg' }]
-                }}
-              />
-              <View 
-                className="absolute bg-warning rounded-full"
-                style={{ 
-                  width: 4, 
-                  height: 40,
-                  top: 60,
-                  left: 80,
-                }}
-              />
-              <View 
-                className="absolute bg-warning rounded-full"
-                style={{ 
-                  width: 4, 
-                  height: 30,
-                  top: 80,
-                  left: 120,
-                  transform: [{ rotate: '90deg' }]
-                }}
-              />
-            </View>
-            
-            {/* Current Location Marker */}
-            <View 
-              className="absolute w-6 h-6 bg-primary rounded-full items-center justify-center"
-              style={{ top: 40, left: 60 }}
-            >
-              <View className="w-3 h-3 bg-white rounded-full" />
-            </View>
-            
-            {/* Destination Marker */}
-            <View 
-              className="absolute w-8 h-8 bg-warning rounded-full items-center justify-center"
-              style={{ top: 100, right: 40 }}
-            >
-              <MaterialIcons name="place" size={16} color="white" />
-            </View>
-          </View>
+          <MapView
+            style={{ flex: 1 }}
+            initialRegion={destinationCoordinates}
+            showsUserLocation={true}
+            showsMyLocationButton={true}
+            showsCompass={true}
+          >
+            <Marker
+              coordinate={{
+                latitude: destinationCoordinates.latitude,
+                longitude: destinationCoordinates.longitude,
+              }}
+              title={currentRoute.nextStop.customerName}
+              description={currentRoute.nextStop.address}
+            />
+          </MapView>
           
-          {/* Map Labels */}
-          <View className="absolute top-2 right-2">
-            <Text className="text-xs text-gray-500">Maiden Ln</Text>
-          </View>
-          <View className="absolute bottom-2 left-2">
-            <Text className="text-xs text-gray-500">Real Ch</Text>
-          </View>
-          <View className="absolute top-1/2 left-2">
-            <Text className="text-xs text-gray-500">Tacos & Tequilas</Text>
-            <Text className="text-xs text-gray-500">Mexican Grill</Text>
+          {/* Map Overlay - Distance/Time Info */}
+          <View className="absolute top-2 right-2 bg-white rounded-lg px-3 py-1 shadow-sm">
+            <Text className="text-xs font-medium text-gray-700">2.3 km</Text>
+            <Text className="text-xs text-gray-500">~8 min</Text>
           </View>
         </View>
         
         {/* Next Stop Info */}
         <View className="bg-blue-50 rounded-lg p-4 flex-row items-center">
           <View className="w-12 h-12 bg-primary rounded-full items-center justify-center mr-4">
-            <Text className="text-white font-bold text-lg">BV</Text>
+            <Text className="text-white font-bold text-lg">
+              {currentRoute.nextStop.customerName.split(' ').map(name => name[0]).join('').substring(0, 2)}
+            </Text>
           </View>
           
           <View className="flex-1">
             <Text className="font-semibold text-text-primary">
               {currentRoute.nextStop.customerName}
             </Text>
-            <Text className="text-sm text-text-secondary">
+            <Text className="text-sm text-text-secondary mb-1">
               {currentRoute.nextStop.address}
             </Text>
+            <View className="flex-row items-center">
+              <MaterialIcons name="access-time" size={14} color="#6B7280" />
+              <Text className="text-xs text-text-secondary ml-1">
+                ETA: {currentRoute.nextStop.estimatedArrival}
+              </Text>
+            </View>
+          </View>
+          
+          <View className="items-end">
+            <PremiumStatusBadge 
+              status="warning" 
+              text={currentRoute.nextStop.package}
+              size="sm"
+            />
           </View>
         </View>
       </PremiumCard>

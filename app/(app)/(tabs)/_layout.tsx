@@ -132,7 +132,13 @@ export default function TabLayout() {
           }}
         />
       )}
-      
+      <Tabs.Screen
+  name="ItemDetails"
+  options={{
+    href: null, // This hides the tab from navigation
+    headerShown: true,
+  }}
+/>
     </Tabs>
   );
 }

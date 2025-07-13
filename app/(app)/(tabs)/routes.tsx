@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
+import { PremiumButton } from '@/components/ui/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
-import { PremiumButton } from '@/components/ui/PremiumButton';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Link } from 'expo-router';
+import React, { useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Route {
   id: string;
@@ -106,9 +107,7 @@ export default function RoutesScreen() {
     console.log('Starting route:', routeId);
   };
 
-  const handleViewDetails = (routeId: string) => {
-    console.log('Viewing route details:', routeId);
-  };
+  // Remove handleViewDetails, navigation will use Link
 
   const filteredRoutes = getFilteredRoutes();
 
@@ -117,11 +116,9 @@ export default function RoutesScreen() {
       {/* Header */}
       <View className="px-6 py-4 bg-white border-b border-gray-100">
         <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-2xl font-bold text-text-primary">Routes</Text>
+          <Text className="text-2xl font-bold text-text-primary">Bookings</Text>
           
-          <TouchableOpacity className="bg-primary rounded-lg px-3 py-2">
-            <Text className="text-white font-semibold text-sm">New Route</Text>
-          </TouchableOpacity>
+          
         </View>
 
         {/* Filter Tabs */}
@@ -255,13 +252,18 @@ export default function RoutesScreen() {
                   )}
                   
                   <View className="flex-1">
-                    <PremiumButton
-                      title="View Details"
-                      onPress={() => handleViewDetails(route.id)}
-                      variant="secondary"
-                      size="sm"
-                      icon={<MaterialIcons name="visibility" size={16} color="#6B7280" style={{ marginRight: 6 }} />}
-                    />
+                    <Link
+                      href={{ pathname: '/(app)/(tabs)/ItemDetails', params: { bookingId: route.id } }}
+                      asChild
+                    >
+                      <PremiumButton
+                        title="View Details"
+                        onPress={() => {}}
+                        variant="secondary"
+                        size="sm"
+                        icon={<MaterialIcons name="visibility" size={16} color="#6B7280" style={{ marginRight: 6 }} />}
+                      />
+                    </Link>
                   </View>
                 </View>
               </PremiumCard>
