@@ -8,10 +8,10 @@
  */
 
 // User Role Types
-export type UserRole = 'ADMIN' | 'GENERAL_MANAGER' | 'HEAD_OF_DEPARTMENT' | 'REQUESTER';
+export type UserRole = 'ADMIN' | 'GENERAL_MANAGER' | 'HEAD_OF_DEPARTMENT' | 'REQUESTER' | 'DRIVER';
 
 // Button Action Types
-export type ButtonAction = 'scan' | 'info' | 'resubmit' | 'view_log' | 'approve' | 'reject' | 'view' | 'warranty';
+export type ButtonAction = 'scan' | 'info' | 'resubmit' | 'view_log' | 'approve' | 'reject' | 'view' | 'warranty' | 'update_status' | 'navigate' | 'contact_customer';
 
 // Role Configuration Interface
 interface RoleConfig {
@@ -52,6 +52,12 @@ export const ICSBOLTZ_ROLE_DEFINITIONS: Record<UserRole, RoleConfig> = {
     allowedActions: ['scan', 'info', 'resubmit'],
     priority: 1,
   },
+  DRIVER: {
+    name: 'Driver',
+    description: 'Driver with route management and delivery tracking capabilities',
+    allowedActions: ['view', 'scan', 'update_status', 'navigate', 'contact_customer'],
+    priority: 1,
+  },
 };
 
 /**
@@ -61,9 +67,9 @@ export const ICSBOLTZ_ROLE_DEFINITIONS: Record<UserRole, RoleConfig> = {
  * In the future, this should be replaced with dynamic role fetching from user authentication.
  * 
  * TO CHANGE USER ROLE: Modify the value below to test different role permissions
- * Available roles: 'ADMIN', 'GENERAL_MANAGER', 'HEAD_OF_DEPARTMENT', 'REQUESTER'
+ * Available roles: 'ADMIN', 'GENERAL_MANAGER', 'HEAD_OF_DEPARTMENT', 'REQUESTER', 'DRIVER'
  */
-export const ICSBOLTZ_CURRENT_USER_ROLE: UserRole = 'REQUESTER';
+export const ICSBOLTZ_CURRENT_USER_ROLE: UserRole = 'DRIVER';
 
 /**
  * Utility function to get role configuration

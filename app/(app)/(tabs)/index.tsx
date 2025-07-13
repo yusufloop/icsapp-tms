@@ -5,14 +5,14 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
 import { ICSBOLTZ_CURRENT_USER_ROLE } from '@/constants/UserRoles';
-import { GeneralManagerDashboard } from '@/components/dashboard/GeneralManagerDashboard';
+import { DriverDashboard } from '@/components/dashboard/DriverDashboard';
 
 const { width } = Dimensions.get('window');
 
 export default function DashboardScreen() {
   // Render different dashboards based on user role
-  if (ICSBOLTZ_CURRENT_USER_ROLE === 'GENERAL_MANAGER') {
-    return <GeneralManagerDashboard />;
+  if (ICSBOLTZ_CURRENT_USER_ROLE === 'DRIVER') {
+    return <DriverDashboard />;
   }
 
   // Default dashboard for other roles (REQUESTER, HEAD_OF_DEPARTMENT, ADMIN)

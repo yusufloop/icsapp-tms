@@ -45,6 +45,13 @@ export default function TabLayout() {
           icon: "notifications",
         };
         break;
+      case "DRIVER":
+        roleSpecificTab = {
+          name: "routes",
+          title: "Routes",
+          icon: "route",
+        };
+        break;
       case "ADMIN":
         roleSpecificTab = {
           name: "user",
