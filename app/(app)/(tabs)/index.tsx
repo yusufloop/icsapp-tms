@@ -1,12 +1,25 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
 import { ICSBOLTZ_CURRENT_USER_ROLE } from '@/constants/UserRoles';
+import { GeneralManagerDashboard } from '@/components/dashboard/GeneralManagerDashboard';
+
+const { width } = Dimensions.get('window');
 
 export default function DashboardScreen() {
+  // Render different dashboards based on user role
+  if (ICSBOLTZ_CURRENT_USER_ROLE === 'GENERAL_MANAGER') {
+    return <GeneralManagerDashboard />;
+  }
+
+  // Default dashboard for other roles (REQUESTER, HEAD_OF_DEPARTMENT, ADMIN)
+  return <DefaultDashboard />;
+}
+
+function DefaultDashboard() {
   // Mock data for invoices
   const invoices = [
     {
