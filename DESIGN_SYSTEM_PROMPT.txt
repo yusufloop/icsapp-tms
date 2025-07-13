@@ -1,0 +1,59 @@
+ This system will allow users to create, manage, track, and analyze shipments from a centralized platform, replacing manual processes with an automated, intuitive workflow.
+
+When generating code use this Global design philosophy/prompt ."Generate a comprehensive global design system and theme for a professional Expo/Tailwind CSS application. The core design philosophy is "Effortless Premium" — inspired by Apple's Human Interface Guidelines. The UI must feel clean, intuitive, and high-quality through the meticulous use of space, typography, and subtle interactions.
+
+#Tech Stack: Must use Expo and Tailwind CSS.make changes  without making a new folder or file that has the same name as the one originally in the app. 
+
+1. Color Palette (The Foundation):
+Primary Action: A strong, accessible Blue for all interactive elements (buttons, active tabs, links). Example: [#0A84FF]
+Destructive/Urgent: A clear Red for delete actions or critical errors. Example: [#FF453A]
+Backgrounds:
+bg-primary: A very light, off-white grey for the main app background to reduce eye strain. Example: #F2F2F7
+bg-secondary: Pure white for content containers and cards to make them "pop". Example: #FFFFFF
+Text:
+text-primary: Near-black for headings and primary content for maximum readability. Example: #1C1C1E
+text-secondary: Medium grey for subheadings, descriptions, and placeholder text. Example: #8A8A8E
+text-tertiary: Light grey for disabled states or subtle metadata. Example: #AEAEB2
+Semantic Status Colors:
+status-success: Vibrant Green. Example: #30D158
+status-warning: Warm Orange. Example: #FF9F0A
+status-info: Bright Yellow. Example: #FFD60A
+2. Spacing & Layout:
+Spacing Unit: Base all padding, margins, and gaps on a 4px grid. (e.g., p-2 for 8px, p-4 for 16px, gap-6 for 24px).
+Screen Padding: All screens should have consistent horizontal padding (e.g., px-4 or px-6).
+Visual Hierarchy: Use generous whitespace and negative space to separate elements and guide the user's eye. Avoid clutter.
+3. Typography:
+Font: Use the native system font stack for a seamless OS-level feel (San Francisco for iOS, Roboto for Android).
+Scale:
+H1/Title: Large and bold (e.g., text-2xl font-bold).
+H2/Subtitle: Medium and semi-bold (e.g., text-lg font-semibold).
+Body: Regular weight, highly legible (e.g., text-base).
+Caption/Metadata: Small and regular/medium weight (e.g., text-sm).
+Line Height: Use relaxed line heights (leading-relaxed) for body text to improve readability.
+4. Component Styling:
+Buttons & Inputs:
+Corners: Consistently rounded (rounded-lg or rounded-xl).
+States: Must have visually distinct states: default, pressed (e.g., slight scale down or darken), and disabled (e.g., reduced opacity, greyed out).
+Cards:
+Elevated using a multi-layered, soft shadow (shadow-md or shadow-lg) to create depth.
+Should have consistent internal padding (p-4).
+Icons:
+Library: Use a single, high-quality library like Heroicons for consistency.
+Style: Use solid icons for active/selected states and outline icons for inactive states.
+Size: Maintain consistent icon sizing (e.g., 20px or 24px).
+5. Animation & Motion:
+Principle: Motion should be purposeful and subtle. It should provide feedback, not distract.
+Screen Transitions: Use a gentle horizontal slide for forward/backward navigation and a vertical slide or fade for modals.
+Micro-interactions: Tappable elements should have instant, tangible feedback (e.g., opacity-80 on press).
+List Rendering: When a list appears, items can animate in with a slight stagger and fade-in effect to feel more dynamic.
+6. Gradients & Effects:
+Principle of Use: Gradients should be used sparingly and intentionally to highlight key hero elements, call-to-action buttons, or decorative backgrounds. They should not be used on standard text or small components, which would compromise cleanliness.
+Gradient Style: All gradients should be subtle, two-stop linear gradients. Avoid harsh, multi-color rainbows.
+Defined Gradients:
+Primary Action Gradient: A diagonal gradient (bg-gradient-to-br) from a slightly lighter version of the Primary Action Blue to the standard Primary Action Blue. This can be used for the most important "Create" or "Sign Up" buttons.
+Example: from [#409CFF] to [#0A84FF].
+Decorative Background Gradient: A very subtle, light grey to white vertical gradient (bg-gradient-to-b) that can be applied to the background of special screens (like a welcome or onboarding screen) to add a sense of depth without being distracting.
+Example: from white to bg-primary (#F2F2F7).
+Highlight Gradient: A vibrant, non-primary color gradient used for special feature promotions or chart elements.
+Example: A purple-to-pink gradient for a "Go Pro" feature card.
+Glassmorphism (Frosted Glass Effect): For overlays like a modal header or a sticky player control, a "frosted glass" effect can be used. This involves a semi-transparent background color combined with a background blur effect (backdrop-blur-lg). This enhances the feeling of depth and layers."
