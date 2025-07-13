@@ -12,49 +12,64 @@ export default function RequestsScreen() {
 
   const requests = [
     { 
-      id: '#ITEM 1', 
+      id: '#BOOKING 1', 
       date: '30/10/2019',
-      status: 'Unsuccessfully', 
-      itemRequested: 'Laptop Repair',
+      status: 'New', 
+      itemRequested: 'Electronics Shipment',
       priority: 'High',
       amount: 'RM 200',
-      company: 'Capi Telecom'
+      company: 'Capi Telecom',
+      items: ['Laptop x2', 'Monitor x1', 'Cables x5'],
+      invoiceStatus: 'Pending',
+      total: 'RM 200'
     },
     { 
-      id: '#ITEM 2', 
+      id: '#BOOKING 2', 
       date: '30/10/2019',
-      status: 'Successfully', 
-      itemRequested: 'Office Supplies',
+      status: 'Delivered', 
+      itemRequested: 'Office Supplies Transport',
       priority: 'Medium',
       amount: '$50',
-      company: 'Capi Telecom'
+      company: 'Capi Telecom',
+      items: ['Paper x10', 'Pens x20', 'Folders x5'],
+      invoiceStatus: 'Paid',
+      total: '$50'
     },
     { 
-      id: '#ITEM 3', 
+      id: '#BOOKING 3', 
       date: '29/10/2019',
-      status: 'Successfully', 
-      itemRequested: 'Software License',
+      status: 'In Transit', 
+      itemRequested: 'Software Equipment',
       priority: 'Low',
       amount: '$150',
-      company: 'Tech Solutions'
+      company: 'Tech Solutions',
+      items: ['Server x1', 'Router x2'],
+      invoiceStatus: 'Invoiced',
+      total: '$150'
     },
     { 
-      id: '#ITEM 4', 
+      id: '#BOOKING 4', 
       date: '28/10/2019',
-      status: 'Pending', 
-      itemRequested: 'Equipment Maintenance',
+      status: 'Picked up', 
+      itemRequested: 'Maintenance Equipment',
       priority: 'High',
       amount: '$300',
-      company: 'Service Pro'
+      company: 'Service Pro',
+      items: ['Tools x1 set', 'Parts x various'],
+      invoiceStatus: 'Pending',
+      total: '$300'
     },
     { 
-      id: '#ITEM 5', 
+      id: '#BOOKING 5', 
       date: '27/10/2019',
-      status: 'Successfully', 
+      status: 'Delivered', 
       itemRequested: 'Training Materials',
       priority: 'Low',
       amount: '$75',
-      company: 'EduTech'
+      company: 'EduTech',
+      items: ['Books x5', 'DVDs x3', 'Manuals x2'],
+      invoiceStatus: 'Paid',
+      total: '$75'
     },
   ];
 
@@ -71,7 +86,7 @@ export default function RequestsScreen() {
   };
 
   const handleCreateRequest = () => {
-    router.push('/new-request');
+    router.push('/new-booking');
   };
 
   return (
@@ -84,12 +99,12 @@ export default function RequestsScreen() {
         {/* Header */}
         <View className="flex-row items-center px-6 py-6 bg-bg-secondary shadow-lg">
           <MaterialIcons 
-            name="assignment" 
+            name="local-shipping" 
             size={28} 
             color="#0A84FF" 
           />
           <Text className="text-3xl font-bold text-text-primary ml-4 leading-tight">
-            My Requests
+            Booking
           </Text>
         </View>
 
@@ -104,7 +119,7 @@ export default function RequestsScreen() {
                 style={{ marginRight: 14 }}
               />
               <TextInput
-                placeholder="Search requests..."
+                placeholder="Search bookings..."
                 placeholderTextColor="#AEAEB2"
                 className="flex-1 text-base text-text-primary leading-relaxed"
                 style={{ fontFamily: 'System' }}
@@ -179,6 +194,9 @@ export default function RequestsScreen() {
                 priority={request.priority}
                 amount={request.amount}
                 company={request.company}
+                items={request.items}
+                invoiceStatus={request.invoiceStatus}
+                total={request.total}
                 isExpanded={expandedCards.has(request.id)}
                 onToggle={() => handleCardToggle(request.id)}
               />

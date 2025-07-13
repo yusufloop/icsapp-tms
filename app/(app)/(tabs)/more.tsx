@@ -3,14 +3,23 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { ICSBOLTZ_CURRENT_USER_ROLE } from '@/constants/UserRoles';
 
 export default function MoreScreen() {
-  // Check if current user is a requester - hide View Request for requesters
-  const isRequester = ICSBOLTZ_CURRENT_USER_ROLE === 'REQUESTER';
+  // Navigation handlers for all available pages
+  const handleNewBooking = () => {
+    router.push('/new-booking');
+  };
 
   const handleNewRequest = () => {
     router.push('/new-request');
+  };
+
+  const handleNewUser = () => {
+    router.push('/new-user');
+  };
+
+  const handleEditUser = () => {
+    router.push('/user');
   };
 
   const handleResubmitRequest = () => {
@@ -19,6 +28,34 @@ export default function MoreScreen() {
 
   const handleViewRequest = () => {
     router.push('/view-request');
+  };
+
+  const handleSummary = () => {
+    router.push('/summary');
+  };
+
+  const handleRecall = () => {
+    router.push('/recall');
+  };
+
+  const handleDashboard = () => {
+    router.push('/');
+  };
+
+  const handleRequests = () => {
+    router.push('/requests');
+  };
+
+  const handleNotifications = () => {
+    router.push('/notifications');
+  };
+
+  const handleScan = () => {
+    router.push('/scan');
+  };
+
+  const handleUsers = () => {
+    router.push('/user');
   };
 
   const handleHelpSupport = () => {
@@ -34,18 +71,116 @@ export default function MoreScreen() {
           <Text style={styles.headerTitle}>More</Text>
         </View>
 
-        {/* Menu Items Container */}
+        {/* Navigation Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Navigation</Text>
+        </View>
         <View style={styles.menuContainer}>
+          {/* Dashboard */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleDashboard}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="home-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>Dashboard</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+
+          <View style={styles.separator} />
+
+          {/* Requests */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleRequests}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="list-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>My Requests</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+
+          <View style={styles.separator} />
+
+          {/* Notifications */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleNotifications}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="notifications-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>Notifications</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+
+          <View style={styles.separator} />
+
+          {/* Scan */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleScan}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="qr-code-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>QR Scan</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+
+          <View style={styles.separator} />
+
+          {/* Users */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleUsers}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="people-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>Users</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Create New Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Create New</Text>
+        </View>
+        <View style={styles.menuContainer}>
+          {/* New Booking */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleNewBooking}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="add-circle-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>New Booking</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+
+          <View style={styles.separator} />
+
           {/* New Request */}
           <TouchableOpacity style={styles.menuItem} onPress={handleNewRequest}>
             <View style={styles.menuItemLeft}>
-              <Ionicons name="add-circle-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Ionicons name="document-outline" size={20} color="#666" style={styles.menuIcon} />
               <Text style={styles.menuItemText}>New Request</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
 
-          {/* Separator Line */}
+          <View style={styles.separator} />
+
+          {/* New User */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleNewUser}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="person-add-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>New User</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Request Management Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Request Management</Text>
+        </View>
+        <View style={styles.menuContainer}>
+          {/* View Request */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleViewRequest}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="eye-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>View Request</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+
           <View style={styles.separator} />
 
           {/* Resubmit Request */}
@@ -57,28 +192,52 @@ export default function MoreScreen() {
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
 
-          {/* Conditional separator and View Request - only show for non-requesters */}
-          {!isRequester && (
-            <>
-              {/* Separator Line */}
-              <View style={styles.separator} />
+          <View style={styles.separator} />
 
-              {/* View Request */}
-              <TouchableOpacity style={styles.menuItem} onPress={handleViewRequest}>
-                <View style={styles.menuItemLeft}>
-                  <Ionicons name="eye-outline" size={20} color="#666" style={styles.menuIcon} />
-                  <Text style={styles.menuItemText}>View Request</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#999" />
-              </TouchableOpacity>
-            </>
-          )}
+          {/* Recall */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleRecall}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="return-up-back-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>Recall Request</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
         </View>
 
-        {/* Large spacing between sections */}
-        <View style={styles.largeSpacer} />
+        {/* User Management Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>User Management</Text>
+        </View>
+        <View style={styles.menuContainer}>
+          {/* Edit User */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleEditUser}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="person-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>Edit User</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+        </View>
 
-        {/* Help & Support Section */}
+        {/* Reports Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Reports</Text>
+        </View>
+        <View style={styles.menuContainer}>
+          {/* Summary */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleSummary}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="document-text-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>Summary Report</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Support Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Support</Text>
+        </View>
         <View style={styles.menuContainer}>
           <TouchableOpacity style={styles.menuItem} onPress={handleHelpSupport}>
             <View style={styles.menuItemLeft}>
@@ -88,6 +247,9 @@ export default function MoreScreen() {
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
         </View>
+
+        {/* Bottom spacing */}
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -114,11 +276,24 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     color: '#000',
   },
+  sectionHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   menuContainer: {
     backgroundColor: '#fff',
     marginHorizontal: 20,
     borderRadius: 12,
     overflow: 'hidden',
+    marginBottom: 8,
   },
   menuItem: {
     flexDirection: 'row',
@@ -148,6 +323,9 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   largeSpacer: {
-    height: 200, // Large spacing to match the image layout
+    height: 200,
+  },
+  bottomSpacer: {
+    height: 40,
   },
 });

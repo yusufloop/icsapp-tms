@@ -1,18 +1,121 @@
-# System Patterns: ICS Boltz App
+# System Patterns: ICS Boltz TMS App
 
 ## 1. Architecture
 
-The application follows a component-based architecture, with a clear separation of concerns between UI components, business logic, and services. It is built on React Native, allowing for cross-platform deployment to iOS and Android from a single codebase.
+The application follows a component-based architecture with clear separation of concerns between UI components, business logic, and services. Built on React Native with Expo, it enables cross-platform deployment to iOS and Android from a single codebase. The architecture emphasizes role-based access control and modular component design.
 
 ## 2. Key Technical Decisions
 
-- **State Management:** The application will utilize React's built-in state management (useState, useContext) for local component state and may incorporate a more robust solution for global state if the complexity of the application grows.
-- **Navigation:** Navigation is handled by `expo-router`, which provides a file-based routing system that is both powerful and easy to understand.
-- **Styling:** Styling is implemented using NativeWind, which brings the utility-first approach of Tailwind CSS to React Native. This allows for rapid UI development and a consistent design language.
+- **State Management:** The application utilizes React's built-in state management (useState, useContext) for local component state. Complex state like expanded cards uses Set data structures for optimal performance.
+- **Navigation:** Navigation is handled by `expo-router` with file-based routing. The system implements role-based tab navigation that dynamically shows different tabs based on user roles.
+- **Styling:** Styling is implemented using NativeWind (Tailwind CSS for React Native) following the "Effortless Premium" design philosophy. The system includes a comprehensive design system with premium components.
 - **Backend Integration:** The application communicates with a Supabase backend for authentication, data storage, and other backend services.
+- **Role-Based Access Control:** Centralized role management system with dynamic permission checking and UI rendering based on user roles.
 
 ## 3. Component Relationships
 
-- **Auth Components:** The components within `components/auth/` are responsible for handling all aspects of user authentication. They are designed to be modular and reusable.
-- **UI Components:** The `components/ui/` directory contains a set of reusable UI components that form the building blocks of the application's user interface. These components are designed to be consistent with the project's design system.
-- **Screen Components:** Each screen in the application is represented by a component in the `app/` directory, which is organized according to the navigation structure.
+### Core Architecture
+```
+app/
+├── (app)/
+│   ├── (tabs)/          # Role-based tab navigation
+│   │   ├── index.tsx    # Dashboard (all roles)
+│   │   ├── requests.tsx # My Requests (all roles)
+│   │   ├── scan.tsx     # QR Scanner (REQUESTER only)
+│   │   ├── notifications.tsx # Notifications (HOD, GM only)
+│   │   ├── user.tsx     # User Management (ADMIN only)
+│   │   └── more.tsx     # More options (all roles)
+│   └── _layout.tsx      # Role-based tab configuration
+├── (auth)/              # Authentication screens
+└── (screens)/           # Full-page screens outside tabs
+    ├── new-booking.tsx  # 3-step booking flow (Step 1)
+    ├── new-request.tsx
+    ├── resubmit-request.tsx
+    └── view-request.tsx
+```
+
+### Component Categories
+
+- **Auth Components:** Located in `components/auth/`, these handle all authentication aspects including login, registration, password reset, and email verification.
+
+- **UI Components:** The `components/ui/` directory contains the premium design system components:
+  - `PremiumButton` - Animated buttons with multiple variants
+  - `PremiumCard` - Elevated cards with shadow and glass variants
+  - `PremiumInput` - Animated form inputs with focus states
+  - `PremiumStatusBadge` - Status indicators with semantic colors
+  - `RequestCard` - Complex expandable cards with role-based actions
+  - `UserCard` - User management cards with expandable details
+
+- **Dashboard Components:** Located in `components/dashboard/`, these provide role-specific dashboard functionality.
+
+- **Screen Components:** Each screen follows the file-based routing structure with clear separation between tabbed and full-page screens.
+
+## 4. Design Patterns
+
+### Role-Based Access Control Pattern
+- Centralized role definitions in `constants/UserRoles.tsx`
+- Dynamic UI rendering based on user permissions
+- Role-specific navigation tab configuration
+- Action button filtering based on user role and request status
+
+### Animation Patterns
+- React Native Animated API for smooth dropdown animations
+- Parallel animations for height, opacity, and rotation
+- Staggered list item animations using react-native-reanimated
+- Purposeful micro-interactions with opacity and scale feedback
+
+### State Management Patterns
+- Set data structures for multi-selection scenarios (expanded cards)
+- Local state management with useState for component-specific data
+- Props drilling for role-based configurations
+- Conditional rendering patterns for role-specific UI elements
+
+### Navigation Patterns
+- File-based routing with expo-router
+- Hidden tab routing for role-specific screens
+- Absolute path navigation for cross-section navigation
+- Parameter passing for form pre-population
+
+## 5. Critical Implementation Paths
+
+### Request Management Flow
+1. User creates request via `/new-request` screen
+2. Request appears in `requests.tsx` with role-based actions
+3. Approval workflow through role-specific buttons
+4. Status updates reflected in RequestCard component
+5. Resubmission flow via `/resubmit-request` for unsuccessful requests
+
+### Role-Based Navigation Flow
+1. User role determined from `ICSBOLTZ_CURRENT_USER_ROLE`
+2. Tab layout dynamically configured in `(tabs)/_layout.tsx`
+3. Hidden tabs configured with `href: null` for unused routes
+4. Role-specific features shown/hidden throughout the app
+
+### New Booking Flow (3-Step Process)
+1. User accesses booking flow via plus icon in requests page or "New Booking" in more page
+2. **Step 1**: Basic information collection with progress indicator
+   - Form validation ensures all required fields are completed
+   - Client autocomplete provides dynamic suggestions with dropdown selection
+   - Date/time pickers use native platform-specific components
+   - Continue button navigates to Step 2
+3. **Step 2**: Shipment details and cost estimation
+   - Booking summary displays data from Step 1
+   - 3D object placeholder for future Three.js integration
+   - Shipment type and container size selection pickers
+   - Dynamic items list with add/remove functionality
+   - Weight and volume measurement inputs
+   - Real-time estimated total calculation
+   - Continue button navigates to Step 3 (placeholder for future implementation)
+
+### Component Interaction Flow
+1. RequestCard handles complex state with animations
+2. Role-based action buttons rendered dynamically
+3. Navigation between screens maintains context
+4. Form data passed via URL parameters for pre-population
+
+### Form Input Patterns
+- Standard TextInput components for reliable cross-platform compatibility
+- Autocomplete functionality with dynamic suggestion filtering
+- Native date/time pickers for optimal user experience
+- Comprehensive form validation with user-friendly error messages
+- Multi-line text areas for address fields with proper styling

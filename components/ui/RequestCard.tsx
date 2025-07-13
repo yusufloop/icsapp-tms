@@ -18,6 +18,9 @@ interface RequestCardProps {
   priority: string;
   amount?: string;
   company?: string;
+  items?: string[];
+  invoiceStatus?: string;
+  total?: string;
   isExpanded: boolean;
   onToggle: () => void;
 }
@@ -30,6 +33,9 @@ export function RequestCard({
   priority,
   amount,
   company,
+  items,
+  invoiceStatus,
+  total,
   isExpanded,
   onToggle,
 }: RequestCardProps) {
@@ -63,6 +69,35 @@ export function RequestCard({
   const getStatusConfig = (status: string) => {
     const statusLower = status.toLowerCase();
     switch (statusLower) {
+      case 'new':
+        return {
+          color: '#0A84FF',
+          bgColor: '#E6F3FF',
+          icon: 'fiber-new',
+          textClass: 'text-blue-500',
+        };
+      case 'picked up':
+        return {
+          color: '#FF9F0A',
+          bgColor: '#FFF3E0',
+          icon: 'local-shipping',
+          textClass: 'text-orange-500',
+        };
+      case 'in transit':
+        return {
+          color: '#5856D6',
+          bgColor: '#F0F0FF',
+          icon: 'directions-car',
+          textClass: 'text-purple-500',
+        };
+      case 'delivered':
+        return {
+          color: '#30D158',
+          bgColor: '#E6F7E6',
+          icon: 'check-circle',
+          textClass: 'text-green-500',
+        };
+      // Keep legacy statuses for backward compatibility
       case 'unsuccessfully':
         return {
           color: '#FF453A',
@@ -193,6 +228,20 @@ export function RequestCard({
     // TODO: Implement warranty functionality
   };
 
+  // TMS Booking specific action handlers
+  const handleRecall = () => {
+    router.push('/recall');
+  };
+
+  const handleEdit = () => {
+    console.log('Edit action for booking', id);
+    // TODO: Implement edit functionality
+  };
+
+  const handleSummary = () => {
+    router.push('/summary');
+  };
+
   // ICSBOLTZ_BUTTON_CONFIG - Button configuration based on actions
   const getButtonConfig = (action: ButtonAction) => {
     switch (action) {
@@ -277,27 +326,35 @@ export function RequestCard({
   return (
     <View className="mb-4">
       <PremiumCard className="overflow-hidden" padding="p-0">
-        {/* Header Section - Always Visible */}
+        {/* Header Section - Always Visible - Simplified for TMS Booking */}
         <View className="p-5">
-          {/* Top Row: ID and Date */}
+          {/* Booking Name and Expand Arrow */}
           <TouchableOpacity 
             onPress={onToggle}
             activeOpacity={0.7}
             className="flex-row items-center justify-between mb-4"
           >
-            <Text className="text-xl font-bold text-text-primary">
-              {id}
+            <Text className="text-xl font-bold text-text-primary flex-1 mr-3">
+              {itemRequested}
             </Text>
-            <Text className="text-sm text-text-tertiary font-medium">
-              {date}
-            </Text>
+            
+            <Animated.View 
+              className="bg-gray-50 rounded-lg p-2"
+              style={{ transform: [{ rotate: rotateInterpolate }] }}
+            >
+              <MaterialIcons 
+                name="keyboard-arrow-down" 
+                size={22} 
+                color="#8A8A8E"
+              />
+            </Animated.View>
           </TouchableOpacity>
           
           {/* Status Row */}
           <TouchableOpacity 
             onPress={onToggle}
             activeOpacity={0.7}
-            className="flex-row items-center justify-between mb-4"
+            className="flex-row items-center"
           >
             <View className="flex-row items-center flex-1">
               <View 
@@ -313,37 +370,6 @@ export function RequestCard({
               <Text className={`text-base font-semibold ${statusConfig.textClass}`}>
                 {status}
               </Text>
-            </View>
-            
-            <Animated.View 
-              className="bg-gray-50 rounded-lg p-2"
-              style={{ transform: [{ rotate: rotateInterpolate }] }}
-            >
-              <MaterialIcons 
-                name="keyboard-arrow-down" 
-                size={22} 
-                color="#8A8A8E"
-              />
-            </Animated.View>
-          </TouchableOpacity>
-          
-          {/* Item Requested with Amount */}
-          <TouchableOpacity 
-            onPress={onToggle}
-            activeOpacity={0.7}
-          >
-            <Text className="text-sm text-text-secondary font-medium mb-2">
-              Item Requested
-            </Text>
-            <View className="flex-row items-center justify-between">
-              <Text className="text-lg font-semibold text-primary leading-relaxed flex-1 mr-3">
-                {itemRequested}
-              </Text>
-              {amount && (
-                <Text className="text-base font-bold text-text-primary">
-                  {amount}
-                </Text>
-              )}
             </View>
           </TouchableOpacity>
         </View>
@@ -364,165 +390,83 @@ export function RequestCard({
               {/* Separator */}
               <View className="h-px bg-gray-100 mb-5" />
               
-              {/* Details Section */}
+              {/* TMS Booking Details Section */}
               <View className="bg-gray-50 rounded-xl p-4 mb-5">
-                {/* Priority */}
-                <View className="flex-row items-center justify-between mb-1">
-                  <Text className="text-base text-text-secondary font-medium">
-                    Priority
-                  </Text>
-                  <View className="flex-row items-center">
-                    <View 
-                      className="w-3 h-3 rounded-full mr-3"
-                      style={{ backgroundColor: priorityConfig.bgColor }}
-                    />
-                    <Text className={`text-base font-semibold ${priorityConfig.textClass}`}>
-                      {priority}
+                {/* Items List */}
+                {items && items.length > 0 && (
+                  <View className="mb-4">
+                    <Text className="text-base text-text-secondary font-medium mb-2">
+                      Items
+                    </Text>
+                    {items.map((item, index) => (
+                      <Text key={index} className="text-sm text-text-primary mb-1">
+                        • {item}
+                      </Text>
+                    ))}
+                  </View>
+                )}
+                
+                {/* Invoice Status */}
+                {invoiceStatus && (
+                  <View className="flex-row items-center justify-between mb-3">
+                    <Text className="text-base text-text-secondary font-medium">
+                      Invoice Status
+                    </Text>
+                    <Text className="text-base font-semibold text-text-primary">
+                      {invoiceStatus}
                     </Text>
                   </View>
-                </View>
+                )}
                 
-                {/* Amount - Removed from dropdown since it's now shown in header */}
-                {/* Company information removed as requested */}
+                {/* Total */}
+                {total && (
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-base text-text-secondary font-medium">
+                      Total
+                    </Text>
+                    <Text className="text-lg font-bold text-primary">
+                      {total}
+                    </Text>
+                  </View>
+                )}
               </View>
 
-              {/* ICSBOLTZ_ROLE_BASED_BUTTONS - Dynamic role-based action buttons */}
-              {/* CUSTOMIZATION: Button spacing and layout can be modified here */}
+              {/* TMS Booking Action Buttons */}
               <View className="space-y-3">
-                {availableActions.length > 0 && (
-                  <>
-                    {/* CUSTOMIZATION: Side-by-side buttons with spacing */}
-                    {/* Render buttons in pairs for better layout */}
-                    {availableActions.length >= 2 && (
-                      <View className="flex-row justify-between mb-2">
-                        {availableActions.slice(0, 2).map((action, index) => {
-                          const buttonConfig = getButtonConfig(action);
-                          if (!buttonConfig) return null;
-                          
-                          return (
-                            <View key={action} className="flex-1" style={{ marginRight: index === 0 ? 12 : 0 }}>
-                              {action === 'resubmit' ? (
-                                // Custom button for resubmit action to bypass PremiumButton gradient issue
-                                <TouchableOpacity
-                                  onPress={buttonConfig.onPress}
-                                  activeOpacity={0.8}
-                                >
-                                  <LinearGradient
-                                    colors={['#409CFF', '#0A84FF']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 1 }}
-                                    className="rounded-lg items-center justify-center flex-row px-3 py-2 min-h-[36px]"
-                                    style={{ borderRadius: 8 }}
-                                  >
-                                    {buttonConfig.icon}
-                                    <Text className="font-semibold text-sm text-white">
-                                      {buttonConfig.title}
-                                    </Text>
-                                  </LinearGradient>
-                                </TouchableOpacity>
-                              ) : (
-                                <PremiumButton
-                                  title={buttonConfig.title}
-                                  onPress={buttonConfig.onPress}
-                                  variant={buttonConfig.variant}
-                                  size="sm"
-                                  icon={buttonConfig.icon}
-                                />
-                              )}
-                            </View>
-                          );
-                        })}
-                      </View>
-                    )}
-                    
-                    {/* CUSTOMIZATION: Full-width buttons with spacing from above buttons */}
-                    {/* Render remaining buttons as full-width */}
-                    {availableActions.slice(2).map((action, index) => {
-                      const buttonConfig = getButtonConfig(action);
-                      if (!buttonConfig) return null;
-                      
-                      return (
-                        <View key={action} style={{ marginTop: index === 0 && availableActions.length >= 2 ? 8 : 0 }}>
-                          {action === 'resubmit' ? (
-                            // Custom button for resubmit action to bypass PremiumButton gradient issue
-                            <TouchableOpacity
-                              onPress={buttonConfig.onPress}
-                              activeOpacity={0.8}
-                            >
-                              <LinearGradient
-                                colors={['#409CFF', '#0A84FF']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                                className="rounded-lg items-center justify-center flex-row px-3 py-2 min-h-[36px]"
-                                style={{ borderRadius: 8 }}
-                              >
-                                {buttonConfig.icon}
-                                <Text className="font-semibold text-sm text-white">
-                                  {buttonConfig.title}
-                                </Text>
-                              </LinearGradient>
-                            </TouchableOpacity>
-                          ) : (
-                            <PremiumButton
-                              title={buttonConfig.title}
-                              onPress={buttonConfig.onPress}
-                              variant={buttonConfig.variant}
-                              size="sm"
-                              icon={buttonConfig.icon}
-                            />
-                          )}
-                        </View>
-                      );
-                    })}
-                    
-                    {/* Handle single button case */}
-                    {availableActions.length === 1 && (
-                      (() => {
-                        const action = availableActions[0];
-                        const buttonConfig = getButtonConfig(action);
-                        if (!buttonConfig) return null;
-                        
-                        return action === 'resubmit' ? (
-                          // Custom button for resubmit action to bypass PremiumButton gradient issue
-                          <TouchableOpacity
-                            onPress={buttonConfig.onPress}
-                            activeOpacity={0.8}
-                          >
-                            <LinearGradient
-                              colors={['#409CFF', '#0A84FF']}
-                              start={{ x: 0, y: 0 }}
-                              end={{ x: 1, y: 1 }}
-                              className="rounded-lg items-center justify-center flex-row px-3 py-2 min-h-[36px]"
-                              style={{ borderRadius: 8 }}
-                            >
-                              {buttonConfig.icon}
-                              <Text className="font-semibold text-sm text-white">
-                                {buttonConfig.title}
-                              </Text>
-                            </LinearGradient>
-                          </TouchableOpacity>
-                        ) : (
-                          <PremiumButton
-                            title={buttonConfig.title}
-                            onPress={buttonConfig.onPress}
-                            variant={buttonConfig.variant}
-                            size="sm"
-                            icon={buttonConfig.icon}
-                          />
-                        );
-                      })()
-                    )}
-                  </>
-                )}
+                {/* Recall & Edit - Side by side buttons */}
+                <View className="flex-row justify-between mb-2">
+                  <TouchableOpacity
+                    onPress={handleRecall}
+                    className="flex-1 bg-bg-primary border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80 flex-row mr-3"
+                  >
+                    <MaterialIcons name="undo" size={18} color="#6B7280" style={{ marginRight: 8 }} />
+                    <Text className="text-base font-semibold text-gray-600">Recall</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    onPress={handleEdit}
+                    className="flex-1 bg-bg-primary border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80 flex-row"
+                  >
+                    <MaterialIcons name="edit" size={18} color="#6B7280" style={{ marginRight: 8 }} />
+                    <Text className="text-base font-semibold text-gray-600">Edit</Text>
+                  </TouchableOpacity>
+                </View>
                 
-                {/* Fallback message if no actions available */}
-                {availableActions.length === 0 && (
-                  <View className="bg-gray-50 rounded-lg p-4">
-                    <Text className="text-center text-text-secondary text-sm">
-                      No actions available for your role
-                    </Text>
-                  </View>
-                )}
+                {/* Summary - Full width button */}
+                <TouchableOpacity
+                  onPress={handleSummary}
+                  className="active:opacity-80"
+                >
+                  <LinearGradient
+                    colors={['#409CFF', '#0A84FF']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    className="rounded-lg px-4 py-3 min-h-[44px] items-center justify-center flex-row"
+                  >
+                    <MaterialIcons name="summarize" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+                    <Text className="text-base font-semibold text-white">Summary</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
               </View>
             </View>
           </View>

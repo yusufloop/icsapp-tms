@@ -1,0 +1,476 @@
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+
+export default function NewBookingStep2Screen() {
+  // Mock data from Step 1 (in real implementation, this would come from navigation params or state management)
+  const bookingData = {
+    bookingName: 'Nvidia 1999 to KL',
+    bookingId: 'BK-2025-001234',
+  };
+
+  const [formData, setFormData] = useState({
+    shipmentType: '',
+    containerSize: '',
+    items: ['Electronics', 'Computer Parts'],
+    totalGrossWeight: '',
+    totalVolume: '',
+  });
+
+  const [showShipmentTypePicker, setShowShipmentTypePicker] = useState(false);
+  const [showContainerSizePicker, setShowContainerSizePicker] = useState(false);
+  const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
+
+  // Updated shipment types to only LFC and CLC
+  const shipmentTypes = ['LFC', 'CLC'];
+  const containerSizes = ['20ft', '40ft', '40ft HC', '45ft'];
+
+  const handleShipmentTypeSelect = (type: string) => {
+    setFormData({ ...formData, shipmentType: type });
+    setShowShipmentTypePicker(false);
+  };
+
+  const handleContainerSizeSelect = (size: string) => {
+    setFormData({ ...formData, containerSize: size });
+    setShowContainerSizePicker(false);
+  };
+
+  const handleRemoveItem = (index: number) => {
+    const newItems = formData.items.filter((_, i) => i !== index);
+    setFormData({ ...formData, items: newItems });
+    setEditingItemIndex(null);
+  };
+
+  const handleEditItem = (index: number, newValue: string) => {
+    const newItems = [...formData.items];
+    newItems[index] = newValue;
+    setFormData({ ...formData, items: newItems });
+  };
+
+  const handleAddNewItem = () => {
+    const newItems = [...formData.items, ''];
+    setFormData({ ...formData, items: newItems });
+    setEditingItemIndex(newItems.length - 1);
+  };
+
+  const handleItemBlur = () => {
+    setEditingItemIndex(null);
+    // Remove empty items when user finishes editing
+    const filteredItems = formData.items.filter(item => item.trim() !== '');
+    setFormData({ ...formData, items: filteredItems });
+  };
+
+  const calculateEstimatedTotal = () => {
+    // Enhanced calculation based on shipment type and measurements
+    let baseRate = 0;
+    
+    // Base rate depends on shipment type
+    if (formData.shipmentType === 'LFC') {
+      baseRate = 2500; // LFC (Less than Full Container Load) base rate
+    } else if (formData.shipmentType === 'CLC') {
+      baseRate = 4500; // CLC (Container Load Cargo) base rate
+    }
+    
+    // Weight-based calculation (RM per KG)
+    const weight = parseFloat(formData.totalGrossWeight) || 0;
+    const weightCost = weight * 3.5;
+    
+    // Volume-based calculation (RM per CBM)
+    const volume = parseFloat(formData.totalVolume) || 0;
+    const volumeCost = volume * 85;
+    
+    // Item handling fee
+    const itemCount = formData.items.filter(item => item.trim() !== '').length;
+    const itemHandlingFee = itemCount * 150;
+    
+    // Container size multiplier
+    let containerMultiplier = 1;
+    if (formData.containerSize === '40ft' || formData.containerSize === '40ft HC') {
+      containerMultiplier = 1.5;
+    } else if (formData.containerSize === '45ft') {
+      containerMultiplier = 1.8;
+    }
+    
+    const subtotal = (baseRate + weightCost + volumeCost + itemHandlingFee) * containerMultiplier;
+    
+    // Add service tax (6%)
+    const serviceTax = subtotal * 0.06;
+    
+    return Math.round(subtotal + serviceTax);
+  };
+
+  const handleContinue = () => {
+    // Optional validation - allow empty fields for now
+    // User can continue with incomplete data
+    
+    // Navigate to step 3
+    router.push('/new-booking-step3');
+  };
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-bg-primary">
+      {/* Header */}
+      <View className="flex-row items-center px-6 py-4 bg-bg-secondary shadow-sm">
+        <TouchableOpacity 
+          onPress={handleBack}
+          className="mr-4 p-2 -ml-2 active:opacity-80"
+        >
+          <MaterialIcons name="arrow-back" size={24} color="#1C1C1E" />
+        </TouchableOpacity>
+        <View className="flex-1">
+          <Text className="text-2xl font-bold text-text-primary">
+            New Booking
+          </Text>
+          <Text className="text-sm text-text-secondary mt-1">
+            Fill in the information below for requests
+          </Text>
+        </View>
+      </View>
+
+      {/* Progress Indicator */}
+      <View className="px-6 py-4 bg-bg-secondary">
+        <View className="flex-row items-center justify-between">
+          {/* Step 1 - Completed */}
+          <View className="flex-row items-center flex-1">
+            <View className="w-8 h-8 rounded-full bg-green-500 items-center justify-center">
+              <MaterialIcons name="check" size={16} color="white" />
+            </View>
+            <View className="flex-1 h-1 bg-green-500 ml-2" />
+          </View>
+          
+          {/* Step 2 - Active */}
+          <View className="flex-row items-center flex-1">
+            <View className="w-8 h-8 rounded-full bg-primary items-center justify-center ml-2">
+              <Text className="text-white text-sm font-bold">2</Text>
+            </View>
+            <View className="flex-1 h-1 bg-gray-300 ml-2" />
+          </View>
+          
+          {/* Step 3 - Inactive */}
+          <View className="flex-row items-center">
+            <View className="w-8 h-8 rounded-full bg-gray-300 items-center justify-center ml-2">
+              <Text className="text-gray-600 text-sm font-bold">3</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Form Content */}
+      <ScrollView 
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
+      >
+        <View className="px-6 py-6 space-y-6">
+          {/* Booking Summary */}
+          <View className="mb-6">
+            <Text className="text-xl font-bold text-text-primary mb-2">
+              {bookingData.bookingName}
+            </Text>
+            <Text className="text-sm text-text-secondary">
+              {bookingData.bookingId}
+            </Text>
+          </View>
+
+          {/* 3D Object Placeholder */}
+          <View className="mb-6">
+            <View className="h-48 bg-bg-secondary rounded-lg border border-gray-300 items-center justify-center">
+              <MaterialIcons name="view-in-ar" size={64} color="#8A8A8E" />
+              <Text className="text-text-secondary mt-2 text-sm">
+                3D Object Preview
+              </Text>
+            </View>
+          </View>
+
+          {/* Shipment Details */}
+          <View className="mb-6">
+            <Text className="text-lg font-bold text-text-primary mb-4">
+              Shipment Details
+            </Text>
+            
+            <View className="flex-row space-x-4">
+              {/* Shipment Type */}
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-text-primary mb-2">
+                  Shipment Type
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowShipmentTypePicker(!showShipmentTypePicker)}
+                  className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
+                >
+                  <Text className={`flex-1 text-base ${formData.shipmentType ? 'text-text-primary' : 'text-text-secondary'}`}>
+                    {formData.shipmentType || 'Select type'}
+                  </Text>
+                  <MaterialIcons name="keyboard-arrow-down" size={20} color="#8A8A8E" />
+                </TouchableOpacity>
+                
+                {/* Shipment Type Picker */}
+                {showShipmentTypePicker && (
+                  <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
+                    {shipmentTypes.map((type, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => handleShipmentTypeSelect(type)}
+                        className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
+                      >
+                        <Text className="text-text-primary">{type}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* Container Size */}
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-text-primary mb-2">
+                  Container Size(ft)
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowContainerSizePicker(!showContainerSizePicker)}
+                  className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
+                >
+                  <Text className={`flex-1 text-base ${formData.containerSize ? 'text-text-primary' : 'text-text-secondary'}`}>
+                    {formData.containerSize || 'Select size'}
+                  </Text>
+                  <MaterialIcons name="keyboard-arrow-down" size={20} color="#8A8A8E" />
+                </TouchableOpacity>
+                
+                {/* Container Size Picker */}
+                {showContainerSizePicker && (
+                  <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
+                    {containerSizes.map((size, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => handleContainerSizeSelect(size)}
+                        className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
+                      >
+                        <Text className="text-text-primary">{size}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </View>
+          </View>
+
+          {/* Items List */}
+          <View className="mb-6">
+            <Text className="text-lg font-bold text-text-primary mb-4">
+              Items List
+            </Text>
+            
+            {/* Items */}
+            {formData.items.map((item, index) => (
+              <View key={index} className="flex-row items-center justify-between bg-bg-secondary border border-gray-300 rounded-lg px-4 py-3 mb-2">
+                {editingItemIndex === index ? (
+                  <TextInput
+                    className="flex-1 text-base text-text-primary"
+                    value={item}
+                    onChangeText={(text) => handleEditItem(index, text)}
+                    onBlur={handleItemBlur}
+                    placeholder="Enter item name"
+                    placeholderTextColor="#8A8A8E"
+                    autoFocus
+                    returnKeyType="done"
+                    onSubmitEditing={handleItemBlur}
+                  />
+                ) : (
+                  <TouchableOpacity
+                    className="flex-1"
+                    onPress={() => setEditingItemIndex(index)}
+                  >
+                    <Text className="text-base text-text-primary">
+                      {item || 'Tap to edit'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  onPress={() => handleRemoveItem(index)}
+                  className="ml-3 p-1 active:opacity-80"
+                >
+                  <MaterialIcons name="close" size={20} color="#8A8A8E" />
+                </TouchableOpacity>
+              </View>
+            ))}
+            
+            {/* Add New Button */}
+            <TouchableOpacity
+              onPress={handleAddNewItem}
+              className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 flex-row items-center justify-center active:opacity-80"
+            >
+              <MaterialIcons name="add" size={20} color="#0A84FF" style={{ marginRight: 8 }} />
+              <Text className="text-base font-medium text-primary">Add New</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Measurements */}
+          <View className="mb-6">
+            <Text className="text-lg font-bold text-text-primary mb-4">
+              Measurements
+            </Text>
+            
+            <View className="flex-row space-x-4">
+              {/* Total Gross Weight */}
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-text-primary mb-2">
+                  Total Gross Weight(KG)
+                </Text>
+                <View className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px]">
+                  <TextInput
+                    className="flex-1 text-base text-text-primary"
+                    value={formData.totalGrossWeight}
+                    onChangeText={(text: string) => setFormData({ ...formData, totalGrossWeight: text })}
+                    placeholder="0.00"
+                    placeholderTextColor="#8A8A8E"
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+
+              {/* Total Volume */}
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-text-primary mb-2">
+                  Total Volume(CBM)
+                </Text>
+                <View className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px]">
+                  <TextInput
+                    className="flex-1 text-base text-text-primary"
+                    value={formData.totalVolume}
+                    onChangeText={(text: string) => setFormData({ ...formData, totalVolume: text })}
+                    placeholder="0.00"
+                    placeholderTextColor="#8A8A8E"
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Estimated Total */}
+          <View className="bg-bg-secondary border border-gray-300 rounded-lg p-6 mb-6">
+            <Text className="text-lg font-bold text-text-primary mb-4">
+              Cost Breakdown
+            </Text>
+            
+            {/* Breakdown Details */}
+            <View className="space-y-2 mb-4">
+              {formData.shipmentType && (
+                <View className="flex-row justify-between">
+                  <Text className="text-sm text-text-secondary">
+                    Base Rate ({formData.shipmentType})
+                  </Text>
+                  <Text className="text-sm text-text-primary">
+                    RM {formData.shipmentType === 'LFC' ? '2,500' : formData.shipmentType === 'CLC' ? '4,500' : '0'}
+                  </Text>
+                </View>
+              )}
+              
+              {parseFloat(formData.totalGrossWeight) > 0 && (
+                <View className="flex-row justify-between">
+                  <Text className="text-sm text-text-secondary">
+                    Weight ({formData.totalGrossWeight} KG × RM 3.50)
+                  </Text>
+                  <Text className="text-sm text-text-primary">
+                    RM {(parseFloat(formData.totalGrossWeight) * 3.5).toLocaleString()}
+                  </Text>
+                </View>
+              )}
+              
+              {parseFloat(formData.totalVolume) > 0 && (
+                <View className="flex-row justify-between">
+                  <Text className="text-sm text-text-secondary">
+                    Volume ({formData.totalVolume} CBM × RM 85)
+                  </Text>
+                  <Text className="text-sm text-text-primary">
+                    RM {(parseFloat(formData.totalVolume) * 85).toLocaleString()}
+                  </Text>
+                </View>
+              )}
+              
+              {formData.items.filter(item => item.trim() !== '').length > 0 && (
+                <View className="flex-row justify-between">
+                  <Text className="text-sm text-text-secondary">
+                    Item Handling ({formData.items.filter(item => item.trim() !== '').length} items × RM 150)
+                  </Text>
+                  <Text className="text-sm text-text-primary">
+                    RM {(formData.items.filter(item => item.trim() !== '').length * 150).toLocaleString()}
+                  </Text>
+                </View>
+              )}
+              
+              {formData.containerSize && formData.containerSize !== '20ft' && (
+                <View className="flex-row justify-between">
+                  <Text className="text-sm text-text-secondary">
+                    Container Size Adjustment ({formData.containerSize})
+                  </Text>
+                  <Text className="text-sm text-text-primary">
+                    {formData.containerSize === '40ft' || formData.containerSize === '40ft HC' ? '+50%' : '+80%'}
+                  </Text>
+                </View>
+              )}
+              
+              <View className="flex-row justify-between">
+                <Text className="text-sm text-text-secondary">
+                  Service Tax (6%)
+                </Text>
+                <Text className="text-sm text-text-primary">
+                  Included
+                </Text>
+              </View>
+            </View>
+            
+            {/* Total */}
+            <View className="border-t border-gray-300 pt-4">
+              <View className="flex-row justify-between items-center">
+                <Text className="text-lg font-bold text-text-primary">
+                  Estimated Total
+                </Text>
+                <Text className="text-2xl font-bold text-primary">
+                  RM {calculateEstimatedTotal().toLocaleString()}
+                </Text>
+              </View>
+              <Text className="text-xs text-text-secondary mt-1">
+                *Final cost may vary based on actual measurements and additional services
+              </Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* Sticky Footer with Action Buttons */}
+      <View className="absolute bottom-0 left-0 right-0 bg-bg-secondary border-t border-gray-200 px-6 py-4">
+        <View className="flex-row space-x-4">
+          {/* Back Button */}
+          <TouchableOpacity
+            onPress={handleBack}
+            className="flex-1 bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
+          >
+            <Text className="text-base font-semibold text-gray-600">Back</Text>
+          </TouchableOpacity>
+          
+          {/* Continue Button */}
+          <TouchableOpacity
+            onPress={handleContinue}
+            className="flex-1 active:opacity-80"
+          >
+            <LinearGradient
+              colors={['#409CFF', '#0A84FF']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              className="rounded-lg px-4 py-3 min-h-[44px] items-center justify-center"
+            >
+              <Text className="text-base font-semibold text-white">Continue</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
-import { UserRole } from '@/constants/UserRoles';
 import { UserCard } from '@/components/ui/UserCard';
+import { UserRole } from '@/constants/UserRoles';
+import { MaterialIcons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 
 
 // Sample user data
@@ -15,7 +16,6 @@ const sampleUsers = [
     profilePicture: undefined,
     status: 'online' as const,
     role: 'ADMIN' as UserRole,
-    department: 'Information Technology',
   },
   {
     id: 'USR002',
@@ -23,8 +23,7 @@ const sampleUsers = [
     phoneNumber: '+60 11-234 5678',
     profilePicture: undefined,
     status: 'active' as const,
-    role: 'GENERAL_MANAGER' as UserRole,
-    department: 'Operations',
+    role: 'CLERK' as UserRole,
   },
   {
     id: 'USR003',
@@ -32,8 +31,7 @@ const sampleUsers = [
     phoneNumber: '+60 13-456 7890',
     profilePicture: undefined,
     status: 'suspended' as const,
-    role: 'HEAD_OF_DEPARTMENT' as UserRole,
-    department: 'Finance',
+    role: 'DRIVER' as UserRole,
   },
   {
     id: 'USR004',
@@ -41,44 +39,34 @@ const sampleUsers = [
     phoneNumber: '+60 14-567 8901',
     profilePicture: undefined,
     status: 'online' as const,
-    role: 'REQUESTER' as UserRole,
-    department: 'Human Resources',
+    role: 'CLIENT' as UserRole,
   },
-  {
-    id: 'USR005',
-    name: 'David Tan',
-    phoneNumber: '+60 15-678 9012',
-    profilePicture: undefined,
-    status: 'terminated' as const,
-    role: 'REQUESTER' as UserRole,
-    department: 'Marketing',
-  },
-  {
-    id: 'USR006',
-    name: 'Lisa Wong',
-    phoneNumber: '+60 16-789 0123',
-    profilePicture: undefined,
-    status: 'active' as const,
-    role: 'HEAD_OF_DEPARTMENT' as UserRole,
-    department: 'Sales',
-  },
-  {
-    id: 'USR007',
-    name: 'Raj Kumar',
-    phoneNumber: '+60 17-890 1234',
-    profilePicture: undefined,
-    status: 'online' as const,
-    role: 'REQUESTER' as UserRole,
-    department: 'Engineering',
-  },
+  
+  
+  
   {
     id: 'USR008',
     name: 'Emily Chen',
     phoneNumber: '+60 18-901 2345',
     profilePicture: undefined,
     status: 'suspended' as const,
-    role: 'GENERAL_MANAGER' as UserRole,
-    department: 'Quality Assurance',
+    role: 'DRIVER' as UserRole,
+  },
+  {
+    id: 'USR009',
+    name: 'Michael Johnson',
+    phoneNumber: '+60 19-012 3456',
+    profilePicture: undefined,
+    status: 'active' as const,
+    role: 'CLERK' as UserRole,
+  },
+  {
+    id: 'USR010',
+    name: 'Anna Lee',
+    phoneNumber: '+60 20-123 4567',
+    profilePicture: undefined,
+    status: 'online' as const,
+    role: 'CLIENT' as UserRole,
   },
 ];
 
@@ -118,7 +106,11 @@ export default function UserScreen() {
       <View className="px-6 py-4 bg-white border-b border-gray-100">
         <View className="flex-row items-center justify-between mb-4">
           <Text className="text-2xl font-bold text-text-primary">Users</Text>
-          <TouchableOpacity className="bg-primary rounded-full p-2">
+          <TouchableOpacity 
+            className="bg-primary rounded-full p-2"
+            onPress={() => router.push('/new-user')}
+            activeOpacity={0.7}
+          >
             <MaterialIcons name="person-add" size={24} color="white" />
           </TouchableOpacity>
         </View>
@@ -176,7 +168,6 @@ export default function UserScreen() {
               profilePicture={user.profilePicture}
               status={user.status}
               role={user.role}
-              department={user.department}
               isExpanded={expandedCards.has(user.id)}
               onToggle={() => handleCardToggle(user.id)}
             />

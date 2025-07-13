@@ -5,7 +5,7 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
-import { Slot } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
@@ -37,7 +37,18 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <Slot />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(app)" />
+        <Stack.Screen name="(screens)/summary" />
+        <Stack.Screen name="(screens)/recall" />
+        <Stack.Screen name="(screens)/new-booking" />
+        <Stack.Screen name="(screens)/new-booking-step2" />
+        <Stack.Screen name="(screens)/new-booking-step3" />
+        <Stack.Screen name="(screens)/new-request" />
+        <Stack.Screen name="(screens)/resubmit-request" />
+        <Stack.Screen name="(screens)/view-request" />
+      </Stack>
       <StatusBar style="auto" />
     </AuthProvider>
   );

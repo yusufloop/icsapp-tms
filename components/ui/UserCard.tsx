@@ -1,6 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useRef, useState } from 'react';
 import { Animated, Text, TouchableOpacity, View, Image } from 'react-native';
+import { router } from 'expo-router';
 import { PremiumCard } from './PremiumCard';
 import { 
   ICSBOLTZ_CURRENT_USER_ROLE, 
@@ -16,7 +17,6 @@ interface UserCardProps {
   profilePicture?: string;
   status: 'online' | 'active' | 'suspended' | 'terminated';
   role: UserRole;
-  department: string;
   isExpanded: boolean;
   onToggle: () => void;
 }
@@ -28,7 +28,6 @@ export function UserCard({
   profilePicture,
   status,
   role,
-  department,
   isExpanded,
   onToggle,
 }: UserCardProps) {
@@ -104,6 +103,12 @@ export function UserCard({
     switch (role) {
       case 'ADMIN':
         return 'Administrator';
+      case 'CLERK':
+        return 'Clerk';
+      case 'DRIVER':
+        return 'Driver';
+      case 'CLIENT':
+        return 'Client';
       case 'GENERAL_MANAGER':
         return 'General Manager';
       case 'HEAD_OF_DEPARTMENT':
@@ -136,8 +141,19 @@ export function UserCard({
   };
 
   const handleEditUser = () => {
-    console.log('Edit User action for user', id);
-    // TODO: Implement edit user functionality
+    // Navigate to edit user page with user data as parameters
+    router.push({
+      pathname: '/edit-user',
+      params: {
+        id,
+        name,
+        email: `${name.toLowerCase().replace(' ', '.')}@company.com`, // Generate email for demo
+        phoneNo: phoneNumber,
+        role,
+        status,
+        profileImage: profilePicture || '',
+      },
+    });
   };
 
   const handleSuspendUser = () => {
@@ -238,7 +254,7 @@ export function UserCard({
               {/* Details Section */}
               <View className="bg-gray-50 rounded-xl p-4 mb-5">
                 {/* Role */}
-                <View className="flex-row items-center justify-between mb-3">
+                <View className="flex-row items-center justify-between">
                   <Text className="text-base text-text-secondary font-medium">
                     Role
                   </Text>
@@ -246,73 +262,29 @@ export function UserCard({
                     {getRoleDisplayName(role)}
                   </Text>
                 </View>
-                
-                {/* Department */}
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-base text-text-secondary font-medium">
-                    Department
-                  </Text>
-                  <Text className="text-base font-semibold text-text-primary">
-                    {department}
-                  </Text>
-                </View>
               </View>
 
-              {/* Action Buttons - Only show for admin users */}
+              {/* Action Buttons - Edit & Delete - Similar to booking card layout */}
               {ICSBOLTZ_CURRENT_USER_ROLE === 'ADMIN' && (
                 <View className="space-y-3">
-                  {/* View Profile Button */}
-                  <TouchableOpacity
-                    onPress={handleViewProfile}
-                    className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex-row items-center justify-center"
-                    activeOpacity={0.7}
-                  >
-                    <MaterialIcons name="visibility" size={18} color="#0A84FF" style={{ marginRight: 8 }} />
-                    <Text className="text-blue-600 font-semibold">View Profile</Text>
-                  </TouchableOpacity>
-
-                  {/* Edit User Button */}
-                  <TouchableOpacity
-                    onPress={handleEditUser}
-                    className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center justify-center"
-                    activeOpacity={0.7}
-                  >
-                    <MaterialIcons name="edit" size={18} color="#6B7280" style={{ marginRight: 8 }} />
-                    <Text className="text-gray-600 font-semibold">Edit User</Text>
-                  </TouchableOpacity>
-
-                  {/* Status-based action buttons */}
-                  {status === 'active' || status === 'online' ? (
+                  {/* Edit & Delete - Side by side buttons */}
+                  <View className="flex-row justify-between">
                     <TouchableOpacity
-                      onPress={handleSuspendUser}
-                      className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex-row items-center justify-center"
-                      activeOpacity={0.7}
+                      onPress={handleEditUser}
+                      className="flex-1 bg-bg-primary border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80 flex-row mr-3"
                     >
-                      <MaterialIcons name="pause-circle-filled" size={18} color="#FF9F0A" style={{ marginRight: 8 }} />
-                      <Text className="text-orange-600 font-semibold">Suspend User</Text>
+                      <MaterialIcons name="edit" size={18} color="#6B7280" style={{ marginRight: 8 }} />
+                      <Text className="text-base font-semibold text-gray-600">Edit</Text>
                     </TouchableOpacity>
-                  ) : status === 'suspended' ? (
-                    <TouchableOpacity
-                      onPress={handleActivateUser}
-                      className="bg-green-50 border border-green-200 rounded-xl p-4 flex-row items-center justify-center"
-                      activeOpacity={0.7}
-                    >
-                      <MaterialIcons name="play-circle-filled" size={18} color="#30D158" style={{ marginRight: 8 }} />
-                      <Text className="text-green-600 font-semibold">Activate User</Text>
-                    </TouchableOpacity>
-                  ) : null}
-
-                  {/* Delete User Button - Only for terminated users */}
-                  {status === 'terminated' && (
+                    
                     <TouchableOpacity
                       onPress={handleDeleteUser}
-                      className="bg-red-50 border border-red-200 rounded-xl p-4 flex-row items-center justify-center"
-                      activeOpacity={0.7}
+                      className="flex-1 bg-bg-primary border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80 flex-row"
                     >
-                      <MaterialIcons name="delete" size={18} color="#FF453A" style={{ marginRight: 8 }} />
-                      <Text className="text-red-600 font-semibold">Delete User</Text>
+                      <MaterialIcons name="delete" size={18} color="#6B7280" style={{ marginRight: 8 }} />
+                      <Text className="text-base font-semibold text-gray-600">Delete</Text>
                     </TouchableOpacity>
-                  )}
+                  </View>
                 </View>
               )}
               

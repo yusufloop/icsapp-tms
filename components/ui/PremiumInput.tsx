@@ -65,12 +65,12 @@ export function PremiumInput({
         )}
         
         <TextInput
-          className="flex-1 text-base text-text-primary font-system"
+          className="flex-1 text-base text-text-primary"
           placeholderTextColor="#8A8A8E" // text-secondary
           secureTextEntry={isPassword && !showPassword}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          style={style}
+          style={[{ fontFamily: 'System' }, style]}
           {...props}
         />
         

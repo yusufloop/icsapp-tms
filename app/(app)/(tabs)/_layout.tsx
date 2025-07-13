@@ -22,8 +22,8 @@ export default function TabLayout() {
       },
       {
         name: "requests",
-        title: "My Requests",
-        icon: "assignment",
+        title: "Booking",
+        icon: "local-shipping",
       },
     ];
 
