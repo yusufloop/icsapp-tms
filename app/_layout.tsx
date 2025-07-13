@@ -1,17 +1,16 @@
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
-import { useFonts } from 'expo-font';
 import {
   Inter_400Regular,
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
-import { Stack } from 'expo-router';
+import { useFonts } from 'expo-font';
+import { Slot } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
 import '../global.css';
-import { AuthProvider } from '@/lib/auth';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -36,20 +35,9 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(app)" />
-        <Stack.Screen name="(screens)/summary" />
-        <Stack.Screen name="(screens)/recall" />
-        <Stack.Screen name="(screens)/new-booking" />
-        <Stack.Screen name="(screens)/new-booking-step2" />
-        <Stack.Screen name="(screens)/new-booking-step3" />
-        <Stack.Screen name="(screens)/new-request" />
-        <Stack.Screen name="(screens)/resubmit-request" />
-        <Stack.Screen name="(screens)/view-request" />
-      </Stack>
+    <>
+      <Slot />
       <StatusBar style="auto" />
-    </AuthProvider>
+    </>
   );
 }

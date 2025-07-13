@@ -45,6 +45,13 @@ export default function TabLayout() {
           icon: "notifications",
         };
         break;
+      case "DRIVER":
+        roleSpecificTab = {
+          name: "routes",
+          title: "Routes",
+          icon: "route",
+        };
+        break;
       case "ADMIN":
         roleSpecificTab = {
           name: "user",
@@ -125,7 +132,13 @@ export default function TabLayout() {
           }}
         />
       )}
-      
+      <Tabs.Screen
+  name="ItemDetails"
+  options={{
+    href: null, // This hides the tab from navigation
+    headerShown: true,
+  }}
+/>
     </Tabs>
   );
 }

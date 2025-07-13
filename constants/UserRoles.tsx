@@ -11,7 +11,7 @@
 export type UserRole = 'ADMIN' | 'CLERK' | 'DRIVER' | 'CLIENT' | 'GENERAL_MANAGER' | 'HEAD_OF_DEPARTMENT' | 'REQUESTER';
 
 // Button Action Types
-export type ButtonAction = 'scan' | 'info' | 'resubmit' | 'view_log' | 'approve' | 'reject' | 'view' | 'warranty';
+export type ButtonAction = 'scan' | 'info' | 'resubmit' | 'view_log' | 'approve' | 'reject' | 'view' | 'warranty' | 'update_status' | 'navigate' | 'contact_customer';
 
 // Role Configuration Interface
 interface RoleConfig {
@@ -68,6 +68,12 @@ export const ICSBOLTZ_ROLE_DEFINITIONS: Record<UserRole, RoleConfig> = {
     name: 'Requester',
     description: 'Standard user with request submission capabilities',
     allowedActions: ['scan', 'info', 'resubmit'],
+    priority: 1,
+  },
+  DRIVER: {
+    name: 'Driver',
+    description: 'Driver with route management and delivery tracking capabilities',
+    allowedActions: ['view', 'scan', 'update_status', 'navigate', 'contact_customer'],
     priority: 1,
   },
 };
