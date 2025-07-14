@@ -83,7 +83,15 @@ export const ICSBOLTZ_ROLE_DEFINITIONS: Record<UserRole, RoleConfig> = {
  */
 
 // Internal state for current user role
-let _currentUserRole: UserRole = 'DRIVER';
+let _currentUserRole: UserRole = (() => {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const storedRole = window.localStorage.getItem('icsboltz_user_role');
+    if (storedRole && Object.keys(ICSBOLTZ_ROLE_DEFINITIONS).includes(storedRole)) {
+      return storedRole as UserRole;
+    }
+  }
+  return 'DRIVER';
+})();
 
 // Listeners for role changes
 type RoleChangeListener = (newRole: UserRole) => void;
@@ -102,7 +110,9 @@ export const getCurrentUserRole = (): UserRole => {
 export const setCurrentUserRole = (newRole: UserRole): void => {
   const oldRole = _currentUserRole;
   _currentUserRole = newRole;
-  
+  if (typeof window !== 'undefined' && window.localStorage) {
+    window.localStorage.setItem('icsboltz_user_role', newRole);
+  }
   // Notify all listeners of the role change
   _roleChangeListeners.forEach(listener => {
     try {
@@ -111,7 +121,6 @@ export const setCurrentUserRole = (newRole: UserRole): void => {
       console.error('Error in role change listener:', error);
     }
   });
-  
   console.log(`User role changed from ${oldRole} to ${newRole}`);
 };
 

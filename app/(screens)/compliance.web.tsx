@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { supabase } from '../../lib/supabase';
-
-interface ComplianceCharge {
-  id: string;
-  compliance_name: string;
-  flat_charge: number;
-  created_at: string;
-}
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  addComplianceCharge,
+  ComplianceCharge,
+  deleteComplianceCharge,
+  getComplianceCharges
+} from '../../services/complianceService';
 
 export default function ComplianceWebScreen() {
   const [complianceCharges, setComplianceCharges] = useState<ComplianceCharge[]>([]);
@@ -18,6 +16,7 @@ export default function ComplianceWebScreen() {
   const [complianceName, setComplianceName] = useState('');
   const [flatCharge, setFlatCharge] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
 
   useEffect(() => {
     fetchComplianceCharges();
@@ -25,15 +24,14 @@ export default function ComplianceWebScreen() {
 
   const fetchComplianceCharges = async () => {
     try {
-      // Mock data for now - replace with real Supabase call when backend is ready
-      const mockData: ComplianceCharge[] = [
-        { id: '1', compliance_name: 'Environmental Compliance', flat_charge: 250.00, created_at: '2024-01-15' },
-        { id: '2', compliance_name: 'Safety Inspection', flat_charge: 180.00, created_at: '2024-01-10' },
-        { id: '3', compliance_name: 'Documentation Fee', flat_charge: 120.00, created_at: '2024-01-05' },
-      ];
-      setComplianceCharges(mockData);
+      setFetchLoading(true);
+      const data = await getComplianceCharges();
+      setComplianceCharges(data);
     } catch (error) {
       console.error('Error fetching compliance charges:', error);
+      Alert.alert('Error', 'Failed to load compliance charges. Please try again.');
+    } finally {
+      setFetchLoading(false);
     }
   };
 
@@ -51,13 +49,10 @@ export default function ComplianceWebScreen() {
 
     setLoading(true);
     try {
-      // Mock implementation - replace with real Supabase call when backend is ready
-      const newCharge: ComplianceCharge = {
-        id: Date.now().toString(),
-        compliance_name: complianceName.trim(),
-        flat_charge: charge,
-        created_at: new Date().toISOString(),
-      };
+      const newCharge = await addComplianceCharge({
+         name_compliance: complianceName.trim(),
+        price: charge,
+      });
 
       setComplianceCharges([newCharge, ...complianceCharges]);
       setComplianceName('');
@@ -83,7 +78,7 @@ export default function ComplianceWebScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              // Mock implementation - replace with real Supabase call when backend is ready
+              await deleteComplianceCharge(id);
               setComplianceCharges(complianceCharges.filter(charge => charge.id !== id));
               Alert.alert('Success', 'Compliance charge deleted successfully');
             } catch (error) {
@@ -136,7 +131,11 @@ export default function ComplianceWebScreen() {
                 <Text className="text-xl font-bold text-text-primary">Current Compliance Charges</Text>
               </View>
               
-              {complianceCharges.length === 0 ? (
+              {fetchLoading ? (
+                <View className="px-6 py-12 text-center">
+                  <Text className="text-text-secondary text-center">Loading compliance charges...</Text>
+                </View>
+              ) : complianceCharges.length === 0 ? (
                 <View className="px-6 py-12 text-center">
                   <Text className="text-text-secondary text-center">No compliance charges configured</Text>
                 </View>
@@ -157,13 +156,13 @@ export default function ComplianceWebScreen() {
                         index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                       }`}
                     >
-                      <Text className="text-text-primary flex-1">{charge.compliance_name}</Text>
+                      <Text className="text-text-primary flex-1">{charge. name_compliance}</Text>
                       <Text className="text-text-primary w-40 text-right font-medium">
-                        {charge.flat_charge.toFixed(2)}
+                        {charge.price.toFixed(2)}
                       </Text>
                       <View className="w-20 flex-row justify-center">
                         <TouchableOpacity
-                          onPress={() => handleDeleteComplianceCharge(charge.id)}
+                          onPress={() => handleDeleteComplianceCharge(charge.id!)}
                           className="p-2 active:opacity-80"
                         >
                           <MaterialIcons name="delete" size={18} color="#ef4444" />

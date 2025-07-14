@@ -1,40 +1,56 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { DemurrageCharge, getDemurrageCharges } from '../../services/demurrageService';
+import { MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  ComplianceCharge,
+  getComplianceCharges,
+} from "../../services/complianceService";
+import {
+  DemurrageCharge,
+  getDemurrageCharges,
+} from "../../services/demurrageService";
 
 export default function NewBookingStep2Screen() {
   // Mock data from Step 1 (in real implementation, this would come from navigation params or state management)
   const bookingData = {
-    bookingName: 'Nvidia 1999 to KL',
-    bookingId: 'BK-2025-001234',
+    bookingName: "Nvidia 1999 to KL",
+    bookingId: "BK-2025-001234",
   };
 
   const [formData, setFormData] = useState({
-    shipmentType: '',
-    containerSize: '',
-    items: ['Electronics', 'Computer Parts'],
-    totalGrossWeight: '',
-    totalVolume: '',
-    demurrageLocation: '',
-    daysExpected: '',
+    shipmentType: "",
+    containerSize: "",
+    items: ["Electronics", "Computer Parts"],
+    totalGrossWeight: "",
+    totalVolume: "",
+    demurrageLocation: "",
+    daysExpected: "",
     selectedCompliance: [] as string[],
   });
 
   const [showShipmentTypePicker, setShowShipmentTypePicker] = useState(false);
   const [showContainerSizePicker, setShowContainerSizePicker] = useState(false);
-  const [showDemurrageLocationPicker, setShowDemurrageLocationPicker] = useState(false);
+  const [showDemurrageLocationPicker, setShowDemurrageLocationPicker] =
+    useState(false);
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
 
   // Updated shipment types to only LFC and CLC
-  const shipmentTypes = ['LFC', 'CLC'];
-  const containerSizes = ['20ft', '40ft', '40ft HC', '45ft'];
-  
+  const shipmentTypes = ["LFC", "CLC"];
+  const containerSizes = ["20ft", "40ft", "40ft HC", "45ft"];
+
   // Demurrage locations from Supabase
-  const [demurrageLocations, setDemurrageLocations] = useState<DemurrageCharge[]>([]);
+  const [demurrageLocations, setDemurrageLocations] = useState<
+    DemurrageCharge[]
+  >([]);
   const [demurrageLoading, setDemurrageLoading] = useState(true);
 
   useEffect(() => {
@@ -47,18 +63,35 @@ export default function NewBookingStep2Screen() {
       const data = await getDemurrageCharges();
       setDemurrageLocations(data);
     } catch (error) {
-      console.error('Error fetching demurrage locations:', error);
+      console.error("Error fetching demurrage locations:", error);
     } finally {
       setDemurrageLoading(false);
     }
   };
 
-  // Mock compliance charges - in real implementation, this would come from the compliance management system
-  const complianceCharges = [
-    { id: '1', compliance_name: 'Environmental Compliance', flat_charge: 250.00 },
-    { id: '2', compliance_name: 'Safety Inspection', flat_charge: 180.00 },
-    { id: '3', compliance_name: 'Documentation Fee', flat_charge: 120.00 },
-  ];
+  const [complianceCharges, setComplianceCharges] = useState<
+    ComplianceCharge[]
+  >([]);
+  const [complianceLoading, setComplianceLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDemurrageLocations();
+    fetchComplianceCharges();
+  }, []);
+
+  const fetchComplianceCharges = async () => {
+    try {
+      setComplianceLoading(true);
+      const data = await getComplianceCharges();
+      setComplianceCharges(data);
+    } catch (error) {
+      console.error("Error fetching compliance charges:", error);
+    } finally {
+      setComplianceLoading(false);
+    }
+  };
+
+
 
   const handleShipmentTypeSelect = (type: string) => {
     setFormData({ ...formData, shipmentType: type });
@@ -81,16 +114,30 @@ export default function NewBookingStep2Screen() {
       // Remove from selection
       setFormData({
         ...formData,
-        selectedCompliance: formData.selectedCompliance.filter(id => id !== complianceId)
+        selectedCompliance: formData.selectedCompliance.filter(
+          (id) => id !== complianceId
+        ),
       });
     } else {
       // Add to selection
       setFormData({
         ...formData,
-        selectedCompliance: [...formData.selectedCompliance, complianceId]
+        selectedCompliance: [...formData.selectedCompliance, complianceId],
       });
     }
   };
+  let complianceCost = 0;
+  if (formData.selectedCompliance.length > 0) {
+    complianceCost = formData.selectedCompliance.reduce(
+      (total, complianceId) => {
+        const compliance = complianceCharges.find(
+          (c) => c.id === complianceId
+        );
+        return total + (compliance?.price || 0);
+      },
+      0
+    );
+  }
 
   const handleRemoveItem = (index: number) => {
     const newItems = formData.items.filter((_, i) => i !== index);
@@ -105,7 +152,7 @@ export default function NewBookingStep2Screen() {
   };
 
   const handleAddNewItem = () => {
-    const newItems = [...formData.items, ''];
+    const newItems = [...formData.items, ""];
     setFormData({ ...formData, items: newItems });
     setEditingItemIndex(newItems.length - 1);
   };
@@ -113,71 +160,89 @@ export default function NewBookingStep2Screen() {
   const handleItemBlur = () => {
     setEditingItemIndex(null);
     // Remove empty items when user finishes editing
-    const filteredItems = formData.items.filter(item => item.trim() !== '');
+    const filteredItems = formData.items.filter((item) => item.trim() !== "");
     setFormData({ ...formData, items: filteredItems });
   };
 
   const calculateEstimatedTotal = () => {
     // Enhanced calculation based on shipment type and measurements
     let baseRate = 0;
-    
+
     // Base rate depends on shipment type
-    if (formData.shipmentType === 'LFC') {
+    if (formData.shipmentType === "LFC") {
       baseRate = 2500; // LFC (Less than Full Container Load) base rate
-    } else if (formData.shipmentType === 'CLC') {
+    } else if (formData.shipmentType === "CLC") {
       baseRate = 4500; // CLC (Container Load Cargo) base rate
     }
-    
+
     // Weight-based calculation (RM per KG)
     const weight = parseFloat(formData.totalGrossWeight) || 0;
     const weightCost = weight * 3.5;
-    
+
     // Volume-based calculation (RM per CBM)
     const volume = parseFloat(formData.totalVolume) || 0;
     const volumeCost = volume * 85;
-    
+
     // Item handling fee
-    const itemCount = formData.items.filter(item => item.trim() !== '').length;
+    const itemCount = formData.items.filter(
+      (item) => item.trim() !== ""
+    ).length;
     const itemHandlingFee = itemCount * 150;
-    
+
     // Container size multiplier
     let containerMultiplier = 1;
-    if (formData.containerSize === '40ft' || formData.containerSize === '40ft HC') {
+    if (
+      formData.containerSize === "40ft" ||
+      formData.containerSize === "40ft HC"
+    ) {
       containerMultiplier = 1.5;
-    } else if (formData.containerSize === '45ft') {
+    } else if (formData.containerSize === "45ft") {
       containerMultiplier = 1.8;
     }
-    
+
     // Demurrage calculation
     let demurrageCost = 0;
     if (formData.demurrageLocation && formData.daysExpected) {
-      const selectedLocation = demurrageLocations.find(loc => loc.location === formData.demurrageLocation);
+      const selectedLocation = demurrageLocations.find(
+        (loc) => loc.location === formData.demurrageLocation
+      );
       const days = parseFloat(formData.daysExpected) || 0;
       if (selectedLocation && selectedLocation.daily_rate && days > 0) {
         demurrageCost = selectedLocation.daily_rate * days;
       }
     }
-    
+
     // Compliance charges calculation
     let complianceCost = 0;
     if (formData.selectedCompliance.length > 0) {
-      complianceCost = formData.selectedCompliance.reduce((total, complianceId) => {
-        const compliance = complianceCharges.find(c => c.id === complianceId);
-        return total + (compliance?.flat_charge || 0);
-      }, 0);
+      complianceCost = formData.selectedCompliance.reduce(
+        (total, complianceId) => {
+          const compliance = complianceCharges.find(
+            (c) => c.id === complianceId
+          );
+          return total + (compliance?.price || 0);
+        },
+        0
+      );
     }
-    
-    const subtotal = (baseRate + weightCost + volumeCost + itemHandlingFee) * containerMultiplier + demurrageCost + complianceCost;
-    
+
+    const subtotal =
+      (baseRate + weightCost + volumeCost + itemHandlingFee) *
+        containerMultiplier +
+      demurrageCost +
+      complianceCost;
+
     // Add service tax (6%)
     const serviceTax = subtotal * 0.06;
-    
+
     return Math.round(subtotal + serviceTax);
   };
 
   const getDemurrageRate = () => {
     if (formData.demurrageLocation) {
-      const selectedLocation = demurrageLocations.find((loc) => loc.location === formData.demurrageLocation);
+      const selectedLocation = demurrageLocations.find(
+        (loc) => loc.location === formData.demurrageLocation
+      );
       return selectedLocation?.daily_rate || 0;
     }
     return 0;
@@ -186,9 +251,9 @@ export default function NewBookingStep2Screen() {
   const handleContinue = () => {
     // Optional validation - allow empty fields for now
     // User can continue with incomplete data
-    
+
     // Navigate to step 3
-    router.push('/new-booking-step3');
+    router.push("/new-booking-step3");
   };
 
   const handleBack = () => {
@@ -199,7 +264,7 @@ export default function NewBookingStep2Screen() {
     <SafeAreaView className="flex-1 bg-bg-primary">
       {/* Header */}
       <View className="flex-row items-center px-6 py-4 bg-bg-secondary shadow-sm">
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={handleBack}
           className="mr-4 p-2 -ml-2 active:opacity-80"
         >
@@ -225,7 +290,7 @@ export default function NewBookingStep2Screen() {
             </View>
             <View className="flex-1 h-1 bg-green-500 ml-2" />
           </View>
-          
+
           {/* Step 2 - Active */}
           <View className="flex-row items-center flex-1">
             <View className="w-8 h-8 rounded-full bg-primary items-center justify-center ml-2">
@@ -233,7 +298,7 @@ export default function NewBookingStep2Screen() {
             </View>
             <View className="flex-1 h-1 bg-gray-300 ml-2" />
           </View>
-          
+
           {/* Step 3 - Inactive */}
           <View className="flex-row items-center">
             <View className="w-8 h-8 rounded-full bg-gray-300 items-center justify-center ml-2">
@@ -244,7 +309,7 @@ export default function NewBookingStep2Screen() {
       </View>
 
       {/* Form Content */}
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
@@ -275,7 +340,7 @@ export default function NewBookingStep2Screen() {
             <Text className="text-lg font-bold text-text-primary mb-4">
               Shipment Details
             </Text>
-            
+
             <View className="flex-row space-x-4">
               {/* Shipment Type */}
               <View className="flex-1">
@@ -283,15 +348,23 @@ export default function NewBookingStep2Screen() {
                   Shipment Type
                 </Text>
                 <TouchableOpacity
-                  onPress={() => setShowShipmentTypePicker(!showShipmentTypePicker)}
+                  onPress={() =>
+                    setShowShipmentTypePicker(!showShipmentTypePicker)
+                  }
                   className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
                 >
-                  <Text className={`flex-1 text-base ${formData.shipmentType ? 'text-text-primary' : 'text-text-secondary'}`}>
-                    {formData.shipmentType || 'Select type'}
+                  <Text
+                    className={`flex-1 text-base ${formData.shipmentType ? "text-text-primary" : "text-text-secondary"}`}
+                  >
+                    {formData.shipmentType || "Select type"}
                   </Text>
-                  <MaterialIcons name="keyboard-arrow-down" size={20} color="#8A8A8E" />
+                  <MaterialIcons
+                    name="keyboard-arrow-down"
+                    size={20}
+                    color="#8A8A8E"
+                  />
                 </TouchableOpacity>
-                
+
                 {/* Shipment Type Picker */}
                 {showShipmentTypePicker && (
                   <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
@@ -314,15 +387,23 @@ export default function NewBookingStep2Screen() {
                   Container Size(ft)
                 </Text>
                 <TouchableOpacity
-                  onPress={() => setShowContainerSizePicker(!showContainerSizePicker)}
+                  onPress={() =>
+                    setShowContainerSizePicker(!showContainerSizePicker)
+                  }
                   className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
                 >
-                  <Text className={`flex-1 text-base ${formData.containerSize ? 'text-text-primary' : 'text-text-secondary'}`}>
-                    {formData.containerSize || 'Select size'}
+                  <Text
+                    className={`flex-1 text-base ${formData.containerSize ? "text-text-primary" : "text-text-secondary"}`}
+                  >
+                    {formData.containerSize || "Select size"}
                   </Text>
-                  <MaterialIcons name="keyboard-arrow-down" size={20} color="#8A8A8E" />
+                  <MaterialIcons
+                    name="keyboard-arrow-down"
+                    size={20}
+                    color="#8A8A8E"
+                  />
                 </TouchableOpacity>
-                
+
                 {/* Container Size Picker */}
                 {showContainerSizePicker && (
                   <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
@@ -346,10 +427,13 @@ export default function NewBookingStep2Screen() {
             <Text className="text-lg font-bold text-text-primary mb-4">
               Items List
             </Text>
-            
+
             {/* Items */}
             {formData.items.map((item, index) => (
-              <View key={index} className="flex-row items-center justify-between bg-bg-secondary border border-gray-300 rounded-lg px-4 py-3 mb-2">
+              <View
+                key={index}
+                className="flex-row items-center justify-between bg-bg-secondary border border-gray-300 rounded-lg px-4 py-3 mb-2"
+              >
                 {editingItemIndex === index ? (
                   <TextInput
                     className="flex-1 text-base text-text-primary"
@@ -368,7 +452,7 @@ export default function NewBookingStep2Screen() {
                     onPress={() => setEditingItemIndex(index)}
                   >
                     <Text className="text-base text-text-primary">
-                      {item || 'Tap to edit'}
+                      {item || "Tap to edit"}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -380,14 +464,21 @@ export default function NewBookingStep2Screen() {
                 </TouchableOpacity>
               </View>
             ))}
-            
+
             {/* Add New Button */}
             <TouchableOpacity
               onPress={handleAddNewItem}
               className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 flex-row items-center justify-center active:opacity-80"
             >
-              <MaterialIcons name="add" size={20} color="#0A84FF" style={{ marginRight: 8 }} />
-              <Text className="text-base font-medium text-primary">Add New</Text>
+              <MaterialIcons
+                name="add"
+                size={20}
+                color="#0A84FF"
+                style={{ marginRight: 8 }}
+              />
+              <Text className="text-base font-medium text-primary">
+                Add New
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -396,7 +487,7 @@ export default function NewBookingStep2Screen() {
             <Text className="text-lg font-bold text-text-primary mb-4">
               Measurements
             </Text>
-            
+
             <View className="flex-row space-x-4">
               {/* Total Gross Weight */}
               <View className="flex-1">
@@ -407,7 +498,9 @@ export default function NewBookingStep2Screen() {
                   <TextInput
                     className="flex-1 text-base text-text-primary"
                     value={formData.totalGrossWeight}
-                    onChangeText={(text: string) => setFormData({ ...formData, totalGrossWeight: text })}
+                    onChangeText={(text: string) =>
+                      setFormData({ ...formData, totalGrossWeight: text })
+                    }
                     placeholder="0.00"
                     placeholderTextColor="#8A8A8E"
                     keyboardType="numeric"
@@ -424,7 +517,9 @@ export default function NewBookingStep2Screen() {
                   <TextInput
                     className="flex-1 text-base text-text-primary"
                     value={formData.totalVolume}
-                    onChangeText={(text: string) => setFormData({ ...formData, totalVolume: text })}
+                    onChangeText={(text: string) =>
+                      setFormData({ ...formData, totalVolume: text })
+                    }
                     placeholder="0.00"
                     placeholderTextColor="#8A8A8E"
                     keyboardType="numeric"
@@ -439,34 +534,48 @@ export default function NewBookingStep2Screen() {
             <Text className="text-lg font-bold text-text-primary mb-4">
               Demurrage
             </Text>
-            
+
             {/* Demurrage Location */}
             <View className="mb-4">
               <Text className="text-sm font-semibold text-text-primary mb-2">
                 Location
               </Text>
               <TouchableOpacity
-                onPress={() => setShowDemurrageLocationPicker(!showDemurrageLocationPicker)}
+                onPress={() =>
+                  setShowDemurrageLocationPicker(!showDemurrageLocationPicker)
+                }
                 className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
               >
-                <Text className={`flex-1 text-base ${formData.demurrageLocation ? 'text-text-primary' : 'text-text-secondary'}`}>
-                  {formData.demurrageLocation || 'Select location'}
+                <Text
+                  className={`flex-1 text-base ${formData.demurrageLocation ? "text-text-primary" : "text-text-secondary"}`}
+                >
+                  {formData.demurrageLocation || "Select location"}
                 </Text>
-                <MaterialIcons name="keyboard-arrow-down" size={20} color="#8A8A8E" />
+                <MaterialIcons
+                  name="keyboard-arrow-down"
+                  size={20}
+                  color="#8A8A8E"
+                />
               </TouchableOpacity>
-              
+
               {/* Demurrage Location Picker */}
               {showDemurrageLocationPicker && demurrageLocations.length > 0 && (
                 <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
                   {demurrageLocations.map((item, index) => (
                     <TouchableOpacity
                       key={item.demurrage_id || index}
-                      onPress={() => handleDemurrageLocationSelect(item.location || '')}
+                      onPress={() =>
+                        handleDemurrageLocationSelect(item.location || "")
+                      }
                       className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
                     >
                       <View className="flex-row justify-between items-center">
-                        <Text className="text-text-primary">{item.location}</Text>
-                        <Text className="text-text-secondary text-sm">RM {item.daily_rate?.toFixed(2)}/day</Text>
+                        <Text className="text-text-primary">
+                          {item.location}
+                        </Text>
+                        <Text className="text-text-secondary text-sm">
+                          RM {item.daily_rate?.toFixed(2)}/day
+                        </Text>
                       </View>
                     </TouchableOpacity>
                   ))}
@@ -483,7 +592,9 @@ export default function NewBookingStep2Screen() {
                 <TextInput
                   className="flex-1 text-base text-text-primary"
                   value={formData.daysExpected}
-                  onChangeText={(text: string) => setFormData({ ...formData, daysExpected: text })}
+                  onChangeText={(text: string) =>
+                    setFormData({ ...formData, daysExpected: text })
+                  }
                   placeholder="0"
                   placeholderTextColor="#8A8A8E"
                   keyboardType="numeric"
@@ -492,47 +603,48 @@ export default function NewBookingStep2Screen() {
             </View>
           </View>
 
-          {/* Compliance */}
           <View className="mb-6">
             <Text className="text-lg font-bold text-text-primary mb-4">
               Compliance
             </Text>
-            
-            {complianceCharges.map((compliance) => (
-              <TouchableOpacity
-                key={compliance.id}
-                onPress={() => handleComplianceToggle(compliance.id)}
-                className="flex-row items-center justify-between bg-bg-secondary border border-gray-300 rounded-lg px-4 py-3 mb-2 active:opacity-80"
-              >
-                <View className="flex-row items-center flex-1">
-                  <View className={`w-5 h-5 rounded border-2 mr-3 items-center justify-center ${
-                    formData.selectedCompliance.includes(compliance.id) 
-                      ? 'bg-primary border-primary' 
-                      : 'border-gray-400'
-                  }`}>
-                    {formData.selectedCompliance.includes(compliance.id) && (
-                      <MaterialIcons name="check" size={14} color="white" />
-                    )}
+            {complianceCharges
+              .filter(compliance => typeof compliance.id === 'string')
+              .map((compliance) => (
+                <TouchableOpacity
+                  key={compliance.id!}
+                  onPress={() => handleComplianceToggle(compliance.id!)}
+                  className="flex-row items-center justify-between bg-bg-secondary border border-gray-300 rounded-lg px-4 py-3 mb-2 active:opacity-80"
+                >
+                  <View className="flex-row items-center flex-1">
+                    <View className={`w-5 h-5 rounded border-2 mr-3 items-center justify-center ${
+                      formData.selectedCompliance.includes(compliance.id!)
+                        ? 'bg-primary border-primary'
+                        : 'border-gray-400'
+                    }`}>
+                      {formData.selectedCompliance.includes(compliance.id!) && (
+                        <MaterialIcons name="check" size={14} color="white" />
+                      )}
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-base font-medium text-text-primary">
+                        {compliance.name_compliance}
+                      </Text>
+                      <Text className="text-sm text-text-secondary">
+                        RM {compliance.price.toFixed(2)}
+                      </Text>
+                    </View>
                   </View>
-                  <View className="flex-1">
-                    <Text className="text-base font-medium text-text-primary">
-                      {compliance.compliance_name}
-                    </Text>
-                    <Text className="text-sm text-text-secondary">
-                      RM {compliance.flat_charge.toFixed(2)}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+                </TouchableOpacity>
+              ))}
           </View>
+
 
           {/* Estimated Total */}
           <View className="bg-bg-secondary border border-gray-300 rounded-lg p-6 mb-6">
             <Text className="text-lg font-bold text-text-primary mb-4">
               Cost Breakdown
             </Text>
-            
+
             {/* Breakdown Details */}
             <View className="space-y-2 mb-4">
               {formData.shipmentType && (
@@ -541,90 +653,113 @@ export default function NewBookingStep2Screen() {
                     Base Rate ({formData.shipmentType})
                   </Text>
                   <Text className="text-sm text-text-primary">
-                    RM {formData.shipmentType === 'LFC' ? '2,500' : formData.shipmentType === 'CLC' ? '4,500' : '0'}
+                    RM{" "}
+                    {formData.shipmentType === "LFC"
+                      ? "2,500"
+                      : formData.shipmentType === "CLC"
+                        ? "4,500"
+                        : "0"}
                   </Text>
                 </View>
               )}
-              
+
               {parseFloat(formData.totalGrossWeight) > 0 && (
                 <View className="flex-row justify-between">
                   <Text className="text-sm text-text-secondary">
                     Weight ({formData.totalGrossWeight} KG × RM 3.50)
                   </Text>
                   <Text className="text-sm text-text-primary">
-                    RM {(parseFloat(formData.totalGrossWeight) * 3.5).toLocaleString()}
+                    RM{" "}
+                    {(
+                      parseFloat(formData.totalGrossWeight) * 3.5
+                    ).toLocaleString()}
                   </Text>
                 </View>
               )}
-              
+
               {parseFloat(formData.totalVolume) > 0 && (
                 <View className="flex-row justify-between">
                   <Text className="text-sm text-text-secondary">
                     Volume ({formData.totalVolume} CBM × RM 85)
                   </Text>
                   <Text className="text-sm text-text-primary">
-                    RM {(parseFloat(formData.totalVolume) * 85).toLocaleString()}
+                    RM{" "}
+                    {(parseFloat(formData.totalVolume) * 85).toLocaleString()}
                   </Text>
                 </View>
               )}
-              
-              {formData.items.filter(item => item.trim() !== '').length > 0 && (
+
+              {formData.items.filter((item) => item.trim() !== "").length >
+                0 && (
                 <View className="flex-row justify-between">
                   <Text className="text-sm text-text-secondary">
-                    Item Handling ({formData.items.filter(item => item.trim() !== '').length} items × RM 150)
+                    Item Handling (
+                    {formData.items.filter((item) => item.trim() !== "").length}{" "}
+                    items × RM 150)
                   </Text>
                   <Text className="text-sm text-text-primary">
-                    RM {(formData.items.filter(item => item.trim() !== '').length * 150).toLocaleString()}
+                    RM{" "}
+                    {(
+                      formData.items.filter((item) => item.trim() !== "")
+                        .length * 150
+                    ).toLocaleString()}
                   </Text>
                 </View>
               )}
-              
-              {formData.containerSize && formData.containerSize !== '20ft' && (
+
+              {formData.containerSize && formData.containerSize !== "20ft" && (
                 <View className="flex-row justify-between">
                   <Text className="text-sm text-text-secondary">
                     Container Size Adjustment ({formData.containerSize})
                   </Text>
                   <Text className="text-sm text-text-primary">
-                    {formData.containerSize === '40ft' || formData.containerSize === '40ft HC' ? '+50%' : '+80%'}
+                    {formData.containerSize === "40ft" ||
+                    formData.containerSize === "40ft HC"
+                      ? "+50%"
+                      : "+80%"}
                   </Text>
                 </View>
               )}
-              
-              {formData.demurrageLocation && formData.daysExpected && parseFloat(formData.daysExpected) > 0 && (
-                <View className="flex-row justify-between">
-                  <Text className="text-sm text-text-secondary">
-                    Demurrage ({formData.demurrageLocation}, {formData.daysExpected} days × RM {getDemurrageRate().toFixed(2)})
-                  </Text>
-                  <Text className="text-sm text-text-primary">
-                    RM {(getDemurrageRate() * parseFloat(formData.daysExpected)).toLocaleString()}
-                  </Text>
-                </View>
-              )}
-              
-              {formData.selectedCompliance.length > 0 && formData.selectedCompliance.map((complianceId) => {
-                const compliance = complianceCharges.find(c => c.id === complianceId);
-                return compliance ? (
-                  <View key={complianceId} className="flex-row justify-between">
+
+              {formData.demurrageLocation &&
+                formData.daysExpected &&
+                parseFloat(formData.daysExpected) > 0 && (
+                  <View className="flex-row justify-between">
                     <Text className="text-sm text-text-secondary">
-                      {compliance.compliance_name}
+                      Demurrage ({formData.demurrageLocation},{" "}
+                      {formData.daysExpected} days × RM{" "}
+                      {getDemurrageRate().toFixed(2)})
                     </Text>
                     <Text className="text-sm text-text-primary">
-                      RM {compliance.flat_charge.toFixed(2)}
+                      RM{" "}
+                      {(
+                        getDemurrageRate() * parseFloat(formData.daysExpected)
+                      ).toLocaleString()}
                     </Text>
                   </View>
-                ) : null;
-              })}
-              
+                )}
+
+              {formData.selectedCompliance.length > 0 && formData.selectedCompliance.map((complianceId) => {
+  const compliance = complianceCharges.find(c => c.id === complianceId);
+  return compliance ? (
+    <View key={complianceId} className="flex-row justify-between">
+      <Text className="text-sm text-text-secondary">
+        {compliance.name_compliance}
+      </Text>
+      <Text className="text-sm text-text-primary">
+        RM {compliance.price.toFixed(2)}
+      </Text>
+    </View>
+  ) : null;
+})}
               <View className="flex-row justify-between">
                 <Text className="text-sm text-text-secondary">
                   Service Tax (6%)
                 </Text>
-                <Text className="text-sm text-text-primary">
-                  Included
-                </Text>
+                <Text className="text-sm text-text-primary">Included</Text>
               </View>
             </View>
-            
+
             {/* Total */}
             <View className="border-t border-gray-300 pt-4">
               <View className="flex-row justify-between items-center">
@@ -636,7 +771,8 @@ export default function NewBookingStep2Screen() {
                 </Text>
               </View>
               <Text className="text-xs text-text-secondary mt-1">
-                *Final cost may vary based on actual measurements and additional services
+                *Final cost may vary based on actual measurements and additional
+                services
               </Text>
             </View>
           </View>
@@ -653,19 +789,21 @@ export default function NewBookingStep2Screen() {
           >
             <Text className="text-base font-semibold text-gray-600">Back</Text>
           </TouchableOpacity>
-          
+
           {/* Continue Button */}
           <TouchableOpacity
             onPress={handleContinue}
             className="flex-1 active:opacity-80"
           >
             <LinearGradient
-              colors={['#409CFF', '#0A84FF']}
+              colors={["#409CFF", "#0A84FF"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               className="rounded-lg px-4 py-3 min-h-[44px] items-center justify-center"
             >
-              <Text className="text-base font-semibold text-white">Continue</Text>
+              <Text className="text-base font-semibold text-white">
+                Continue
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { getDemurrageCharges, DemurrageCharge } from '../../services/demurrageService';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { DemurrageCharge, getDemurrageCharges } from '../../services/demurrageService';
 
 export default function NewBookingStep2WebScreen() {
   // Mock data from Step 1 (in real implementation, this would come from navigation params or state management)
@@ -38,9 +38,9 @@ export default function NewBookingStep2WebScreen() {
   
   // Mock compliance charges - in real implementation, this would come from the compliance management system
   const complianceCharges = [
-    { id: '1', compliance_name: 'Environmental Compliance', flat_charge: 250.00 },
-    { id: '2', compliance_name: 'Safety Inspection', flat_charge: 180.00 },
-    { id: '3', compliance_name: 'Documentation Fee', flat_charge: 120.00 },
+    { id: '1',  name_compliance: 'Environmental Compliance', price: 250.00 },
+    { id: '2',  name_compliance: 'Safety Inspection', price: 180.00 },
+    { id: '3',  name_compliance: 'Documentation Fee', price: 120.00 },
   ];
 
   // Fetch demurrage locations from Supabase
@@ -165,7 +165,7 @@ export default function NewBookingStep2WebScreen() {
     if (formData.selectedCompliance.length > 0) {
       complianceCost = formData.selectedCompliance.reduce((total, complianceId) => {
         const compliance = complianceCharges.find(c => c.id === complianceId);
-        return total + (compliance?.flat_charge || 0);
+        return total + (compliance?.price || 0);
       }, 0);
     }
     
@@ -557,10 +557,10 @@ export default function NewBookingStep2WebScreen() {
                         </View>
                         <View className="flex-1">
                           <Text className="text-base font-medium text-text-primary">
-                            {compliance.compliance_name}
+                            {compliance. name_compliance}
                           </Text>
                           <Text className="text-sm text-text-secondary">
-                            RM {compliance.flat_charge.toFixed(2)}
+                            RM {compliance.price.toFixed(2)}
                           </Text>
                         </View>
                       </View>
@@ -647,10 +647,10 @@ export default function NewBookingStep2WebScreen() {
                       return compliance ? (
                         <View key={complianceId} className="flex-row justify-between">
                           <Text className="text-sm text-text-secondary">
-                            {compliance.compliance_name}
+                            {compliance. name_compliance}
                           </Text>
                           <Text className="text-sm text-text-primary">
-                            RM {compliance.flat_charge.toFixed(2)}
+                            RM {compliance.price.toFixed(2)}
                           </Text>
                         </View>
                       ) : null;
