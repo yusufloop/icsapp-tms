@@ -3,8 +3,9 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, Animated } from 'r
 import { MaterialIcons } from '@expo/vector-icons';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
+import { addApproval } from '@/services/approvalService';
 import { router } from 'expo-router';
-import { DesignSystem } from '@/constants/DesignSystem';
+import { Alert, Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 interface BookingData {
@@ -423,6 +424,34 @@ export default function WebBookingsScreen() {
                           <Text className="ml-2 text-sm font-medium text-gray-700">Edit</Text>
                         </TouchableOpacity>
 
+                       {/* Approve Button - Success action with solid green */}
+                       <TouchableOpacity
+                         onPress={() => {
+                           addApproval({
+                             booking_id: booking.id,
+                             approval_type: 'APPROVED'
+                           })
+                           .then(() => {
+                             Alert.alert('Success', 'Booking has been approved successfully!');
+                           })
+                           .catch((error) => {
+                             console.error('Error approving booking:', error);
+                             Alert.alert('Error', 'Failed to approve booking. Please try again.');
+                           });
+                         }}
+                         className="rounded-lg px-4 py-2 flex-row items-center"
+                         style={{
+                           backgroundColor: '#10B981',
+                           shadowColor: '#10B981',
+                           shadowOffset: { width: 0, height: 2 },
+                           shadowOpacity: 0.1,
+                           shadowRadius: 4,
+                           elevation: 2,
+                         }}
+                       >
+                         <MaterialIcons name="check-circle" size={16} color="white" />
+                         <Text className="ml-2 text-sm font-semibold text-white">Approve</Text>
+                       </TouchableOpacity>
                         {/* Invoice Button - Primary action with solid primary color */}
                         <TouchableOpacity
                           onPress={() => handleInvoice(booking)}

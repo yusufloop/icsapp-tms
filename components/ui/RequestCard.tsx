@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Animated, Text, TouchableOpacity, View } from 'react-native';
 import {
   getCurrentUserActions,
@@ -10,6 +10,8 @@ import {
 } from '../../constants/UserRoles';
 import { PremiumButton } from './PremiumButton';
 import { PremiumCard } from './PremiumCard';
+import { addApproval } from '@/services/approvalService';
+import { Alert } from 'react-native';
 
 interface RequestCardProps {
   id: string;
@@ -272,6 +274,28 @@ export function RequestCard({
     router.push('/summary');
   };
 
+  // Approval handler
+  const handleApprove = useCallback(async () => {
+    try {
+      await addApproval({
+        booking_id: id,
+        approval_type: 'APPROVED'
+      });
+      
+      Alert.alert(
+        'Success',
+        'Booking has been approved successfully!',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('Error approving booking:', error);
+      Alert.alert(
+        'Error',
+        'Failed to approve booking. Please try again.',
+        [{ text: 'OK' }]
+      );
+    }
+  }, [id]);
 
   // ICSBOLTZ_BUTTON_CONFIG - Button configuration based on actions
   const getButtonConfig = (action: ButtonAction) => {
@@ -477,6 +501,25 @@ export function RequestCard({
                   >
                     <MaterialIcons name="edit" size={18} color="#6B7280" style={{ marginRight: 8 }} />
                     <Text className="text-base font-semibold text-gray-600">Edit</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {/* Approve & Recall - Side by side buttons */}
+                <View className="flex-row justify-between mb-2">
+                  <TouchableOpacity
+                    onPress={handleApprove}
+                    className="flex-1 bg-green-500 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80 flex-row mr-3"
+                  >
+                    <MaterialIcons name="check-circle" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+                    <Text className="text-base font-semibold text-white">Approve</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    onPress={handleRecall}
+                    className="flex-1 bg-red-500 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80 flex-row"
+                  >
+                    <MaterialIcons name="undo" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+                    <Text className="text-base font-semibold text-white">Recall</Text>
                   </TouchableOpacity>
                 </View>
 
