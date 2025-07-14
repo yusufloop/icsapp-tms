@@ -6,72 +6,90 @@ import { RequestCard } from '@/components/ui/RequestCard';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { router } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { supabase } from '@/lib/supabase';
+import { useEffect } from 'react';
 
 export default function RequestsScreen() {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const requests = [
-    { 
-      id: '#BOOKING 1', 
-      date: '30/10/2019',
-      status: 'New', 
-      itemRequested: 'Electronics Shipment',
-      priority: 'High',
-      amount: 'RM 200',
-      company: 'Capi Telecom',
-      items: ['Laptop x2', 'Monitor x1', 'Cables x5'],
-      invoiceStatus: 'Pending',
-      total: 'RM 200'
-    },
-    { 
-      id: '#BOOKING 2', 
-      date: '30/10/2019',
-      status: 'Delivered', 
-      itemRequested: 'Office Supplies Transport',
-      priority: 'Medium',
-      amount: '$50',
-      company: 'Capi Telecom',
-      items: ['Paper x10', 'Pens x20', 'Folders x5'],
-      invoiceStatus: 'Paid',
-      total: '$50'
-    },
-    { 
-      id: '178ef99d-a107-432d-b8ec-bbc008754c29', 
-      date: '29/10/2019',
-      status: 'In Transit', 
-      itemRequested: 'Software Equipment',
-      priority: 'Low',
-      amount: '$150',
-      company: 'Tech Solutions',
-      items: ['Server x1', 'Router x2'],
-      invoiceStatus: 'Invoiced',
-      total: '$150'
-    },
-    { 
-      id: '#BOOKING 4', 
-      date: '28/10/2019',
-      status: 'Picked up', 
-      itemRequested: 'Maintenance Equipment',
-      priority: 'High',
-      amount: '$300',
-      company: 'Service Pro',
-      items: ['Tools x1 set', 'Parts x various'],
-      invoiceStatus: 'Pending',
-      total: '$300'
-    },
-    { 
-      id: '#BOOKING 5', 
-      date: '27/10/2019',
-      status: 'Delivered', 
-      itemRequested: 'Training Materials',
-      priority: 'Low',
-      amount: '$75',
-      company: 'EduTech',
-      items: ['Books x5', 'DVDs x3', 'Manuals x2'],
-      invoiceStatus: 'Paid',
-      total: '$75'
-    },
-  ];
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const { data, error } = await supabase
+        .from('bookings')
+        .select(`
+          booking_id,
+          date_booking,
+          consignee,
+          pickup_state,
+          delivery_state,
+          shipment_type,
+          container_size,
+          created_at,
+          client_id,
+          booking_statuses (
+            status_id,
+            updated_at,
+            statuses_master (
+              status_value
+            )
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      // Transform the data to match the expected format for RequestCard
+      const transformedData = data.map(booking => {
+        // Get status from the joined booking_statuses table
+        const statusValue = booking.booking_statuses?.statuses_master?.status_value || 'Pending';
+        
+        // Format the date
+        const formattedDate = booking.date_booking 
+          ? new Date(booking.date_booking).toLocaleDateString() 
+          : new Date(booking.created_at).toLocaleDateString();
+        
+        // Generate a mock priority based on status
+        let priority = 'Medium';
+        if (statusValue === 'New' || statusValue === 'Pending') priority = 'High';
+        if (statusValue === 'Delivered') priority = 'Low';
+        
+        // Generate a mock amount based on container size
+        const amount = booking.container_size === '40ft' ? 'RM 5000' : 'RM 3000';
+        
+        return {
+          id: booking.booking_id,
+          date: formattedDate,
+          status: statusValue,
+          itemRequested: `${booking.pickup_state} to ${booking.delivery_state}`,
+          priority,
+          amount,
+          company: booking.consignee || 'Client',
+          items: [`${booking.shipment_type || 'FCL'} - ${booking.container_size || '20ft'}`],
+          invoiceStatus: 'Pending',
+          total: amount
+        };
+      });
+
+      setRequests(transformedData);
+    } catch (err: any) {
+      console.error('Error fetching bookings:', err);
+      setError(err.message || 'Failed to fetch bookings');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCardToggle = (cardId: string) => {
     setExpandedCards(prev => {
@@ -183,7 +201,7 @@ export default function RequestsScreen() {
         <View className="px-6">
           {requests.map((request, index) => (
             <Animated.View
-              key={request.id}
+              key={request.id || index}
               entering={FadeInDown.delay(index * 100).duration(300)}
             >
               <RequestCard
@@ -206,5 +224,6 @@ export default function RequestsScreen() {
       </ScrollView>
 
     </SafeAreaView>
+    
   );
 }

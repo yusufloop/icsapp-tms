@@ -2,10 +2,11 @@ import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
 import { DesignSystem } from '@/constants/DesignSystem';
 import { addApproval } from '@/services/approvalService';
+import { supabase } from '@/lib/supabase';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, Animated, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 interface BookingData {
   id: string;
@@ -23,84 +24,91 @@ interface BookingData {
 export default function WebBookingsScreen() {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
+  const [bookings, setBookings] = useState<BookingData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [animatedValues] = useState(() => new Map<string, Animated.Value>());
 
-  // Mock data for the bookings table
-  const bookings: BookingData[] = [
-    {
-      id: '1',
-      name: 'Macbook Pro',
-      bookingNumber: 'xxxKLGxPNGxxxxx',
-      price: '5000',
-      shipmentType: 'LCL',
-      containerSize: '40',
-      pickup: 'PNG',
-      delivery: 'KLG',
-      date: '2025-05-09',
-      status: 'In Transit'
-    },
-    {
-      id: '2',
-      name: 'Macbook Pro',
-      bookingNumber: 'xxxKLGxPNGxxxxx',
-      price: '5000',
-      shipmentType: 'LCL',
-      containerSize: '40',
-      pickup: 'PNG',
-      delivery: 'KLG',
-      date: '2025-05-09',
-      status: 'In Transit'
-    },
-    {
-      id: '3',
-      name: 'Macbook Pro',
-      bookingNumber: 'xxxKLGxPNGxxxxx',
-      price: '5000',
-      shipmentType: 'LCL',
-      containerSize: '40',
-      pickup: 'PNG',
-      delivery: 'KLG',
-      date: '2025-05-09',
-      status: 'In Transit'
-    },
-    {
-      id: '4',
-      name: 'Macbook Pro',
-      bookingNumber: 'xxxKLGxPNGxxxxx',
-      price: '5000',
-      shipmentType: 'LCL',
-      containerSize: '40',
-      pickup: 'PNG',
-      delivery: 'KLG',
-      date: '2025-05-09',
-      status: 'Delivered'
-    },
-    {
-      id: '5',
-      name: 'Macbook Pro',
-      bookingNumber: 'xxxKLGxPNGxxxxx',
-      price: '5000',
-      shipmentType: 'LCL',
-      containerSize: '40',
-      pickup: 'PNG',
-      delivery: 'KLG',
-      date: '2025-05-09',
-      status: 'Delivered'
-    },
-    {
-      id: '6',
-      name: 'Macbook Pro',
-      bookingNumber: 'xxxKLGxPNGxxxxx',
-      price: '5000',
-      shipmentType: 'LCL',
-      containerSize: '40',
-      pickup: 'PNG',
-      delivery: 'KLG',
-      date: '2025-05-09',
-      status: 'Delivered'
-    },
-  ];
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const { data, error } = await supabase
+        .from('bookings')
+        .select(`
+          booking_id,
+          date_booking,
+          consignee,
+          pickup_state,
+          delivery_state,
+          shipment_type,
+          container_size,
+          created_at,
+          client_id,
+          booking_statuses (
+            status_id,
+            updated_at,
+            statuses_master (
+              status_value
+            )
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      // Transform the data to match the expected format for the table
+      const transformedData: BookingData[] = data.map(booking => {
+        // Get status from the joined booking_statuses table
+        const statusValue = booking.booking_statuses?.statuses_master?.status_value || 'Pending';
+        
+        // Map status to the expected format
+        let mappedStatus: 'In Transit' | 'Delivered' | 'Pending' | 'Picked Up' = 'Pending';
+        if (statusValue === 'In Transit') mappedStatus = 'In Transit';
+        else if (statusValue === 'Delivered') mappedStatus = 'Delivered';
+        else if (statusValue === 'Picked Up') mappedStatus = 'Picked Up';
+        
+        // Format the date
+        const formattedDate = booking.date_booking 
+          ? new Date(booking.date_booking).toISOString().split('T')[0]
+          : new Date(booking.created_at).toISOString().split('T')[0];
+        
+        // Generate a booking number based on origin and destination
+        const bookingNumber = `xxx${booking.pickup_state || 'ORG'}x${booking.delivery_state || 'DST'}xxxxx`;
+        
+        // Calculate price based on container size (mock calculation)
+        const price = booking.container_size === '40ft' ? '5000' : '3000';
+        
+        return {
+          id: booking.booking_id,
+          name: booking.consignee || 'Shipment',
+          bookingNumber,
+          price,
+          shipmentType: booking.shipment_type || 'LCL',
+          containerSize: booking.container_size?.replace('ft', '') || '20',
+          pickup: booking.pickup_state || 'ORG',
+          delivery: booking.delivery_state || 'DST',
+          date: formattedDate,
+          status: mappedStatus
+        };
+      });
+
+      setBookings(transformedData);
+    } catch (err: any) {
+      console.error('Error fetching bookings:', err);
+      setError(err.message || 'Failed to fetch bookings');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRowSelect = (id: string) => {
     setSelectedRows(prev => {
@@ -324,7 +332,25 @@ export default function WebBookingsScreen() {
             </View>
 
             {/* Table Rows */}
-            {bookings.map((booking, index) => {
+            {loading ? (
+              <View className="py-12 text-center">
+                <Text className="text-gray-500 text-center">Loading bookings...</Text>
+              </View>
+            ) : error ? (
+              <View className="py-12 text-center">
+                <Text className="text-red-500 text-center">{error}</Text>
+                <TouchableOpacity 
+                  className="mt-4 bg-blue-500 px-4 py-2 rounded-lg"
+                  onPress={fetchBookings}
+                >
+                  <Text className="text-white">Retry</Text>
+                </TouchableOpacity>
+              </View>
+            ) : bookings.length === 0 ? (
+              <View className="py-12 text-center">
+                <Text className="text-gray-500 text-center">No bookings found</Text>
+              </View>
+            ) : bookings.map((booking, index) => {
               const isExpanded = expandedRow === booking.id;
               const animatedValue = getAnimatedValue(booking.id);
               
