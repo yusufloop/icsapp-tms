@@ -2,15 +2,46 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import React, { useState, useEffect } from 'react';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { DashboardProps } from '@/types/dashboard';
-import { mockClerkData } from '@/data/mockData';
+import { fetchClerkDashboardData, Task, Driver, ClerkStats } from '@/services/clerkService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function ClerkDashboard({ user }: DashboardProps) {
-  const { pendingTasks, availableDrivers, clerkStats } = mockClerkData;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
+  const [availableDrivers, setAvailableDrivers] = useState<Driver[]>([]);
+  const [clerkStats, setClerkStats] = useState<ClerkStats>({
+    pendingTasks: 0,
+    driversAvailable: 0,
+    bookingsToProcess: 0,
+    invoicesDraft: 0
+  });
   const [selectedTaskFilter, setSelectedTaskFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchClerkDashboardData();
+        setPendingTasks(data.pendingTasks);
+        setAvailableDrivers(data.availableDrivers);
+        setClerkStats(data.clerkStats);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err);
+        setError('Failed to load dashboard data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, []);
 
   const getUserGreeting = () => {
     const hour = new Date().getHours();
@@ -59,6 +90,36 @@ export default function ClerkDashboard({ user }: DashboardProps) {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
+      {loading ? (
+        <LoadingSpinner />
+      ) : error ? (
+        <View className="flex-1 items-center justify-center p-6">
+          <MaterialIcons name="error-outline" size={48} color="#FF453A" />
+          <Text className="text-lg font-semibold text-text-primary mt-4 text-center">
+            {error}
+          </Text>
+          <TouchableOpacity 
+            className="mt-4 bg-primary px-4 py-2 rounded-lg"
+            onPress={() => {
+              setLoading(true);
+              fetchClerkDashboardData()
+                .then(data => {
+                  setPendingTasks(data.pendingTasks);
+                  setAvailableDrivers(data.availableDrivers);
+                  setClerkStats(data.clerkStats);
+                  setError(null);
+                })
+                .catch(err => {
+                  console.error('Retry failed:', err);
+                  setError('Failed to load dashboard data. Please try again.');
+                })
+                .finally(() => setLoading(false));
+            }}
+          >
+            <Text className="text-white font-medium">Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
       <ScrollView 
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -358,6 +419,7 @@ export default function ClerkDashboard({ user }: DashboardProps) {
           </PremiumCard>
         </View>
       </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
