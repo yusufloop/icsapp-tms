@@ -234,13 +234,33 @@ export function RequestCard({
   };
 
   const handleEdit = () => {
-    console.log('Edit action for booking', id);
-    // TODO: Implement edit functionality
+    // Navigate to edit booking page with current booking data
+    router.push({
+      pathname: '/edit-booking',
+      params: {
+        bookingName: itemRequested,
+        client: company || 'John@gmail.com',
+        consignee: 'Jane Doe',
+        date: new Date().toISOString(),
+        pickupState: 'Selangor',
+        pickupAddress: '123 Pickup Street, Petaling Jaya',
+        pickupTime: new Date().toISOString(),
+        deliveryState: 'Kuala Lumpur',
+        deliveryAddress: '456 Delivery Avenue, KLCC',
+        deliveryTime: new Date().toISOString(),
+        shipmentType: 'LFC',
+        containerSize: '40ft',
+        items: JSON.stringify(items || ['Electronics', 'Computer Parts']),
+        totalGrossWeight: '1500',
+        totalVolume: '25',
+      },
+    });
   };
 
   const handleSummary = () => {
     router.push('/summary');
   };
+
 
   // ICSBOLTZ_BUTTON_CONFIG - Button configuration based on actions
   const getButtonConfig = (action: ButtonAction) => {
@@ -451,6 +471,7 @@ export function RequestCard({
                     <Text className="text-base font-semibold text-gray-600">Edit</Text>
                   </TouchableOpacity>
                 </View>
+
                 
                 {/* Summary - Full width button */}
                 <TouchableOpacity

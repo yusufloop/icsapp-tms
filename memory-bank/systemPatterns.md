@@ -98,6 +98,7 @@ app/
    - Client autocomplete provides dynamic suggestions with dropdown selection
    - Date/time pickers use native platform-specific components
    - Continue button navigates to Step 2
+   - **Web Version**: `app/(screens)/new-booking.web.tsx` with constrained layout and proper scrolling
 3. **Step 2**: Shipment details and cost estimation
    - Booking summary displays data from Step 1
    - 3D object placeholder for future Three.js integration
@@ -105,7 +106,38 @@ app/
    - Dynamic items list with add/remove functionality
    - Weight and volume measurement inputs
    - Real-time estimated total calculation
-   - Continue button navigates to Step 3 (placeholder for future implementation)
+   - Continue button navigates to Step 3
+4. **Step 3**: Driver selection and booking finalization
+   - Driver search and filtering functionality
+   - Driver selection with radio button interface
+   - Driver details modal with job information
+   - Bookmark template functionality
+   - Final booking creation and navigation back to requests
+
+### Edit Booking System
+1. User accesses edit functionality via edit buttons in RequestCard (mobile) or dropdown table (web)
+2. **Mobile Version**: `app/(screens)/edit-booking.tsx`
+   - SafeAreaView layout with proper header navigation
+   - Modal pickers for dropdowns (standard mobile UX)
+   - Sticky footer with Cancel and Update action buttons
+   - Form pre-populated with booking data from URL parameters
+3. **Web Version**: `app/(screens)/edit-booking.web.tsx`
+   - Professional web layout with centered content and form cards
+   - Dropdown behavior that pushes content below (matching web booking pages)
+   - Constrained width layout (max-w-2xl) for optimal web viewing
+   - Web-optimized dropdown positioning and interactions
+4. **Comprehensive Form Features**:
+   - All booking sections editable (Basic Info, Pickup, Delivery, Shipment Details)
+   - Client autocomplete with dynamic suggestions
+   - Native date/time pickers for all time fields
+   - Dynamic items list management (add/edit/remove items)
+   - Real-time cost calculation with updated estimates
+   - Form validation with user-friendly error messages
+5. **Integration Points**:
+   - RequestCard edit button navigation with parameter passing
+   - Web requests table edit button navigation with parameter passing
+   - Booking data passed via URL parameters for form pre-population
+   - Fixed infinite re-render bug with proper useEffect dependencies
 
 ### Component Interaction Flow
 1. RequestCard handles complex state with animations
