@@ -3,9 +3,10 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function NewBookingWebScreen() {
+  // The form starts with an empty state
   const [formData, setFormData] = useState({
     bookingName: '',
     client: '',
@@ -18,6 +19,64 @@ export default function NewBookingWebScreen() {
     deliveryAddress: '',
     deliveryTime: new Date(),
   });
+
+  // --- 1. API endpoint for autofill data ---
+  const API_ENDPOINT = 'https://above-dinosaur-weekly.ngrok-free.app/webhook/auto1';
+  const [isLoading, setIsLoading] = useState(false);
+
+  // --- 2. Function to fetch and populate the form with API data ---
+  const handleAutofill = async () => {
+    if (isLoading) return; // Prevent multiple calls
+    
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch(API_ENDPOINT, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add ngrok-skip-browser-warning header to bypass ngrok browser warning
+          'ngrok-skip-browser-warning': 'true',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Extract the first item from the array and get the output object
+      if (data && Array.isArray(data) && data.length > 0 && data[0].output) {
+        const bookingData = data[0].output;
+        
+        setFormData({
+          bookingName: bookingData.bookingName || '',
+          client: bookingData.client || '',
+          consignee: bookingData.consignee || '',
+          date: bookingData.date ? new Date(bookingData.date) : new Date(),
+          pickupState: bookingData.pickupState || '',
+          pickupAddress: bookingData.pickupAddress || '',
+          pickupTime: bookingData.pickupTime ? new Date(bookingData.pickupTime) : new Date(),
+          deliveryState: bookingData.deliveryState || '',
+          deliveryAddress: bookingData.deliveryAddress || '',
+          deliveryTime: bookingData.deliveryTime ? new Date(bookingData.deliveryTime) : new Date(),
+        });
+        
+        Alert.alert('Success', 'Form has been autofilled with API data.');
+      } else {
+        throw new Error('Invalid data structure received from API');
+      }
+    } catch (error) {
+      console.error('Autofill error:', error);
+      Alert.alert(
+        'Error', 
+        `Failed to fetch autofill data: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showPickupTimePicker, setShowPickupTimePicker] = useState(false);
@@ -144,6 +203,27 @@ export default function NewBookingWebScreen() {
       >
         <View className="px-6 py-6">
           <View className="max-w-2xl mx-auto w-full">
+            
+            {/* --- 3. Autofill button is placed here --- */}
+            <TouchableOpacity
+              onPress={handleAutofill}
+              disabled={isLoading}
+              className={`${isLoading ? 'bg-gray-400' : 'bg-teal-500'} rounded-lg py-3 mb-6 items-center justify-center shadow ${!isLoading && 'active:opacity-80'}`}
+            >
+              <View className="flex-row items-center">
+                {isLoading && (
+                  <ActivityIndicator 
+                    size="small" 
+                    color="white" 
+                    style={{ marginRight: 8 }} 
+                  />
+                )}
+                <Text className="text-white font-bold text-base">
+                  {isLoading ? 'Loading...' : 'Autofill Form (For Web Testing)'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
             {/* Form Card */}
             <View className="bg-white rounded-lg shadow-sm border border-gray-200">
               {/* Form Content */}

@@ -8,7 +8,10 @@ The project has been successfully transitioned from an Inventory Management Syst
 **FULLY IMPLEMENTED: Comprehensive Role-Based Transportation Management System**
 The TMS application is feature-complete with a sophisticated role-based access control system that manages transportation/shipment requests through different organizational levels.
 
-**LATEST IMPLEMENTATION: Edit Booking System with Dropdown Integration - COMPLETED**
+**LATEST IMPLEMENTATION: API-Based Autofill Function for New Booking - COMPLETED**
+Successfully replaced hardcoded JSON autofill with API-based autofill function in both web and mobile versions of the new booking page. The implementation fetches real-time data from the provided ngrok endpoint and populates all form fields with proper error handling and user feedback.
+
+**PREVIOUS IMPLEMENTATION: Edit Booking System with Dropdown Integration - COMPLETED**
 Successfully implemented a comprehensive edit booking system with both web and mobile versions, including proper integration with existing booking cards and dropdown tables. The system provides full editing capabilities for existing bookings with pre-populated data and real-time cost calculation.
 
 **PREVIOUS IMPLEMENTATION: Web Versions of New Booking Flow Steps 2 & 3 - COMPLETED**
