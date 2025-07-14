@@ -6,8 +6,8 @@ export const mockClientData = {
   recentBookings: [
     {
       id: 'BK001',
-      origin: 'Port Klang',
-      destination: 'Kuantan Port',
+      pickup_state: 'Port Klang',
+      delivery_state: 'Kuantan Port',
       status: 'In Transit' as const,
       date: '2025-01-10',
       containerType: '40ft FCL',
@@ -15,8 +15,8 @@ export const mockClientData = {
     },
     {
       id: 'BK002',
-      origin: 'Penang Port',
-      destination: 'Johor Port',
+      pickup_state: 'Penang Port',
+      delivery_state: 'Johor Port',
       status: 'Processing' as const,
       date: '2025-01-12',
       containerType: '20ft LCL',
@@ -24,8 +24,8 @@ export const mockClientData = {
     },
     {
       id: 'BK003',
-      origin: 'Kuantan Port',
-      destination: 'Port Klang',
+      pickup_state: 'Kuantan Port',
+      delivery_state: 'Port Klang',
       status: 'Delivered' as const,
       date: '2025-01-08',
       containerType: '40ft FCL',
@@ -33,8 +33,8 @@ export const mockClientData = {
     },
     {
       id: 'BK004',
-      origin: 'Johor Port',
-      destination: 'Penang Port',
+      pickup_state: 'Johor Port',
+      delivery_state: 'Penang Port',
       status: 'Pending' as const,
       date: '2025-01-14',
       containerType: '20ft FCL',

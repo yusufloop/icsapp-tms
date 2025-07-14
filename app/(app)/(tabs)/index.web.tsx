@@ -1,17 +1,29 @@
 import DriverDashboard from '@/components/dashboards/DriverDashboard';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
-import { ICSBOLTZ_CURRENT_USER_ROLE } from '@/constants/UserRoles';
+import { getCurrentUserRole, subscribeToRoleChanges, type UserRole } from '@/constants/UserRoles';
 import { MaterialIcons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
 export default function DashboardScreen() {
+  const [currentRole, setCurrentRole] = useState<UserRole>(getCurrentUserRole());
+
+  // Subscribe to role changes
+  useEffect(() => {
+    const unsubscribe = subscribeToRoleChanges((newRole) => {
+      setCurrentRole(newRole);
+      console.log('Dashboard role changed to:', newRole);
+    });
+
+    return unsubscribe;
+  }, []);
+
   // Render different dashboards based on user role
-  if (ICSBOLTZ_CURRENT_USER_ROLE === 'DRIVER') {
+  if (currentRole === 'DRIVER') {
     return <DriverDashboard />;
   }
 
@@ -59,234 +71,139 @@ function DefaultDashboard() {
   // Stats data
   const stats = [
     { label: 'Total Invoices', value: '12', icon: 'receipt', color: '#0A84FF' },
-    { label: 'Paid', value: '8', icon: 'check-circle', color: '#30D158' },
-    { label: 'Overdue', value: '2', icon: 'warning', color: '#FF453A' },
-    { label: 'Pending', value: '2', icon: 'schedule', color: '#FF9F0A' },
+    { label: 'Paid', value: '8', icon: 'check-circle', color: '#28A745' },
+    { label: 'Pending', value: '3', icon: 'schedule', color: '#FFC107' },
+    { label: 'Overdue', value: '1', icon: 'error', color: '#DC3545' },
   ];
-
-  const getUserGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
-  };
-
-  const getRoleDisplayName = (role: string) => {
-    switch (role) {
-      case 'ADMIN':
-        return 'Administrator';
-      case 'GENERAL_MANAGER':
-        return 'General Manager';
-      case 'HEAD_OF_DEPARTMENT':
-        return 'Head of Department';
-      case 'REQUESTER':
-        return 'Requester';
-      default:
-        return role;
-    }
-  };
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
+      {/* Header */}
+      <View className="bg-white border-b border-gray-200 px-6 py-4">
+        <View className="max-w-6xl mx-auto">
+          <Text className="text-2xl font-bold text-gray-900">Dashboard</Text>
+          <Text className="text-sm text-gray-600 mt-1">
+            Overview of your transportation management system
+          </Text>
+        </View>
+      </View>
+
       <ScrollView 
         className="flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={true}
+        contentContainerStyle={{ paddingBottom: 40 }}
       >
-        {/* Header */}
-        <View className="px-6 py-4 bg-white">
-          <View className="flex-row items-center justify-between mb-4">
-            <View className="flex-row items-center">
-              <View className="w-12 h-12 bg-primary rounded-full items-center justify-center mr-4">
-                <MaterialIcons name="dashboard" size={24} color="white" />
-              </View>
-              <View>
-                <Text className="text-gray-500 text-sm">
-                  {getUserGreeting()}
-                </Text>
-                <Text className="text-2xl font-bold text-text-primary">
-                  Dashboard web
-                </Text>
-              </View>
-            </View>
+        <View className="px-6 py-6">
+          <View className="max-w-6xl mx-auto">
             
-            <TouchableOpacity className="bg-gray-100 rounded-full p-2">
-              <MaterialIcons name="notifications" size={24} color="#6B7280" />
-            </TouchableOpacity>
-          </View>
-
-          {/* User Role Badge */}
-          <View className="flex-row items-center">
-            <Text className="text-text-secondary mr-2">Role:</Text>
-            <PremiumStatusBadge 
-              status="info" 
-              text={getRoleDisplayName(ICSBOLTZ_CURRENT_USER_ROLE)}
-              size="sm"
-            />
-          </View>
-        </View>
-
-        {/* Stats Grid */}
-        <View className="px-6 pt-6">
-          <Text className="text-lg font-semibold text-text-primary mb-4">
-            Overview
-          </Text>
-          
-          <View className="flex-row flex-wrap -mx-2">
-            {stats.map((stat, index) => (
-              <View key={index} className="w-1/2 px-2 mb-4">
-                <PremiumCard>
-                  <View className="flex-row items-center">
+            {/* Stats Grid */}
+            <View className="grid grid-cols-4 gap-6 mb-8">
+              {stats.map((stat, index) => (
+                <PremiumCard key={index} className="p-6">
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-1">
+                      <Text className="text-2xl font-bold text-gray-900 mb-1">
+                        {stat.value}
+                      </Text>
+                      <Text className="text-sm text-gray-600">
+                        {stat.label}
+                      </Text>
+                    </View>
                     <View 
-                      className="w-10 h-10 rounded-lg items-center justify-center mr-3"
+                      className="w-12 h-12 rounded-xl items-center justify-center"
                       style={{ backgroundColor: stat.color + '20' }}
                     >
                       <MaterialIcons 
                         name={stat.icon as any} 
-                        size={20} 
+                        size={24} 
                         color={stat.color} 
                       />
                     </View>
-                    
-                    <View className="flex-1">
-                      <Text className="text-2xl font-bold text-text-primary">
-                        {stat.value}
-                      </Text>
-                      <Text className="text-text-secondary text-xs">
-                        {stat.label}
-                      </Text>
+                  </View>
+                </PremiumCard>
+              ))}
+            </View>
+
+            <View className="grid grid-cols-2 gap-6">
+              {/* Recent Invoices */}
+              <PremiumCard className="p-6">
+                <View className="flex-row items-center justify-between mb-6">
+                  <Text className="text-lg font-bold text-gray-900">
+                    Recent Invoices
+                  </Text>
+                  <TouchableOpacity className="active:opacity-80">
+                    <Text className="text-sm text-blue-600 font-medium">
+                      View All
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View className="space-y-4">
+                  {invoices.map((invoice, index) => (
+                    <View
+                      key={index}
+                      className="flex-row items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+                    >
+                      <View className="flex-1">
+                        <Text className="font-semibold text-gray-900 mb-1">
+                          {invoice.id}
+                        </Text>
+                        <Text className="text-sm text-gray-600">
+                          {invoice.route} • {invoice.date}
+                        </Text>
+                      </View>
+                      <View className="items-end">
+                        <Text className="font-semibold text-gray-900 mb-1">
+                          {invoice.amount}
+                        </Text>
+                        <PremiumStatusBadge 
+                          status={invoice.statusType}
+                          text={invoice.status}
+                          size="sm"
+                        />
+                      </View>
                     </View>
-                  </View>
-                </PremiumCard>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Invoices Section */}
-        <View className="px-6 pt-6">
-          <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-lg font-semibold text-text-primary">
-              Recent Invoices
-            </Text>
-            <TouchableOpacity>
-              <Text className="text-primary font-medium">View All</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <PremiumCard>
-            {invoices.map((invoice, index) => (
-              <View key={invoice.id}>
-                <View className="flex-row items-center justify-between py-3">
-                  <View className="flex-1">
-                    <Text className="font-semibold text-text-primary mb-1">
-                      {invoice.id}
-                    </Text>
-                    <Text className="text-sm text-text-secondary">
-                      {invoice.route} • {invoice.date}
-                    </Text>
-                  </View>
-                  
-                  <View className="items-end">
-                    <Text className="font-semibold text-text-primary mb-1">
-                      {invoice.amount}
-                    </Text>
-                    <PremiumStatusBadge 
-                      status={invoice.statusType}
-                      text={invoice.status}
-                      size="sm"
-                    />
-                  </View>
-                </View>
-                
-                {index < invoices.length - 1 && (
-                  <View className="h-px bg-gray-200" />
-                )}
-              </View>
-            ))}
-          </PremiumCard>
-        </View>
-
-        {/* Booking Summary Section */}
-        <View className="px-6 pt-6">
-          <Text className="text-lg font-semibold text-text-primary mb-4">
-            Recent Bookings
-          </Text>
-          
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            className="flex-row"
-            contentContainerStyle={{ paddingRight: 20 }}
-          >
-            {bookingItems.map((item) => (
-              <View key={item.id} className="mr-4">
-                <PremiumCard style={{ width: 120 }}>
-                  <Text className="font-semibold text-text-primary mb-2">
-                    {item.itemNumber}
-                  </Text>
-                  <PremiumStatusBadge 
-                    status={item.statusType}
-                    text={item.status}
-                    size="sm"
-                  />
-                  <Text className="text-xs text-text-secondary mt-2">
-                    {item.route}
-                  </Text>
-                </PremiumCard>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Quick Actions */}
-        <View className="px-6 pt-6">
-          <Text className="text-lg font-semibold text-text-primary mb-4">
-            Quick Actions
-          </Text>
-          
-          <View className="space-y-3">
-            <TouchableOpacity>
-              <PremiumCard>
-                <View className="flex-row items-center">
-                  <View className="w-10 h-10 bg-primary/20 rounded-lg items-center justify-center mr-4">
-                    <MaterialIcons name="add" size={20} color="#0A84FF" />
-                  </View>
-                  
-                  <View className="flex-1">
-                    <Text className="font-semibold text-text-primary">
-                      Create New Request
-                    </Text>
-                    <Text className="text-sm text-text-secondary">
-                      Submit a new request for approval
-                    </Text>
-                  </View>
-                  
-                  <MaterialIcons name="chevron-right" size={20} color="#8A8A8E" />
+                  ))}
                 </View>
               </PremiumCard>
-            </TouchableOpacity>
 
-            <TouchableOpacity>
-              <PremiumCard>
-                <View className="flex-row items-center">
-                  <View className="w-10 h-10 bg-warning/20 rounded-lg items-center justify-center mr-4">
-                    <MaterialIcons name="analytics" size={20} color="#FF9F0A" />
-                  </View>
-                  
-                  <View className="flex-1">
-                    <Text className="font-semibold text-text-primary">
-                      View Reports
+              {/* Booking Summary */}
+              <PremiumCard className="p-6">
+                <View className="flex-row items-center justify-between mb-6">
+                  <Text className="text-lg font-bold text-gray-900">
+                    Recent Bookings
+                  </Text>
+                  <TouchableOpacity className="active:opacity-80">
+                    <Text className="text-sm text-blue-600 font-medium">
+                      View All
                     </Text>
-                    <Text className="text-sm text-text-secondary">
-                      Access detailed analytics and reports
-                    </Text>
-                  </View>
-                  
-                  <MaterialIcons name="chevron-right" size={20} color="#8A8A8E" />
+                  </TouchableOpacity>
+                </View>
+
+                <View className="space-y-4">
+                  {bookingItems.map((item) => (
+                    <View
+                      key={item.id}
+                      className="flex-row items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+                    >
+                      <View className="flex-1">
+                        <Text className="font-semibold text-gray-900 mb-1">
+                          {item.itemNumber}
+                        </Text>
+                        <Text className="text-sm text-gray-600">
+                          {item.route}
+                        </Text>
+                      </View>
+                      <PremiumStatusBadge 
+                        status={item.statusType}
+                        text={item.status}
+                        size="sm"
+                      />
+                    </View>
+                  ))}
                 </View>
               </PremiumCard>
-            </TouchableOpacity>
+            </View>
           </View>
         </View>
       </ScrollView>

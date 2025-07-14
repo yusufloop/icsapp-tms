@@ -8,31 +8,47 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
-import { ClerkStats, Driver, fetchClerkDashboardData, Task } from '@/services/clerkService';
+import { getBookingStats, getRecentBookings, type Booking, type BookingStats } from '@/services/bookingService';
 import { DashboardProps } from '@/types/dashboard';
+
+interface ClerkStats {
+  pendingBookings: number;
+  inTransitBookings: number;
+  deliveredBookings: number;
+  totalBookings: number;
+}
 
 export default function ClerkDashboard({ user }: DashboardProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
-  const [availableDrivers, setAvailableDrivers] = useState<Driver[]>([]);
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
   const [clerkStats, setClerkStats] = useState<ClerkStats>({
-    pendingTasks: 0,
-    driversAvailable: 0,
-    bookingsToProcess: 0,
-    invoicesDraft: 0
+    pendingBookings: 0,
+    inTransitBookings: 0,
+    deliveredBookings: 0,
+    totalBookings: 0
   });
-  const [selectedTaskFilter, setSelectedTaskFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
 
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
         setLoading(true);
-        const data = await fetchClerkDashboardData();
-        setPendingTasks(data.pendingTasks);
-        setAvailableDrivers(data.availableDrivers);
-        setClerkStats(data.clerkStats);
+        
+        // Fetch recent bookings and stats in parallel
+        const [bookingsData, statsData] = await Promise.all([
+          getRecentBookings(10),
+          getBookingStats()
+        ]);
+
+        setRecentBookings(bookingsData);
+        setClerkStats({
+          pendingBookings: statsData.pending,
+          inTransitBookings: statsData.inTransit,
+          deliveredBookings: statsData.delivered,
+          totalBookings: statsData.totalBookings
+        });
+        
         setError(null);
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
@@ -52,43 +68,63 @@ export default function ClerkDashboard({ user }: DashboardProps) {
     return 'Good Evening';
   };
 
-  const getPriorityConfig = (priority: string) => {
-    switch (priority) {
-      case 'High':
-        return { type: 'error' as const, color: '#EF4444', bgColor: '#FEE2E2' };
-      case 'Medium':
-        return { type: 'warning' as const, color: '#F59E0B', bgColor: '#FEF3C7' };
-      case 'Low':
-        return { type: 'success' as const, color: '#10B981', bgColor: '#D1FAE5' };
-      default:
-        return { type: 'neutral' as const, color: '#6B7280', bgColor: '#F3F4F6' };
-    }
-  };
-
-  const getDriverStatusConfig = (status: string) => {
-    switch (status) {
-      case 'Available':
+  const getStatusConfig = (entityType?: string, statusValue?: string) => {
+    const status = statusValue?.toLowerCase() || '';
+    const entity = entityType?.toLowerCase() || '';
+    
+    if (entity === 'booking' || entity === 'shipment') {
+      if (status.includes('transit') || status.includes('shipping') || status.includes('in_transit')) {
+        return { type: 'info' as const, color: '#3B82F6' };
+      } else if (status.includes('delivered') || status.includes('completed')) {
         return { type: 'success' as const, color: '#10B981' };
-      case 'On Route':
+      } else if (status.includes('pending') || status.includes('processing') || status.includes('created')) {
         return { type: 'warning' as const, color: '#F59E0B' };
-      case 'Offline':
-        return { type: 'neutral' as const, color: '#6B7280' };
-      default:
-        return { type: 'neutral' as const, color: '#6B7280' };
+      }
     }
+    return { type: 'neutral' as const, color: '#6B7280' };
   };
 
-  const getFilteredTasks = () => {
-    if (selectedTaskFilter === 'all') return pendingTasks;
-    return pendingTasks.filter(task => task.priority.toLowerCase() === selectedTaskFilter);
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'N/A';
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch {
+      return 'N/A';
+    }
   };
 
   // Action handlers
-  const handleCompleteTask = (taskId: string) => console.log('Complete task:', taskId);
-  const handleAssignDriver = (driverId: string) => console.log('Assign driver:', driverId);
-  const handleUpdateBookingStatus = () => console.log('Navigate to booking status update');
+  const handleUpdateBookingStatus = () => router.push('/requests');
   const handleGenerateInvoice = () => router.push('/invoice');
-  const handleViewDriverDetails = (driverId: string) => console.log('View driver details:', driverId);
+  const handleViewBookingDetails = (bookingId: string) => {
+    console.log('View booking details:', bookingId);
+    // Navigate to booking details page
+  };
+
+  const retryLoadData = async () => {
+    setLoading(true);
+    try {
+      const [bookingsData, statsData] = await Promise.all([
+        getRecentBookings(10),
+        getBookingStats()
+      ]);
+
+      setRecentBookings(bookingsData);
+      setClerkStats({
+        pendingBookings: statsData.pending,
+        inTransitBookings: statsData.inTransit,
+        deliveredBookings: statsData.delivered,
+        totalBookings: statsData.totalBookings
+      });
+      
+      setError(null);
+    } catch (err) {
+      console.error('Retry failed:', err);
+      setError('Failed to load dashboard data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -102,21 +138,7 @@ export default function ClerkDashboard({ user }: DashboardProps) {
           </Text>
           <TouchableOpacity 
             className="mt-4 bg-primary px-4 py-2 rounded-lg"
-            onPress={() => {
-              setLoading(true);
-              fetchClerkDashboardData()
-                .then(data => {
-                  setPendingTasks(data.pendingTasks);
-                  setAvailableDrivers(data.availableDrivers);
-                  setClerkStats(data.clerkStats);
-                  setError(null);
-                })
-                .catch(err => {
-                  console.error('Retry failed:', err);
-                  setError('Failed to load dashboard data. Please try again.');
-                })
-                .finally(() => setLoading(false));
-            }}
+            onPress={retryLoadData}
           >
             <Text className="text-white font-medium">Retry</Text>
           </TouchableOpacity>
@@ -169,15 +191,15 @@ export default function ClerkDashboard({ user }: DashboardProps) {
             <View className="w-1/2 px-2 mb-4">
               <PremiumCard>
                 <View className="flex-row items-center">
-                  <View className="w-10 h-10 rounded-lg bg-red-100 items-center justify-center mr-3">
-                    <MaterialIcons name="assignment" size={20} color="#EF4444" />
+                  <View className="w-10 h-10 rounded-lg bg-blue-100 items-center justify-center mr-3">
+                    <MaterialIcons name="inventory" size={20} color="#3B82F6" />
                   </View>
                   <View className="flex-1">
                     <Text className="text-2xl font-bold text-text-primary">
-                      {clerkStats.pendingTasks}
+                      {clerkStats.totalBookings}
                     </Text>
                     <Text className="text-text-secondary text-xs">
-                      Pending Tasks
+                      Total Bookings
                     </Text>
                   </View>
                 </View>
@@ -187,15 +209,15 @@ export default function ClerkDashboard({ user }: DashboardProps) {
             <View className="w-1/2 px-2 mb-4">
               <PremiumCard>
                 <View className="flex-row items-center">
-                  <View className="w-10 h-10 rounded-lg bg-green-100 items-center justify-center mr-3">
-                    <MaterialIcons name="local-shipping" size={20} color="#10B981" />
+                  <View className="w-10 h-10 rounded-lg bg-yellow-100 items-center justify-center mr-3">
+                    <MaterialIcons name="schedule" size={20} color="#F59E0B" />
                   </View>
                   <View className="flex-1">
                     <Text className="text-2xl font-bold text-text-primary">
-                      {clerkStats.driversAvailable}
+                      {clerkStats.pendingBookings}
                     </Text>
                     <Text className="text-text-secondary text-xs">
-                      Drivers Available
+                      Pending Bookings
                     </Text>
                   </View>
                 </View>
@@ -206,14 +228,14 @@ export default function ClerkDashboard({ user }: DashboardProps) {
               <PremiumCard>
                 <View className="flex-row items-center">
                   <View className="w-10 h-10 rounded-lg bg-blue-100 items-center justify-center mr-3">
-                    <MaterialIcons name="inventory" size={20} color="#3B82F6" />
+                    <MaterialIcons name="local-shipping" size={20} color="#3B82F6" />
                   </View>
                   <View className="flex-1">
                     <Text className="text-2xl font-bold text-text-primary">
-                      {clerkStats.bookingsToProcess}
+                      {clerkStats.inTransitBookings}
                     </Text>
                     <Text className="text-text-secondary text-xs">
-                      Bookings to Process
+                      In Transit
                     </Text>
                   </View>
                 </View>
@@ -223,15 +245,15 @@ export default function ClerkDashboard({ user }: DashboardProps) {
             <View className="w-1/2 px-2 mb-4">
               <PremiumCard>
                 <View className="flex-row items-center">
-                  <View className="w-10 h-10 rounded-lg bg-orange-100 items-center justify-center mr-3">
-                    <MaterialIcons name="receipt" size={20} color="#F59E0B" />
+                  <View className="w-10 h-10 rounded-lg bg-green-100 items-center justify-center mr-3">
+                    <MaterialIcons name="check-circle" size={20} color="#10B981" />
                   </View>
                   <View className="flex-1">
                     <Text className="text-2xl font-bold text-text-primary">
-                      {clerkStats.invoicesDraft}
+                      {clerkStats.deliveredBookings}
                     </Text>
                     <Text className="text-text-secondary text-xs">
-                      Draft Invoices
+                      Delivered
                     </Text>
                   </View>
                 </View>
@@ -269,139 +291,86 @@ export default function ClerkDashboard({ user }: DashboardProps) {
           </View>
         </View>
 
-        {/* Pending Tasks */}
+        {/* Recent Bookings */}
         <View className="px-6 pt-6">
           <View className="flex-row items-center justify-between mb-4">
             <Text className="text-lg font-semibold text-text-primary">
-              Today's Tasks
+              Recent Bookings
             </Text>
-            
-            {/* Task Filter */}
-            <View className="flex-row">
-              {['all', 'high', 'medium', 'low'].map((filter) => (
-                <TouchableOpacity
-                  key={filter}
-                  onPress={() => setSelectedTaskFilter(filter as any)}
-                  className={`px-3 py-1 rounded-full mr-2 ${
-                    selectedTaskFilter === filter 
-                      ? 'bg-green-500' 
-                      : 'bg-gray-200'
-                  }`}
-                >
-                  <Text className={`text-xs font-medium ${
-                    selectedTaskFilter === filter 
-                      ? 'text-white' 
-                      : 'text-gray-600'
-                  }`}>
-                    {filter.charAt(0).toUpperCase() + filter.slice(1)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <TouchableOpacity onPress={() => router.push('/requests')}>
+              <Text className="text-blue-500 font-medium">View All</Text>
+            </TouchableOpacity>
           </View>
           
           <View className="space-y-3">
-            {getFilteredTasks().slice(0, 4).map((task) => (
-              <PremiumCard key={task.id}>
-                <View className="flex-row items-start justify-between mb-3">
-                  <View className="flex-1 mr-3">
-                    <View className="flex-row items-center mb-2">
-                      <Text className="font-semibold text-text-primary mr-2">
-                        {task.type}
-                      </Text>
-                      <PremiumStatusBadge 
-                        status={getPriorityConfig(task.priority).type}
-                        text={task.priority}
-                        size="sm"
-                      />
-                    </View>
-                    
-                    <Text className="text-sm text-text-secondary mb-2">
-                      {task.description}
-                    </Text>
-                    
-                    <View className="flex-row items-center">
-                      <MaterialIcons name="schedule" size={14} color="#6B7280" />
-                      <Text className="text-xs text-text-secondary ml-1">
-                        Due: {task.dueDate}
-                      </Text>
-                    </View>
-                  </View>
-                  
-                  <TouchableOpacity
-                    onPress={() => handleCompleteTask(task.id)}
-                    className="bg-green-100 rounded-lg p-2"
-                  >
-                    <MaterialIcons name="check" size={20} color="#10B981" />
-                  </TouchableOpacity>
-                </View>
-              </PremiumCard>
-            ))}
-          </View>
-        </View>
-
-        {/* Driver Management */}
-        <View className="px-6 pt-6">
-          <Text className="text-lg font-semibold text-text-primary mb-4">
-            Driver Status
-          </Text>
-          
-          <View className="space-y-3">
-            {availableDrivers.map((driver) => (
+            {recentBookings.slice(0, 5).map((booking) => (
               <TouchableOpacity
-                key={driver.id}
-                onPress={() => handleViewDriverDetails(driver.id)}
+                key={booking.booking_id}
+                onPress={() => handleViewBookingDetails(booking.booking_id)}
                 activeOpacity={0.7}
               >
                 <PremiumCard>
+                  <View className="flex-row items-center justify-between mb-3">
+                    <Text className="font-semibold text-text-primary">
+                      #{booking.booking_id.slice(0, 8)}
+                    </Text>
+                    <PremiumStatusBadge 
+                      status={getStatusConfig(booking.entity_type, booking.status_value).type}
+                      text={booking.status_value || 'Unknown'}
+                      size="sm"
+                    />
+                  </View>
+                  
+                  <View className="flex-row items-center mb-2">
+                    <MaterialIcons name="location-on" size={16} color="#6B7280" />
+                    <Text className="text-sm text-text-secondary ml-2">
+                      {booking.pickup_state || 'N/A'} → {booking.delivery_state || 'N/A'}
+                    </Text>
+                  </View>
+                  
                   <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center flex-1">
-                      <View className="w-10 h-10 bg-gray-200 rounded-full items-center justify-center mr-3">
-                        <MaterialIcons name="person" size={20} color="#6B7280" />
-                      </View>
-                      
-                      <View className="flex-1">
-                        <Text className="font-semibold text-text-primary">
-                          {driver.name}
-                        </Text>
-                        <Text className="text-sm text-text-secondary">
-                          {driver.currentLocation}
-                        </Text>
-                        <Text className="text-xs text-text-secondary">
-                          {driver.assignedBookings} active bookings
-                        </Text>
-                      </View>
+                    <View className="flex-row items-center">
+                      <MaterialIcons name="inventory" size={16} color="#6B7280" />
+                      <Text className="text-sm text-text-secondary ml-2">
+                        {booking.container_size || 'N/A'} - {booking.shipment_type || 'N/A'}
+                      </Text>
                     </View>
                     
-                    <View className="items-end">
-                      <PremiumStatusBadge 
-                        status={getDriverStatusConfig(driver.status).type}
-                        text={driver.status}
-                        size="sm"
-                      />
-                      
-                      {driver.status === 'Available' && (
-                        <TouchableOpacity
-                          onPress={() => handleAssignDriver(driver.id)}
-                          className="mt-2"
-                        >
-                          <Text className="text-green-500 text-xs font-medium">
-                            Assign
-                          </Text>
-                        </TouchableOpacity>
-                      )}
+                    <View className="flex-row items-center">
+                      <MaterialIcons name="schedule" size={16} color="#6B7280" />
+                      <Text className="text-sm text-text-secondary ml-2">
+                        {formatDate(booking.date_booking)}
+                      </Text>
                     </View>
                   </View>
+
+                  {booking.consignee && (
+                    <View className="flex-row items-center mt-2">
+                      <MaterialIcons name="person" size={16} color="#6B7280" />
+                      <Text className="text-sm text-text-secondary ml-2">
+                        Consignee: {booking.consignee}
+                      </Text>
+                    </View>
+                  )}
                 </PremiumCard>
               </TouchableOpacity>
             ))}
+
+            {recentBookings.length === 0 && (
+              <PremiumCard>
+                <View className="items-center py-8">
+                  <MaterialIcons name="inbox" size={48} color="#6B7280" />
+                  <Text className="text-text-secondary mt-2">No bookings found</Text>
+                </View>
+              </PremiumCard>
+            )}
           </View>
         </View>
 
-        {/* System Alerts */}
+        {/* System Status */}
         <View className="px-6 pt-6">
           <Text className="text-lg font-semibold text-text-primary mb-4">
-            System Alerts
+            System Status
           </Text>
           
           <PremiumCard>

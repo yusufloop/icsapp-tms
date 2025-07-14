@@ -1,18 +1,17 @@
-import React from 'react';
-import { ICSBOLTZ_CURRENT_USER_ROLE } from '@/constants/UserRoles';
+import React, { useEffect, useState } from 'react';
+import { getCurrentUserRole, subscribeToRoleChanges, type UserRole } from '@/constants/UserRoles';
 import { 
   ClientDashboard,
   ClerkDashboard,
-  
   AdminDashboard,
   DriverDashboard
 } from '@/components/dashboards';
 import { supabase } from '@/lib/supabase';
 import { testSupabaseConnection } from '@/lib/supabase';
-import { useEffect } from 'react';
-
 
 export default function DashboardScreen() {
+  const [currentRole, setCurrentRole] = useState<UserRole>(getCurrentUserRole());
+
   // Test Supabase connection on component mount
   useEffect(() => {
     const testConnection = async () => {
@@ -22,14 +21,15 @@ export default function DashboardScreen() {
     
     testConnection();
   }, []);
-  // Test Supabase connection on component mount
+
+  // Subscribe to role changes
   useEffect(() => {
-    const testConnection = async () => {
-      const isConnected = await testSupabaseConnection();
-      console.log('Supabase connection test:', isConnected ? 'SUCCESS' : 'FAILED');
-    };
-    
-    testConnection();
+    const unsubscribe = subscribeToRoleChanges((newRole) => {
+      setCurrentRole(newRole);
+      console.log('Dashboard role changed to:', newRole);
+    });
+
+    return unsubscribe;
   }, []);
 
   // Mock user data - in real app this would come from authentication
@@ -37,28 +37,25 @@ export default function DashboardScreen() {
     id: '1',
     name: 'John Doe',
     email: 'john@example.com',
-    role: ICSBOLTZ_CURRENT_USER_ROLE as 'CLIENT' | 'CLERK' | 'ADMIN'
+    role: currentRole as 'CLIENT' | 'CLERK' | 'ADMIN'
   };
 
   // Render role-specific dashboards
-  if (ICSBOLTZ_CURRENT_USER_ROLE === 'CLIENT') {
-    return <ClientDashboard user={mockUser} />;
+  switch (currentRole) {
+    case 'CLIENT':
+      return <ClientDashboard user={mockUser} />;
+    
+    case 'CLERK':
+      return <ClerkDashboard user={mockUser} />;
+    
+    case 'ADMIN':
+      return <AdminDashboard user={mockUser} />;
+    
+    case 'DRIVER':
+      return <DriverDashboard />;
+    
+    default:
+      // Default fallback to Client dashboard
+      return <ClientDashboard user={mockUser} />;
   }
-  
-  if (ICSBOLTZ_CURRENT_USER_ROLE === 'CLERK' ) {
-    return <ClerkDashboard user={mockUser} />;
-  }
-  
-
-  
-  if (ICSBOLTZ_CURRENT_USER_ROLE === 'ADMIN') {
-    return <AdminDashboard user={mockUser} />;
-  }
-  
-  if (ICSBOLTZ_CURRENT_USER_ROLE === 'DRIVER') {
-    return <DriverDashboard />;
-  }
-  
-  // Default fallback to Client dashboard
-  return <ClientDashboard user={mockUser} />;
 }
