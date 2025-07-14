@@ -3,7 +3,7 @@ import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { Dimensions, Text, View } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+//import MapView, { Marker } from 'react-native-maps';
 
 const { width } = Dimensions.get('window');
 

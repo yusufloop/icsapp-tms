@@ -4,8 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
-export default function SummaryScreen() {
-  // Mock data representing a completed booking
+export default function TimelineScreen() {
+  // Mock data representing a booking timeline
   const bookingData = {
     bookingName: 'Uranium to KL',
     bookingId: 'xxxxxPNGxKLGxxxx',
@@ -29,16 +29,64 @@ export default function SummaryScreen() {
     ]
   };
 
+  // Timeline events data
+  const timelineEvents = [
+    {
+      id: 1,
+      title: 'Booking Created',
+      description: 'Booking request has been submitted',
+      timestamp: '2025-04-05 09:30',
+      status: 'completed',
+      icon: 'check-circle'
+    },
+    {
+      id: 2,
+      title: 'Driver Assigned',
+      description: 'Driver John Doe has been assigned to this booking',
+      timestamp: '2025-04-05 10:15',
+      status: 'completed',
+      icon: 'check-circle'
+    },
+    {
+      id: 3,
+      title: 'En Route to Pickup',
+      description: 'Driver is heading to pickup location',
+      timestamp: '2025-04-06 09:00',
+      status: 'current',
+      icon: 'radio-button-checked'
+    },
+    {
+      id: 4,
+      title: 'Pickup Complete',
+      description: 'Items collected from pickup location',
+      timestamp: 'Pending',
+      status: 'pending',
+      icon: 'radio-button-unchecked'
+    },
+    {
+      id: 5,
+      title: 'In Transit',
+      description: 'Items are being transported to destination',
+      timestamp: 'Pending',
+      status: 'pending',
+      icon: 'radio-button-unchecked'
+    },
+    {
+      id: 6,
+      title: 'Delivered',
+      description: 'Items successfully delivered to consignee',
+      timestamp: 'Pending',
+      status: 'pending',
+      icon: 'radio-button-unchecked'
+    }
+  ];
+
   const handleBack = () => {
     router.back();
   };
 
-  const handleTimeline = () => {
-    router.push('/timeline');
-  };
-
-  const handleInvoice = () => {
-    router.push('/invoice');
+  const handleOkay = () => {
+    router.back();
   };
 
   const formatDate = (dateString: string) => {
@@ -47,6 +95,32 @@ export default function SummaryScreen() {
 
   const formatTime = (timeString: string) => {
     return timeString;
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return '#34D399'; // Green
+      case 'current':
+        return '#3B82F6'; // Blue
+      case 'pending':
+        return '#9CA3AF'; // Gray
+      default:
+        return '#9CA3AF';
+    }
+  };
+
+  const getIconName = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'check-circle';
+      case 'current':
+        return 'radio-button-checked';
+      case 'pending':
+        return 'radio-button-unchecked';
+      default:
+        return 'radio-button-unchecked';
+    }
   };
 
   return (
@@ -61,10 +135,10 @@ export default function SummaryScreen() {
         </TouchableOpacity>
         <View className="flex-1">
           <Text className="text-2xl font-bold text-text-primary">
-            Summary
+            Timeline
           </Text>
           <Text className="text-sm text-text-secondary mt-1">
-            Fill in the information below for requests
+            Track your booking progress
           </Text>
         </View>
       </View>
@@ -190,6 +264,51 @@ export default function SummaryScreen() {
           {/* Divider */}
           <View className="h-px bg-gray-300 mb-8" />
 
+          {/* Timeline Section */}
+          <View className="mb-8">
+            <Text className="text-lg font-bold text-text-primary mb-6">
+              Booking Progress
+            </Text>
+            
+            {timelineEvents.map((event, index) => (
+              <View key={event.id} className="flex-row mb-6">
+                {/* Timeline Icon and Line */}
+                <View className="items-center mr-4">
+                  <View 
+                    className="w-8 h-8 rounded-full items-center justify-center"
+                    style={{ backgroundColor: getStatusColor(event.status) }}
+                  >
+                    <MaterialIcons 
+                      name={getIconName(event.status)} 
+                      size={20} 
+                      color="white" 
+                    />
+                  </View>
+                  {/* Connecting Line */}
+                  {index < timelineEvents.length - 1 && (
+                    <View 
+                      className="w-0.5 h-12 mt-2"
+                      style={{ backgroundColor: '#E5E7EB' }}
+                    />
+                  )}
+                </View>
+
+                {/* Event Content */}
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-text-primary mb-1">
+                    {event.title}
+                  </Text>
+                  <Text className="text-sm text-text-secondary mb-2">
+                    {event.description}
+                  </Text>
+                  <Text className="text-xs text-text-secondary">
+                    {event.timestamp}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
           {/* Shipment Section */}
           <View className="mb-8">
             <View className="mb-4">
@@ -215,25 +334,14 @@ export default function SummaryScreen() {
         </View>
       </ScrollView>
 
-      {/* Sticky Footer with Action Buttons */}
+      {/* Sticky Footer with Action Button */}
       <View className="absolute bottom-0 left-0 right-0 bg-bg-secondary border-t border-gray-200 px-6 py-4">
-        <View className="flex-row space-x-4">
-          {/* Timeline Button */}
-          <TouchableOpacity
-            onPress={handleTimeline}
-            className="flex-1 bg-bg-primary border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
-          >
-            <Text className="text-base font-semibold text-text-primary">Timeline</Text>
-          </TouchableOpacity>
-          
-          {/* Invoice Button */}
-          <TouchableOpacity
-            onPress={handleInvoice}
-            className="flex-1 bg-primary rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
-          >
-            <Text className="text-base font-semibold text-white">Invoice</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          onPress={handleOkay}
+          className="bg-primary rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
+        >
+          <Text className="text-base font-semibold text-white">Okay</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
