@@ -2,25 +2,18 @@ import { supabase } from '@/lib/supabase';
 
 export interface DemurrageCharge {
   demurrage_id?: string;
-  booking_id: string;
-  days_overdue: number;
-  daily_rate: number;
+  booking_id?: string;
+  days_overdue?: number;
+  daily_rate?: number;
   location?: string;
-  start_date?: string;
-  end_date?: string;
-  total_fee?: number;
+
 }
 
 /**
  * Add a new demurrage charge to the database
  */
-export const addDemurrageCharge = async (charge: DemurrageCharge) => {
+export const addDemurrageCharge = async (charge: Omit<DemurrageCharge, 'demurrage_id' >) => {
   try {
-    // Calculate total fee if not provided
-    if (!charge.total_fee && charge.days_overdue && charge.daily_rate) {
-      charge.total_fee = charge.days_overdue * charge.daily_rate;
-    }
-    
     const { data, error } = await supabase
       .from('demurrage_charges')
       .insert([charge])
@@ -36,22 +29,35 @@ export const addDemurrageCharge = async (charge: DemurrageCharge) => {
 };
 
 /**
- * Get demurrage charges, optionally filtered by booking ID
+ * Get all demurrage charges
  */
-export const getDemurrageCharges = async (bookingId?: string) => {
+export const getDemurrageCharges = async () => {
   try {
-    let query = supabase
+    const { data, error } = await supabase
       .from('demurrage_charges')
       .select('*');
-    
-    if (bookingId) {
-      query = query.eq('booking_id', bookingId);
-    }
-    
-    const { data, error } = await query.order('created_at', { ascending: false });
+    console.log('Demurrage charges fetch result:', { data, error });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching demurrage charges:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get demurrage charges by booking ID
+ */
+export const getDemurrageChargesByBooking = async (bookingId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('demurrage_charges')
+      .select('*')
+      .eq('booking_id', bookingId)
+      ;
     
     if (error) throw error;
-    return data;
+    return data || [];
   } catch (error) {
     console.error('Error fetching demurrage charges:', error);
     throw error;
@@ -82,14 +88,6 @@ export const getDemurrageChargeById = async (demurrageId: string) => {
  */
 export const updateDemurrageCharge = async (demurrageId: string, updates: Partial<DemurrageCharge>) => {
   try {
-    // Recalculate total fee if days or rate changed
-    if ((updates.days_overdue || updates.daily_rate) && !updates.total_fee) {
-      const current = await getDemurrageChargeById(demurrageId);
-      const days = updates.days_overdue ?? current.days_overdue;
-      const rate = updates.daily_rate ?? current.daily_rate;
-      updates.total_fee = days * rate;
-    }
-    
     const { data, error } = await supabase
       .from('demurrage_charges')
       .update(updates)

@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { PremiumButton } from '@/components/ui/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
-import { PremiumButton } from '@/components/ui/PremiumButton';
+import { ClerkStats, Driver, fetchClerkDashboardData, Task } from '@/services/clerkService';
 import { DashboardProps } from '@/types/dashboard';
-import { fetchClerkDashboardData, fetchClerkDashboardMockData, Task, Driver, ClerkStats } from '@/services/clerkService';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function ClerkDashboard({ user }: DashboardProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
@@ -85,7 +87,7 @@ export default function ClerkDashboard({ user }: DashboardProps) {
   const handleCompleteTask = (taskId: string) => console.log('Complete task:', taskId);
   const handleAssignDriver = (driverId: string) => console.log('Assign driver:', driverId);
   const handleUpdateBookingStatus = () => console.log('Navigate to booking status update');
-  const handleGenerateInvoice = () => console.log('Navigate to invoice generation');
+  const handleGenerateInvoice = () => router.push('/invoice');
   const handleViewDriverDetails = (driverId: string) => console.log('View driver details:', driverId);
 
   return (

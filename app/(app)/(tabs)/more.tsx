@@ -1,10 +1,42 @@
+import { ICSBOLTZ_ROLE_DEFINITIONS, UserRole, getCurrentUserRole, setCurrentUserRole, subscribeToRoleChanges } from '@/constants/UserRoles';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function MoreScreen() {
+  const [currentUserRole, setCurrentUserRoleState] = useState<UserRole>(getCurrentUserRole());
+  const [showRolePicker, setShowRolePicker] = useState(false);
+
+  // Subscribe to role changes
+  React.useEffect(() => {
+    const unsubscribe = subscribeToRoleChanges((newRole) => {
+      setCurrentUserRoleState(newRole);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // Get all available roles
+  const roleOptions = Object.entries(ICSBOLTZ_ROLE_DEFINITIONS).map(([key, config]) => ({
+    value: key as UserRole,
+    label: config.name,
+    description: config.description,
+  }));
+
+  const handleRoleChange = (newRole: UserRole) => {
+    // Update the global role state
+    setCurrentUserRole(newRole);
+    setShowRolePicker(false);
+    
+    Alert.alert(
+      'Role Changed',
+      `Your role has been changed to ${ICSBOLTZ_ROLE_DEFINITIONS[newRole].name}. The app will reflect the new permissions.`,
+      [{ text: 'OK' }]
+    );
+  };
+
   // Navigation handlers for all available pages
   const handleNewBooking = () => {
     router.push('/new-booking');
@@ -42,25 +74,15 @@ export default function MoreScreen() {
     router.push('/');
   };
 
-  const handleRequests = () => {
-    router.push('/requests');
-  };
-
-  const handleNotifications = () => {
-    router.push('/notifications');
-  };
-
-  const handleScan = () => {
-    router.push('/scan');
-  };
-
-  const handleUsers = () => {
-    router.push('/user');
-  };
-
-  const handleHelpSupport = () => {
-    console.log('Navigate to Help & Support');
-  };
+  // Only define handlers for screens that exist in your routes
+  const handleRequests = () => router.push('/requests');
+  const handleNotifications = () => router.push('/notifications');
+  const handleScan = () => router.push('/scan');
+  const handleUsers = () => router.push('/user');
+  const handleDemurrage = () => router.push('/demurrage');
+  const handleCompliance = () => router.push('/compliance');
+ 
+  // Remove compliance/help if those screens do not exist
 
   return (
     <SafeAreaView style={styles.container}>
@@ -69,6 +91,72 @@ export default function MoreScreen() {
         <View style={styles.header}>
           <Ionicons name="star" size={24} color="#000" />
           <Text style={styles.headerTitle}>More</Text>
+        </View>
+
+        {/* User Role Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>User Role</Text>
+        </View>
+        <View style={styles.menuContainer}>
+          {/* Current Role Display */}
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => setShowRolePicker(!showRolePicker)}
+          >
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="person-circle-outline" size={20} color="#666" style={styles.menuIcon} />
+              <View style={styles.roleInfo}>
+                <Text style={styles.menuItemText}>
+                  {ICSBOLTZ_ROLE_DEFINITIONS[currentUserRole].name}
+                </Text>
+                <Text style={styles.roleDescription}>
+                  {ICSBOLTZ_ROLE_DEFINITIONS[currentUserRole].description}
+                </Text>
+              </View>
+            </View>
+            <Ionicons 
+              name={showRolePicker ? "chevron-up" : "chevron-down"} 
+              size={20} 
+              color="#999" 
+            />
+          </TouchableOpacity>
+
+          {/* Role Picker Dropdown */}
+          {showRolePicker && (
+            <View style={styles.rolePickerContainer}>
+              <View style={styles.separator} />
+              {roleOptions.map((role, index) => (
+                <View key={role.value}>
+                  <TouchableOpacity
+                    style={[
+                      styles.roleOption,
+                      currentUserRole === role.value && styles.selectedRoleOption
+                    ]}
+                    onPress={() => handleRoleChange(role.value)}
+                  >
+                    <View style={styles.roleOptionContent}>
+                      <Text style={[
+                        styles.roleOptionText,
+                        currentUserRole === role.value && styles.selectedRoleText
+                      ]}>
+                        {role.label}
+                      </Text>
+                      <Text style={[
+                        styles.roleOptionDescription,
+                        currentUserRole === role.value && styles.selectedRoleDescription
+                      ]}>
+                        {role.description}
+                      </Text>
+                    </View>
+                    {currentUserRole === role.value && (
+                      <Ionicons name="checkmark" size={20} color="#007AFF" />
+                    )}
+                  </TouchableOpacity>
+                  {index < roleOptions.length - 1 && <View style={styles.separator} />}
+                </View>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Navigation Section */}
@@ -219,6 +307,32 @@ export default function MoreScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Configuration Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Configuration</Text>
+        </View>
+        <View style={styles.menuContainer}>
+          {/* Demurrage */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleDemurrage}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="boat-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>Demurrage Management</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+
+          <View style={styles.separator} />
+
+          {/* Compliance */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleCompliance}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="shield-checkmark-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>Compliance Management</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+        </View>
+
         {/* Reports Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Reports</Text>
@@ -234,7 +348,7 @@ export default function MoreScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Support Section */}
+        {/* Support Section
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Support</Text>
         </View>
@@ -246,7 +360,7 @@ export default function MoreScreen() {
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Bottom spacing */}
         <View style={styles.bottomSpacer} />
@@ -327,5 +441,47 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 40,
+  },
+  roleInfo: {
+    flex: 1,
+  },
+  roleDescription: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 2,
+  },
+  rolePickerContainer: {
+    backgroundColor: '#fff',
+  },
+  roleOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+  },
+  selectedRoleOption: {
+    backgroundColor: '#f0f8ff',
+  },
+  roleOptionContent: {
+    flex: 1,
+  },
+  roleOptionText: {
+    fontSize: 16,
+    color: '#000',
+    fontWeight: '400',
+  },
+  selectedRoleText: {
+    color: '#007AFF',
+    fontWeight: '500',
+  },
+  roleOptionDescription: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 2,
+  },
+  selectedRoleDescription: {
+    color: '#007AFF',
   },
 });

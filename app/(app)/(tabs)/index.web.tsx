@@ -1,4 +1,4 @@
-import { DriverDashboard } from '@/components/dashboard/DriverDashboard';
+import DriverDashboard from '@/components/dashboards/DriverDashboard';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
 import { ICSBOLTZ_CURRENT_USER_ROLE } from '@/constants/UserRoles';

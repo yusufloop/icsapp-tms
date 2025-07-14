@@ -1,9 +1,10 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { router } from 'expo-router';
 import { DesignSystem } from '@/constants/DesignSystem';
+import { UserRole, ICSBOLTZ_ROLE_DEFINITIONS, getCurrentUserRole, setCurrentUserRole, subscribeToRoleChanges } from '@/constants/UserRoles';
 
 interface MenuItem {
   id: string;
@@ -15,6 +16,37 @@ interface MenuItem {
 }
 
 export default function WebMoreScreen() {
+  const [currentUserRole, setCurrentUserRoleState] = useState<UserRole>(getCurrentUserRole());
+  const [showRolePicker, setShowRolePicker] = useState(false);
+
+  // Subscribe to role changes
+  React.useEffect(() => {
+    const unsubscribe = subscribeToRoleChanges((newRole) => {
+      setCurrentUserRoleState(newRole);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // Get all available roles
+  const roleOptions = Object.entries(ICSBOLTZ_ROLE_DEFINITIONS).map(([key, config]) => ({
+    value: key as UserRole,
+    label: config.name,
+    description: config.description,
+  }));
+
+  const handleRoleChange = (newRole: UserRole) => {
+    // Update the global role state
+    setCurrentUserRole(newRole);
+    setShowRolePicker(false);
+    
+    Alert.alert(
+      'Role Changed',
+      `Your role has been changed to ${ICSBOLTZ_ROLE_DEFINITIONS[newRole].name}. The app will reflect the new permissions.`,
+      [{ text: 'OK' }]
+    );
+  };
+
   const menuItems: MenuItem[] = [
     // Navigation
     { id: 'dashboard', title: 'Dashboard', description: 'View system overview and analytics', icon: 'dashboard', route: '/', category: 'Navigation' },
@@ -35,6 +67,10 @@ export default function WebMoreScreen() {
     
     // User Management
     { id: 'edit-user', title: 'Edit User', description: 'Modify user information and settings', icon: 'edit', route: '/edit-user', category: 'User Management' },
+    
+    // Configuration
+    { id: 'demurrage', title: 'Demurrage Management', description: 'Manage demurrage charges for different locations', icon: 'local-shipping', route: '/demurrage', category: 'Configuration' },
+    { id: 'compliance', title: 'Compliance Management', description: 'Manage compliance charges and requirements', icon: 'shield', route: '/compliance', category: 'Configuration' },
     
     // Reports
     { id: 'summary', title: 'Summary Report', description: 'View comprehensive system reports', icon: 'assessment', route: '/summary', category: 'Reports' },
@@ -87,6 +123,96 @@ export default function WebMoreScreen() {
       {/* Content */}
       <ScrollView className="flex-1 p-6">
         <View className="max-w-6xl mx-auto">
+          {/* User Role Section */}
+          <View className="mb-8">
+            <View className="flex-row items-center mb-4">
+              <MaterialIcons 
+                name="person-outline" 
+                size={24} 
+                color={DesignSystem.colors.primary[500]} 
+              />
+              <Text className="text-lg font-semibold text-gray-900 ml-3 uppercase tracking-wide">
+                User Role
+              </Text>
+            </View>
+
+            <PremiumCard className="p-6">
+              {/* Current Role Display */}
+              <TouchableOpacity 
+                onPress={() => setShowRolePicker(!showRolePicker)}
+                className="flex-row items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <View className="flex-row items-center flex-1">
+                  <View 
+                    className="w-12 h-12 rounded-xl items-center justify-center mr-4"
+                    style={{ backgroundColor: DesignSystem.colors.primary[50] }}
+                  >
+                    <MaterialIcons 
+                      name="person" 
+                      size={24} 
+                      color={DesignSystem.colors.primary[500]} 
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-lg font-semibold text-gray-900">
+                      {ICSBOLTZ_ROLE_DEFINITIONS[currentUserRole].name}
+                    </Text>
+                    <Text className="text-sm text-gray-600 mt-1">
+                      {ICSBOLTZ_ROLE_DEFINITIONS[currentUserRole].description}
+                    </Text>
+                  </View>
+                </View>
+                <MaterialIcons 
+                  name={showRolePicker ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
+                  size={24} 
+                  color={DesignSystem.colors.text.secondary} 
+                />
+              </TouchableOpacity>
+
+              {/* Role Picker Dropdown */}
+              {showRolePicker && (
+                <View className="mt-4 border-t border-gray-200 pt-4">
+                  <Text className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                    Select Role
+                  </Text>
+                  <View className="space-y-2">
+                    {roleOptions.map((role) => (
+                      <TouchableOpacity
+                        key={role.value}
+                        onPress={() => handleRoleChange(role.value)}
+                        className={`flex-row items-center justify-between p-3 rounded-lg transition-colors ${
+                          currentUserRole === role.value 
+                            ? 'bg-blue-50 border border-blue-200' 
+                            : 'bg-white border border-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        <View className="flex-1">
+                          <Text className={`text-base font-medium ${
+                            currentUserRole === role.value ? 'text-blue-700' : 'text-gray-900'
+                          }`}>
+                            {role.label}
+                          </Text>
+                          <Text className={`text-sm mt-1 ${
+                            currentUserRole === role.value ? 'text-blue-600' : 'text-gray-600'
+                          }`}>
+                            {role.description}
+                          </Text>
+                        </View>
+                        {currentUserRole === role.value && (
+                          <MaterialIcons 
+                            name="check-circle" 
+                            size={20} 
+                            color={DesignSystem.colors.primary[500]} 
+                          />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
+            </PremiumCard>
+          </View>
+
           {Object.entries(groupedItems).map(([category, items]) => (
             <View key={category} className="mb-8">
               {/* Category Header */}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function RecallWebScreen() {
   const [reasonOfRecall, setReasonOfRecall] = useState('Just because.....');
@@ -75,69 +76,59 @@ export default function RecallWebScreen() {
       >
         <View className="px-6 py-6">
           <View className="max-w-2xl mx-auto w-full">
-            {/* Form Card */}
+            {/* Content Card */}
             <View className="bg-white rounded-lg shadow-sm border border-gray-200">
-              {/* Form Content */}
+              {/* Content */}
               <View className="px-6 py-6 space-y-6">
-                {/* Static Summary Section */}
-                <View className="mb-8">
+                {/* Booking Information Section */}
+                <View className="mb-6">
                   <Text className="text-lg font-bold text-text-primary mb-4">
                     Booking Information
                   </Text>
                   
                   <View className="space-y-4">
                     <View className="mb-4">
-                      <Text className="text-sm font-semibold text-text-primary mb-2">
+                      <Text className="text-sm font-semibold text-text-secondary mb-1">
                         Booking Name
                       </Text>
-                      <View className="rounded-lg bg-bg-secondary border border-gray-300 px-4 py-3 min-h-[44px] justify-center">
-                        <Text className="text-base text-text-primary">
-                          {bookingData.bookingName}
-                        </Text>
-                      </View>
+                      <Text className="text-base text-text-primary">
+                        {bookingData.bookingName}
+                      </Text>
                     </View>
 
                     <View className="mb-4">
-                      <Text className="text-sm font-semibold text-text-primary mb-2">
+                      <Text className="text-sm font-semibold text-text-secondary mb-1">
                         Booking ID
                       </Text>
-                      <View className="rounded-lg bg-bg-secondary border border-gray-300 px-4 py-3 min-h-[44px] justify-center">
-                        <Text className="text-base text-text-primary font-mono">
-                          {bookingData.bookingId}
-                        </Text>
-                      </View>
+                      <Text className="text-base text-text-primary">
+                        {bookingData.bookingId}
+                      </Text>
                     </View>
 
-                    <View className="flex-row space-x-4">
-                      <View className="flex-1">
-                        <Text className="text-sm font-semibold text-text-primary mb-2">
-                          Client
-                        </Text>
-                        <View className="rounded-lg bg-bg-secondary border border-gray-300 px-4 py-3 min-h-[44px] justify-center">
-                          <Text className="text-base text-text-primary">
-                            {bookingData.client}
-                          </Text>
-                        </View>
-                      </View>
+                    <View className="mb-4">
+                      <Text className="text-sm font-semibold text-text-secondary mb-1">
+                        Client
+                      </Text>
+                      <Text className="text-base text-text-primary">
+                        {bookingData.client}
+                      </Text>
+                    </View>
 
-                      <View className="flex-1">
-                        <Text className="text-sm font-semibold text-text-primary mb-2">
-                          Consignee (Receiver)
-                        </Text>
-                        <View className="rounded-lg bg-bg-secondary border border-gray-300 px-4 py-3 min-h-[44px] justify-center">
-                          <Text className="text-base text-text-primary">
-                            {bookingData.consignee}
-                          </Text>
-                        </View>
-                      </View>
+                    <View className="mb-4">
+                      <Text className="text-sm font-semibold text-text-secondary mb-1">
+                        Consignee (Receiver)
+                      </Text>
+                      <Text className="text-base text-text-primary">
+                        {bookingData.consignee}
+                      </Text>
                     </View>
 
                     {/* Items Section */}
                     <View>
-                      <Text className="text-sm font-semibold text-text-primary mb-2">
+                      <Text className="text-sm font-semibold text-text-secondary mb-2">
                         Items
                       </Text>
-                      <View className="rounded-lg bg-bg-secondary border border-gray-300 px-4 py-3 min-h-[100px]">
+                      <View className="bg-gray-50 rounded-lg p-4">
                         {bookingData.items.map((item, index) => (
                           <Text key={index} className="text-base text-text-primary mb-1">
                             • {item}
@@ -151,7 +142,7 @@ export default function RecallWebScreen() {
                 {/* Reason of Recall Section */}
                 <View className="mb-6">
                   <Text className="text-sm font-semibold text-text-primary mb-2">
-                    Reason of Recall <Text className="text-red-500">*</Text>
+                    Reason of Recall
                   </Text>
                   <View className="rounded-lg bg-bg-secondary border border-gray-300 p-4 min-h-[120px]">
                     <TextInput
@@ -166,13 +157,13 @@ export default function RecallWebScreen() {
                       style={{ minHeight: 100 }}
                     />
                   </View>
-                  <Text className="text-xs text-text-secondary mt-1">
-                    Please provide a detailed explanation for the recall request
+                  <Text className="text-xs text-text-secondary mt-2">
+                    Please provide a detailed reason for the recall request
                   </Text>
                 </View>
               </View>
 
-              {/* Sticky Footer with Action Buttons */}
+              {/* Footer with Action Buttons */}
               <View className="border-t border-gray-200 px-6 py-4 bg-white">
                 <View className="flex-row space-x-4">
                   {/* Back Button */}
@@ -180,15 +171,25 @@ export default function RecallWebScreen() {
                     onPress={handleBack}
                     className="flex-1 bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
                   >
-                    <Text className="text-base font-semibold text-gray-600">Cancel</Text>
+                    <Text className="text-base font-semibold text-gray-600">Back</Text>
                   </TouchableOpacity>
                   
                   {/* Recall Button */}
                   <TouchableOpacity
                     onPress={handleRecall}
-                    className="flex-1 bg-red-500 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
+                    className="flex-1 active:opacity-80"
                   >
-                    <Text className="text-base font-semibold text-white">Recall</Text>
+                    <LinearGradient
+                      colors={['#EF4444', '#DC2626']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      className="rounded-lg px-4 py-3 min-h-[44px] items-center justify-center"
+                    >
+                      <View className="flex-row items-center">
+                        <MaterialIcons name="undo" size={18} color="white" style={{ marginRight: 8 }} />
+                        <Text className="text-base font-semibold text-white">Recall</Text>
+                      </View>
+                    </LinearGradient>
                   </TouchableOpacity>
                 </View>
               </View>

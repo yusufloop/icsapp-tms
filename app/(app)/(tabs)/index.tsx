@@ -3,16 +3,14 @@ import { ICSBOLTZ_CURRENT_USER_ROLE } from '@/constants/UserRoles';
 import { 
   ClientDashboard,
   ClerkDashboard,
-  ClerkDashboard,
+  
   AdminDashboard,
   DriverDashboard
 } from '@/components/dashboards';
 import { supabase } from '@/lib/supabase';
 import { testSupabaseConnection } from '@/lib/supabase';
 import { useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { testSupabaseConnection } from '@/lib/supabase';
-import { useEffect } from 'react';
+
 
 export default function DashboardScreen() {
   // Test Supabase connection on component mount
@@ -51,9 +49,7 @@ export default function DashboardScreen() {
     return <ClerkDashboard user={mockUser} />;
   }
   
-  if (ICSBOLTZ_CURRENT_USER_ROLE === 'CLERK' ) {
-    return <ClerkDashboard user={mockUser} />;
-  }
+
   
   if (ICSBOLTZ_CURRENT_USER_ROLE === 'ADMIN') {
     return <AdminDashboard user={mockUser} />;
