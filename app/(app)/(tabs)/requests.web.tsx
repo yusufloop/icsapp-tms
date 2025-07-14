@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import { Alert, Animated, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
 interface BookingData {
   id: string;
   name: string;
@@ -41,24 +42,14 @@ export default function WebBookingsScreen() {
       
       const { data, error } = await supabase
         .from('bookings')
-        .select(`
-          booking_id,
-          date_booking,
-          consignee,
-          pickup_state,
-          delivery_state,
-          shipment_type,
-          container_size,
-          created_at,
-          client_id,
-          booking_statuses (
+        .select(`*,
+          booking_statuses!inner(
             status_id,
-            updated_at,
-            statuses_master (
+            statuses_master(
+              status_id,
               status_value
             )
-          )
-        `)
+          )`)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -67,7 +58,7 @@ export default function WebBookingsScreen() {
 
       // Transform the data to match the expected format for the table
       const transformedData: BookingData[] = data.map(booking => {
-        // Get status from the joined booking_statuses table
+        // Get status from the joined booking_statuses and statuses_master tables
         const statusValue = booking.booking_statuses?.statuses_master?.status_value || 'Pending';
         
         // Map status to the expected format
@@ -82,17 +73,20 @@ export default function WebBookingsScreen() {
           : new Date(booking.created_at).toISOString().split('T')[0];
         
         // Generate a booking number based on origin and destination
-        const bookingNumber = `xxx${booking.pickup_state || 'ORG'}x${booking.delivery_state || 'DST'}xxxxx`;
+        const pickupCode = booking.pickup_state ? booking.pickup_state.substring(0, 3).toUpperCase() : 'ORG';
+        const deliveryCode = booking.delivery_state ? booking.delivery_state.substring(0, 3).toUpperCase() : 'DST';
+        const bookingNumber = `BK-${pickupCode}-${deliveryCode}-${booking.booking_id.substring(0, 5)}`;
         
         // Calculate price based on container size (mock calculation)
-        const price = booking.container_size === '40ft' ? '5000' : '3000';
+        const basePrice = booking.container_size === '40ft' ? 5000 : 3000;
+        const price = basePrice.toString();
         
         return {
           id: booking.booking_id,
           name: booking.consignee || 'Shipment',
           bookingNumber,
           price,
-          shipmentType: booking.shipment_type || 'LCL',
+          shipmentType: booking.shipment_type || 'FCL',
           containerSize: booking.container_size?.replace('ft', '') || '20',
           pickup: booking.pickup_state || 'ORG',
           delivery: booking.delivery_state || 'DST',

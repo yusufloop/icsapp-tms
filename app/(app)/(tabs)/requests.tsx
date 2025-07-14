@@ -7,11 +7,24 @@ import { PremiumCard } from '@/components/ui/PremiumCard';
 import { router } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { supabase } from '@/lib/supabase';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+interface BookingRequest {
+  id: string;
+  date: string;
+  status: string;
+  itemRequested: string;
+  priority: string;
+  amount: string;
+  company: string;
+  items: string[];
+  invoiceStatus: string;
+  total: string;
+}
 
 export default function RequestsScreen() {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,33 +39,23 @@ export default function RequestsScreen() {
       
       const { data, error } = await supabase
         .from('bookings')
-        .select(`
-          booking_id,
-          date_booking,
-          consignee,
-          pickup_state,
-          delivery_state,
-          shipment_type,
-          container_size,
-          created_at,
-          client_id,
-          booking_statuses (
+        .select(`*,
+          booking_statuses!inner(
             status_id,
-            updated_at,
-            statuses_master (
+            statuses_master(
+              status_id,
               status_value
             )
-          )
-        `)
+          )`)
         .order('created_at', { ascending: false });
 
       if (error) {
         throw error;
       }
 
-      // Transform the data to match the expected format for RequestCard
-      const transformedData = data.map(booking => {
-        // Get status from the joined booking_statuses table
+      // Transform the data to match the expected format for the RequestCard component
+      const transformedData: BookingRequest[] = data.map(booking => {
+        // Get status from the joined booking_statuses and statuses_master tables
         const statusValue = booking.booking_statuses?.statuses_master?.status_value || 'Pending';
         
         // Format the date
@@ -60,25 +63,35 @@ export default function RequestsScreen() {
           ? new Date(booking.date_booking).toLocaleDateString() 
           : new Date(booking.created_at).toLocaleDateString();
         
-        // Generate a mock priority based on status
+        // Generate a priority based on status
         let priority = 'Medium';
         if (statusValue === 'New' || statusValue === 'Pending') priority = 'High';
         if (statusValue === 'Delivered') priority = 'Low';
         
-        // Generate a mock amount based on container size
-        const amount = booking.container_size === '40ft' ? 'RM 5000' : 'RM 3000';
+        // Generate an amount based on container size
+        const baseAmount = booking.container_size === '40ft' ? 5000 : 3000;
+        const amount = `RM ${baseAmount}`;
+        const total = `RM ${baseAmount}`;
+        
+        // Create a route description from pickup and delivery states
+        const routeDescription = `${booking.pickup_state || 'Origin'} to ${booking.delivery_state || 'Destination'}`;
+        
+        // Create items array based on shipment details
+        const items = [
+          `${booking.shipment_type || 'FCL'} - ${booking.container_size || '20ft'}`
+        ];
         
         return {
           id: booking.booking_id,
           date: formattedDate,
           status: statusValue,
-          itemRequested: `${booking.pickup_state} to ${booking.delivery_state}`,
+          itemRequested: routeDescription,
           priority,
-          amount,
+          amount: amount,
           company: booking.consignee || 'Client',
-          items: [`${booking.shipment_type || 'FCL'} - ${booking.container_size || '20ft'}`],
+          items: items,
           invoiceStatus: 'Pending',
-          total: amount
+          total: total
         };
       });
 
