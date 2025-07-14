@@ -3,7 +3,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NewBookingScreen() {
@@ -21,29 +21,62 @@ export default function NewBookingScreen() {
     deliveryTime: new Date(),
   });
 
-  // --- 1. Hardcoded data is stored in a constant object ---
-  const hardcodedData = {
-    bookingName: "Urgent Legal Documents",
-    client: "Jane@gmail.com",
-    consignee: "Paralegal Services LLC",
-    date: "2025-10-10T09:00:00.000Z",
-    pickupState: "Texas",
-    pickupAddress: "456 Commerce St, Dallas, TX 75201",
-    pickupTime: "2025-10-10T10:30:00.000Z",
-    deliveryState: "Texas",
-    deliveryAddress: "789 Main St, Houston, TX 77002",
-    deliveryTime: "2025-10-10T14:00:00.000Z"
-  };
+  // --- 1. API endpoint for autofill data ---
+  const API_ENDPOINT = 'https://above-dinosaur-weekly.ngrok-free.app/webhook/auto1';
+  const [isLoading, setIsLoading] = useState(false);
 
-  // --- 2. Function to populate the form with hardcoded data ---
-  const handleAutofill = () => {
-    setFormData({
-      ...hardcodedData,
-      date: new Date(hardcodedData.date),
-      pickupTime: new Date(hardcodedData.pickupTime),
-      deliveryTime: new Date(hardcodedData.deliveryTime),
-    });
-    Alert.alert('Success', 'Form has been populated with test data.');
+  // --- 2. Function to fetch and populate the form with API data ---
+  const handleAutofill = async () => {
+    if (isLoading) return; // Prevent multiple calls
+    
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch(API_ENDPOINT, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add ngrok-skip-browser-warning header to bypass ngrok browser warning
+          'ngrok-skip-browser-warning': 'true',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Extract the first item from the array and get the output object
+      if (data && Array.isArray(data) && data.length > 0 && data[0].output) {
+        const bookingData = data[0].output;
+        
+        setFormData({
+          bookingName: bookingData.bookingName || '',
+          client: bookingData.client || '',
+          consignee: bookingData.consignee || '',
+          date: bookingData.date ? new Date(bookingData.date) : new Date(),
+          pickupState: bookingData.pickupState || '',
+          pickupAddress: bookingData.pickupAddress || '',
+          pickupTime: bookingData.pickupTime ? new Date(bookingData.pickupTime) : new Date(),
+          deliveryState: bookingData.deliveryState || '',
+          deliveryAddress: bookingData.deliveryAddress || '',
+          deliveryTime: bookingData.deliveryTime ? new Date(bookingData.deliveryTime) : new Date(),
+        });
+        
+        Alert.alert('Success', 'Form has been autofilled with API data.');
+      } else {
+        throw new Error('Invalid data structure received from API');
+      }
+    } catch (error) {
+      console.error('Autofill error:', error);
+      Alert.alert(
+        'Error', 
+        `Failed to fetch autofill data: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -193,9 +226,21 @@ export default function NewBookingScreen() {
       <View className="px-6 pt-4 pb-2 bg-bg-primary">
         <TouchableOpacity
           onPress={handleAutofill}
-          className="bg-green-500 rounded-lg py-3 items-center justify-center shadow active:opacity-80"
+          disabled={isLoading}
+          className={`${isLoading ? 'bg-gray-400' : 'bg-green-500'} rounded-lg py-3 items-center justify-center shadow ${!isLoading && 'active:opacity-80'}`}
         >
-          <Text className="text-white font-bold text-base">Autofill Form (For Testing)</Text>
+          <View className="flex-row items-center">
+            {isLoading && (
+              <ActivityIndicator 
+                size="small" 
+                color="white" 
+                style={{ marginRight: 8 }} 
+              />
+            )}
+            <Text className="text-white font-bold text-base">
+              {isLoading ? 'Loading...' : 'Autofill Form (For Testing)'}
+            </Text>
+          </View>
         </TouchableOpacity>
       </View>
 
