@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { Alert, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function NewBookingWebScreen() {
+  // The form starts with an empty state
   const [formData, setFormData] = useState({
     bookingName: '',
     client: '',
@@ -18,6 +19,32 @@ export default function NewBookingWebScreen() {
     deliveryAddress: '',
     deliveryTime: new Date(),
   });
+
+  // --- 1. Hardcoded data for the web form ---
+  const hardcodedData = {
+    bookingName: "Web Project Launch Materials",
+    client: "WebDev Solutions Inc.",
+    consignee: "Marketing Team Lead",
+    date: "2025-09-20T10:00:00.000Z",
+    pickupState: "California",
+    pickupAddress: "789 Tech Avenue, Silicon Valley, CA 94043",
+    pickupTime: "2025-09-20T11:00:00.000Z",
+    deliveryState: "California",
+    deliveryAddress: "101 Innovation Drive, San Francisco, CA 94105",
+    deliveryTime: "2025-09-20T15:30:00.000Z"
+  };
+
+  // --- 2. Function to populate the form with hardcoded data ---
+  const handleAutofill = () => {
+    setFormData({
+      ...hardcodedData,
+      // Convert date strings to Date objects for the pickers
+      date: new Date(hardcodedData.date),
+      pickupTime: new Date(hardcodedData.pickupTime),
+      deliveryTime: new Date(hardcodedData.deliveryTime),
+    });
+    Alert.alert('Success', 'Form has been autofilled with test data.');
+  };
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showPickupTimePicker, setShowPickupTimePicker] = useState(false);
@@ -144,6 +171,15 @@ export default function NewBookingWebScreen() {
       >
         <View className="px-6 py-6">
           <View className="max-w-2xl mx-auto w-full">
+            
+            {/* --- 3. Autofill button is placed here --- */}
+            <TouchableOpacity
+              onPress={handleAutofill}
+              className="bg-teal-500 rounded-lg py-3 mb-6 items-center justify-center shadow active:opacity-80"
+            >
+              <Text className="text-white font-bold text-base">Autofill Form (For Web Testing)</Text>
+            </TouchableOpacity>
+
             {/* Form Card */}
             <View className="bg-white rounded-lg shadow-sm border border-gray-200">
               {/* Form Content */}

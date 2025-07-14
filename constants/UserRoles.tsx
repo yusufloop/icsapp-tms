@@ -83,7 +83,7 @@ export const ICSBOLTZ_ROLE_DEFINITIONS: Record<UserRole, RoleConfig> = {
  */
 
 // Internal state for current user role
-let _currentUserRole: UserRole = 'DRIVER';
+let _currentUserRole: UserRole = 'ADMIN';
 
 // Listeners for role changes
 type RoleChangeListener = (newRole: UserRole) => void;

@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NewBookingScreen() {
+  // Form starts with empty values
   const [formData, setFormData] = useState({
     bookingName: '',
     client: '',
@@ -20,6 +20,31 @@ export default function NewBookingScreen() {
     deliveryAddress: '',
     deliveryTime: new Date(),
   });
+
+  // --- 1. Hardcoded data is stored in a constant object ---
+  const hardcodedData = {
+    bookingName: "Urgent Legal Documents",
+    client: "Jane@gmail.com",
+    consignee: "Paralegal Services LLC",
+    date: "2025-10-10T09:00:00.000Z",
+    pickupState: "Texas",
+    pickupAddress: "456 Commerce St, Dallas, TX 75201",
+    pickupTime: "2025-10-10T10:30:00.000Z",
+    deliveryState: "Texas",
+    deliveryAddress: "789 Main St, Houston, TX 77002",
+    deliveryTime: "2025-10-10T14:00:00.000Z"
+  };
+
+  // --- 2. Function to populate the form with hardcoded data ---
+  const handleAutofill = () => {
+    setFormData({
+      ...hardcodedData,
+      date: new Date(hardcodedData.date),
+      pickupTime: new Date(hardcodedData.pickupTime),
+      deliveryTime: new Date(hardcodedData.deliveryTime),
+    });
+    Alert.alert('Success', 'Form has been populated with test data.');
+  };
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showPickupTimePicker, setShowPickupTimePicker] = useState(false);
@@ -162,6 +187,16 @@ export default function NewBookingScreen() {
             </View>
           </View>
         </View>
+      </View>
+
+      {/* --- 3. Autofill button is added here --- */}
+      <View className="px-6 pt-4 pb-2 bg-bg-primary">
+        <TouchableOpacity
+          onPress={handleAutofill}
+          className="bg-green-500 rounded-lg py-3 items-center justify-center shadow active:opacity-80"
+        >
+          <Text className="text-white font-bold text-base">Autofill Form (For Testing)</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Form Content */}
