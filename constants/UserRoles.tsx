@@ -40,12 +40,7 @@ export const ICSBOLTZ_ROLE_DEFINITIONS: Record<UserRole, RoleConfig> = {
     allowedActions: ['view_log', 'approve', 'reject'],
     priority: 6,
   },
-  DRIVER: {
-    name: 'Driver',
-    description: 'Transport driver with delivery and status update capabilities',
-    allowedActions: ['view', 'scan'],
-    priority: 5,
-  },
+  
   CLIENT: {
     name: 'Client',
     description: 'Customer with booking request capabilities',
@@ -87,7 +82,7 @@ export const ICSBOLTZ_ROLE_DEFINITIONS: Record<UserRole, RoleConfig> = {
  * TO CHANGE USER ROLE: Modify the value below to test different role permissions
  * Available roles: 'ADMIN', 'CLERK', 'DRIVER', 'CLIENT', 'GENERAL_MANAGER', 'HEAD_OF_DEPARTMENT', 'REQUESTER'
  */
-export const ICSBOLTZ_CURRENT_USER_ROLE: UserRole = 'ADMIN';
+export const ICSBOLTZ_CURRENT_USER_ROLE: UserRole = 'CLIENT';
 
 /**
  * Utility function to get role configuration

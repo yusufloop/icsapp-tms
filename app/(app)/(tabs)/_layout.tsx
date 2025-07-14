@@ -1,12 +1,12 @@
-import { Tabs } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
 import React from "react";
 import { Platform } from "react-native";
 
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { ICSBOLTZ_CURRENT_USER_ROLE } from "@/constants/UserRoles";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -108,14 +108,7 @@ export default function TabLayout() {
       ))}
 
       {/* Hidden tabs that shouldn't appear in navigation but need to exist for routing */}
-      {currentRole !== "REQUESTER" && (
-        <Tabs.Screen
-          name="scan"
-          options={{
-            href: null, // This hides the tab from navigation
-          }}
-        />
-      )}
+      {/* Only add hidden scan tab if not already in main tabs */}
       {(currentRole === "REQUESTER" || currentRole === "ADMIN") && (
         <Tabs.Screen
           name="notifications"
@@ -133,12 +126,12 @@ export default function TabLayout() {
         />
       )}
       <Tabs.Screen
-  name="ItemDetails"
-  options={{
-    href: null, // This hides the tab from navigation
-    headerShown: true,
-  }}
-/>
+        name="ItemDetails"
+        options={{
+          href: null, // This hides the tab from navigation
+          headerShown: true,
+        }}
+      />
     </Tabs>
   );
 }

@@ -47,7 +47,7 @@ export default function ClientDashboard({ user }: DashboardProps) {
   };
 
   // Quick action handlers
-  const handleNewBooking = () => console.log('Navigate to new booking');
+
   const handleTrackShipment = () => console.log('Navigate to shipment tracking');
   const handleViewInvoices = () => console.log('Navigate to invoices');
   const handleViewBooking = (bookingId: string) => console.log('View booking:', bookingId);
@@ -92,86 +92,7 @@ export default function ClientDashboard({ user }: DashboardProps) {
           </View>
         </View>
 
-        {/* Quick Stats */}
-        <View className="px-6 pt-6">
-          <Text className="text-lg font-semibold text-text-primary mb-4">
-            Your Shipping Overview
-          </Text>
-          
-          <View className="flex-row flex-wrap -mx-2">
-            <View className="w-1/2 px-2 mb-4">
-              <PremiumCard>
-                <View className="flex-row items-center">
-                  <View className="w-10 h-10 rounded-lg bg-blue-100 items-center justify-center mr-3">
-                    <MaterialIcons name="local-shipping" size={20} color="#3B82F6" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-2xl font-bold text-text-primary">
-                      {clientStats.activeShipments}
-                    </Text>
-                    <Text className="text-text-secondary text-xs">
-                      Active Shipments
-                    </Text>
-                  </View>
-                </View>
-              </PremiumCard>
-            </View>
-
-            <View className="w-1/2 px-2 mb-4">
-              <PremiumCard>
-                <View className="flex-row items-center">
-                  <View className="w-10 h-10 rounded-lg bg-orange-100 items-center justify-center mr-3">
-                    <MaterialIcons name="receipt" size={20} color="#F59E0B" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-2xl font-bold text-text-primary">
-                      {clientStats.pendingInvoices}
-                    </Text>
-                    <Text className="text-text-secondary text-xs">
-                      Pending Invoices
-                    </Text>
-                  </View>
-                </View>
-              </PremiumCard>
-            </View>
-
-            <View className="w-1/2 px-2 mb-4">
-              <PremiumCard>
-                <View className="flex-row items-center">
-                  <View className="w-10 h-10 rounded-lg bg-green-100 items-center justify-center mr-3">
-                    <MaterialIcons name="check-circle" size={20} color="#10B981" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-2xl font-bold text-text-primary">
-                      {clientStats.completedDeliveries}
-                    </Text>
-                    <Text className="text-text-secondary text-xs">
-                      Completed
-                    </Text>
-                  </View>
-                </View>
-              </PremiumCard>
-            </View>
-
-            <View className="w-1/2 px-2 mb-4">
-              <PremiumCard>
-                <View className="flex-row items-center">
-                  <View className="w-10 h-10 rounded-lg bg-purple-100 items-center justify-center mr-3">
-                    <MaterialIcons name="calendar-today" size={20} color="#8B5CF6" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-2xl font-bold text-text-primary">
-                      {clientStats.totalBookingsThisMonth}
-                    </Text>
-                    <Text className="text-text-secondary text-xs">
-                      This Month
-                    </Text>
-                  </View>
-                </View>
-              </PremiumCard>
-            </View>
-          </View>
-        </View>
+        
 
         {/* Quick Actions */}
         <View className="px-6 pt-6">
@@ -180,15 +101,7 @@ export default function ClientDashboard({ user }: DashboardProps) {
           </Text>
           
           <View className="flex-row flex-wrap -mx-2">
-            <View className="w-1/3 px-2 mb-3">
-              <PremiumButton
-                title="New Booking"
-                onPress={handleNewBooking}
-                variant="gradient"
-                size="sm"
-                icon={<MaterialIcons name="add" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />}
-              />
-            </View>
+           
             
             <View className="w-1/3 px-2 mb-3">
               <PremiumButton

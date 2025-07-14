@@ -50,7 +50,7 @@ export function RouteMapView({ currentRoute }: RouteMapViewProps) {
           className="rounded-lg mb-4 overflow-hidden"
           style={{ height: 200 }}
         >
-          <MapView
+          {/* <MapView
             style={{ flex: 1 }}
             initialRegion={destinationCoordinates}
             showsUserLocation={true}
@@ -65,7 +65,7 @@ export function RouteMapView({ currentRoute }: RouteMapViewProps) {
               title={currentRoute.nextStop.customerName}
               description={currentRoute.nextStop.address}
             />
-          </MapView>
+          </MapView> */}
           
           {/* Map Overlay - Distance/Time Info */}
           <View className="absolute top-2 right-2 bg-white rounded-lg px-3 py-1 shadow-sm">

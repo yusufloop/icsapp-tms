@@ -17,12 +17,11 @@ export default function DashboardScreen() {
   };
 
   // Render role-specific dashboards
-  if (ICSBOLTZ_CURRENT_USER_ROLE === 'REQUESTER') {
+  if (ICSBOLTZ_CURRENT_USER_ROLE === 'CLIENT') {
     return <ClientDashboard user={mockUser} />;
   }
   
-  if (ICSBOLTZ_CURRENT_USER_ROLE === 'HEAD_OF_DEPARTMENT' || 
-      ICSBOLTZ_CURRENT_USER_ROLE === 'GENERAL_MANAGER') {
+  if (ICSBOLTZ_CURRENT_USER_ROLE === 'CLERK' ) {
     return <ClerkDashboard user={mockUser} />;
   }
   

@@ -45,14 +45,8 @@ export function PremiumCard({
   .filter(Boolean) // Removes any false/null/undefined values
   .join(' ');
 
-  // Enhanced shadow styles based on design philosophy
-  const shadowStyle = variant === 'default' ? {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
-  } : {};
+  // No custom shadow styles
+  const shadowStyle = {};
 
   return (
     <View 
