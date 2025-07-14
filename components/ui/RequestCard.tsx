@@ -221,10 +221,6 @@ export function RequestCard({
     // TODO: Implement view log functionality
   };
 
-  const handleApprove = () => {
-    console.log('Approve action for request', id);
-    // TODO: Implement approve functionality
-  };
 
   const handleReject = () => {
     console.log('Reject action for request', id);
@@ -514,13 +510,13 @@ export function RequestCard({
                     <Text className="text-base font-semibold text-white">Approve</Text>
                   </TouchableOpacity>
                   
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     onPress={handleRecall}
                     className="flex-1 bg-red-500 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80 flex-row"
                   >
                     <MaterialIcons name="undo" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
                     <Text className="text-base font-semibold text-white">Recall</Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
 
                 

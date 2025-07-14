@@ -36,7 +36,7 @@ export default function RequestsScreen() {
       total: '$50'
     },
     { 
-      id: '#BOOKING 3', 
+      id: '178ef99d-a107-432d-b8ec-bbc008754c29', 
       date: '29/10/2019',
       status: 'In Transit', 
       itemRequested: 'Software Equipment',

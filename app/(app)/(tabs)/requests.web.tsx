@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Animated } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
+import { DesignSystem } from '@/constants/DesignSystem';
 import { addApproval } from '@/services/approvalService';
-import { router } from 'expo-router';
-import { Alert, Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import { router } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, Animated, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 interface BookingData {
   id: string;
   name: string;
@@ -149,8 +148,12 @@ export default function WebBookingsScreen() {
   };
 
   const handleRowClick = (booking: BookingData, event?: any) => {
-    // Prevent expansion if clicking on checkbox
-    if (event?.target?.closest('[data-checkbox]')) {
+    // Prevent expansion if clicking on checkbox (web: event.target, native: event.nativeEvent.target)
+    if (
+      event &&
+      ((event.target && event.target.closest && event.target.closest('[data-checkbox]')) ||
+        (event.nativeEvent && event.nativeEvent.target && event.nativeEvent.target.closest && event.nativeEvent.target.closest('[data-checkbox]')))
+    ) {
       return;
     }
 
