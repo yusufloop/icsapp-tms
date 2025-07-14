@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   View, 
   Text, 
-  TextInput, 
+  TextInput,
+  Alert,
   TouchableOpacity, 
   SafeAreaView,
   StyleSheet,
@@ -10,22 +11,61 @@ import {
   Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { addDemurrageCharge } from '../../services/demurrageService';
 
 interface DemurrageChargeScreenProps {
   navigation: any;
+  route: {
+    params?: {
+      bookingId?: string;
+    }
+  };
 }
 
-export default function DemurrageChargeScreen({ navigation }: DemurrageChargeScreenProps) {
-  const [demurrageCharge, setDemurrageCharge] = useState('');
+export default function DemurrageChargeScreen({ navigation, route }: DemurrageChargeScreenProps) {
+  const [daysOverdue, setDaysOverdue] = useState('');
+  const [dailyRate, setDailyRate] = useState('');
+  const [location, setLocation] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  // Get bookingId from route params
+  const bookingId = route.params?.bookingId || '';
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  const handleAdd = () => {
-    console.log('Demurrage Charge:', demurrageCharge);
-    // Handle add functionality here
-    navigation.goBack();
+  const handleAdd = async () => {
+    if (!daysOverdue.trim() || !dailyRate.trim()) {
+      Alert.alert('Error', 'Please enter both days overdue and daily rate');
+      return;
+    }
+    
+    if (!bookingId) {
+      Alert.alert('Error', 'No booking ID provided');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      await addDemurrageCharge({
+        booking_id: bookingId,
+        days_overdue: parseInt(daysOverdue),
+        daily_rate: parseFloat(dailyRate),
+        location: location || undefined
+      });
+      
+      Alert.alert(
+        'Success', 
+        'Demurrage charge added successfully',
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
+      );
+    } catch (error) {
+      console.error('Error adding demurrage charge:', error);
+      Alert.alert('Error', 'Failed to add demurrage charge');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,16 +92,49 @@ export default function DemurrageChargeScreen({ navigation }: DemurrageChargeScr
         </View>
 
         {/* Form Content */}
-        <View style={styles.formContainer}>
-          <Text style={styles.inputLabel}>Demurrage Charge</Text>
+        <View style={styles.formContainer}>          
+          <View style={styles.formGroup}>
+            <Text style={styles.inputLabel}>Days Overdue</Text>
+            <TextInput
+              style={styles.input}
+              value={daysOverdue}
+              onChangeText={setDaysOverdue}
+              placeholder="Enter number of days"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+            />
+          </View>
           
-          <TextInput
-            style={styles.input}
-            value={demurrageCharge}
-            onChangeText={setDemurrageCharge}
-            placeholder=""
-            placeholderTextColor="#999"
-          />
+          <View style={styles.formGroup}>
+            <Text style={styles.inputLabel}>Daily Rate</Text>
+            <TextInput
+              style={styles.input}
+              value={dailyRate}
+              onChangeText={setDailyRate}
+              placeholder="Enter daily rate"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+            />
+          </View>
+          
+          <View style={styles.formGroup}>
+            <Text style={styles.inputLabel}>Location (Optional)</Text>
+            <TextInput
+              style={styles.input}
+              value={location}
+              onChangeText={setLocation}
+              placeholder="Enter location"
+              placeholderTextColor="#999"
+            />
+          </View>
+          
+          {bookingId ? (
+            <Text style={styles.bookingInfo}>
+              Adding charge to booking: {bookingId.substring(0, 8)}...
+            </Text>
+          ) : (
+            <Text style={styles.errorText}>No booking ID provided</Text>
+          )}
         </View>
 
         {/* Add Button */}
@@ -69,16 +142,16 @@ export default function DemurrageChargeScreen({ navigation }: DemurrageChargeScr
           <TouchableOpacity 
             style={[
               styles.addButton,
-              !demurrageCharge.trim() && styles.addButtonDisabled
+              (!daysOverdue.trim() || !dailyRate.trim() || !bookingId || loading) && styles.addButtonDisabled
             ]}
             onPress={handleAdd}
-            disabled={!demurrageCharge.trim()}
+            disabled={!daysOverdue.trim() || !dailyRate.trim() || !bookingId || loading}
           >
             <Text style={[
               styles.addButtonText,
-              !demurrageCharge.trim() && styles.addButtonTextDisabled
+              (!daysOverdue.trim() || !dailyRate.trim() || !bookingId || loading) && styles.addButtonTextDisabled
             ]}>
-              Add
+              {loading ? 'Adding...' : 'Add'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -124,7 +197,10 @@ const styles = StyleSheet.create({
   formContainer: {
     paddingHorizontal: 24,
     paddingTop: 40,
-    flex: 1,
+    flex: 1
+  },
+  formGroup: {
+    marginBottom: 20,
   },
   inputLabel: {
     fontSize: 16,
@@ -166,4 +242,15 @@ const styles = StyleSheet.create({
   addButtonTextDisabled: {
     color: '#999',
   },
+  bookingInfo: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 10,
+    fontStyle: 'italic'
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#ff3b30',
+    marginTop: 10
+  }
 });

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getDemurrageCharges, DemurrageCharge } from '../../services/demurrageService';
 
 export default function NewBookingStep2WebScreen() {
   // Mock data from Step 1 (in real implementation, this would come from navigation params or state management)
@@ -26,24 +27,40 @@ export default function NewBookingStep2WebScreen() {
   const [showContainerSizePicker, setShowContainerSizePicker] = useState(false);
   const [showDemurrageLocationPicker, setShowDemurrageLocationPicker] = useState(false);
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
+  
+  // State for demurrage data from Supabase
+  const [demurrageLocations, setDemurrageLocations] = useState<DemurrageCharge[]>([]);
+  const [demurrageLoading, setDemurrageLoading] = useState(true);
 
   // Updated shipment types to only LFC and CLC
   const shipmentTypes = ['LFC', 'CLC'];
   const containerSizes = ['20ft', '40ft', '40ft HC', '45ft'];
   
-  // Mock demurrage locations - in real implementation, this would come from the demurrage management system
-  const demurrageLocations = [
-    { location: 'Port Klang', dailyRate: 150.00 },
-    { location: 'Johor Port', dailyRate: 120.00 },
-    { location: 'Penang Port', dailyRate: 180.00 },
-  ];
-
   // Mock compliance charges - in real implementation, this would come from the compliance management system
   const complianceCharges = [
     { id: '1', compliance_name: 'Environmental Compliance', flat_charge: 250.00 },
     { id: '2', compliance_name: 'Safety Inspection', flat_charge: 180.00 },
     { id: '3', compliance_name: 'Documentation Fee', flat_charge: 120.00 },
   ];
+
+  // Fetch demurrage locations from Supabase
+  useEffect(() => {
+    fetchDemurrageLocations();
+  }, []);
+
+  const fetchDemurrageLocations = async () => {
+    try {
+      setDemurrageLoading(true);
+      const data = await getDemurrageCharges();
+      setDemurrageLocations(data);
+    } catch (error) {
+      console.error('Error fetching demurrage locations:', error);
+      // Show user-friendly error message
+      Alert.alert('Error', 'Failed to load demurrage locations. Please try again.');
+    } finally {
+      setDemurrageLoading(false);
+    }
+  };
 
   const handleShipmentTypeSelect = (type: string) => {
     setFormData({ ...formData, shipmentType: type });
@@ -133,13 +150,13 @@ export default function NewBookingStep2WebScreen() {
       containerMultiplier = 1.8;
     }
     
-    // Demurrage calculation
+    // Demurrage calculation using real Supabase data
     let demurrageCost = 0;
     if (formData.demurrageLocation && formData.daysExpected) {
       const selectedLocation = demurrageLocations.find(loc => loc.location === formData.demurrageLocation);
       const days = parseFloat(formData.daysExpected) || 0;
-      if (selectedLocation && days > 0) {
-        demurrageCost = selectedLocation.dailyRate * days;
+      if (selectedLocation && selectedLocation.daily_rate && days > 0) {
+        demurrageCost = selectedLocation.daily_rate * days;
       }
     }
     
@@ -163,7 +180,7 @@ export default function NewBookingStep2WebScreen() {
   const getDemurrageRate = () => {
     if (formData.demurrageLocation) {
       const selectedLocation = demurrageLocations.find(loc => loc.location === formData.demurrageLocation);
-      return selectedLocation?.dailyRate || 0;
+      return selectedLocation?.daily_rate || 0;
     }
     return 0;
   };
@@ -454,14 +471,21 @@ export default function NewBookingStep2WebScreen() {
                       </Text>
                       <TouchableOpacity
                         onPress={() => {
-                          setShowDemurrageLocationPicker(!showDemurrageLocationPicker);
-                          setShowShipmentTypePicker(false);
-                          setShowContainerSizePicker(false);
+                          if (!demurrageLoading && demurrageLocations.length > 0) {
+                            setShowDemurrageLocationPicker(!showDemurrageLocationPicker);
+                            setShowShipmentTypePicker(false);
+                            setShowContainerSizePicker(false);
+                          }
                         }}
                         className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
                       >
                         <Text className={`flex-1 text-base ${formData.demurrageLocation ? 'text-text-primary' : 'text-text-secondary'}`}>
-                          {formData.demurrageLocation || 'Select location'}
+                          {demurrageLoading 
+                            ? 'Loading locations...' 
+                            : demurrageLocations.length === 0
+                            ? 'No locations available'
+                            : formData.demurrageLocation || 'Select location'
+                          }
                         </Text>
                         <MaterialIcons name="keyboard-arrow-down" size={20} color="#8A8A8E" />
                       </TouchableOpacity>
@@ -485,21 +509,23 @@ export default function NewBookingStep2WebScreen() {
                     </View>
                   </View>
                   
-                  {/* Demurrage Location Picker */}
-                  {showDemurrageLocationPicker && (
+                  {/* Demurrage Location Picker - Uses real Supabase data */}
+                  {showDemurrageLocationPicker && demurrageLocations.length > 0 && (
                     <View className="mt-4 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
                       <Text className="text-sm font-semibold text-text-primary px-4 py-2 border-b border-gray-200">
                         Select Demurrage Location
                       </Text>
                       {demurrageLocations.map((item, index) => (
                         <TouchableOpacity
-                          key={index}
-                          onPress={() => handleDemurrageLocationSelect(item.location)}
+                          key={item.demurrage_id || index}
+                          onPress={() => handleDemurrageLocationSelect(item.location || '')}
                           className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
                         >
                           <View className="flex-row justify-between items-center">
                             <Text className="text-text-primary">{item.location}</Text>
-                            <Text className="text-text-secondary text-sm">RM {item.dailyRate.toFixed(2)}/day</Text>
+                            <Text className="text-text-secondary text-sm">
+                              RM {item.daily_rate?.toFixed(2) || '0.00'}/day
+                            </Text>
                           </View>
                         </TouchableOpacity>
                       ))}

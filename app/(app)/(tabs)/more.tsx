@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ICSBOLTZ_ROLE_DEFINITIONS, UserRole, getCurrentUserRole, setCurrentUserRole, subscribeToRoleChanges } from '@/constants/UserRoles';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { UserRole, ICSBOLTZ_ROLE_DEFINITIONS, getCurrentUserRole, setCurrentUserRole, subscribeToRoleChanges } from '@/constants/UserRoles';
+import React, { useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function MoreScreen() {
   const [currentUserRole, setCurrentUserRoleState] = useState<UserRole>(getCurrentUserRole());
@@ -74,33 +74,15 @@ export default function MoreScreen() {
     router.push('/');
   };
 
-  const handleRequests = () => {
-    router.push('/requests');
-  };
-
-  const handleNotifications = () => {
-    router.push('/notifications');
-  };
-
-  const handleScan = () => {
-    router.push('/scan');
-  };
-
-  const handleUsers = () => {
-    router.push('/user');
-  };
-
-  const handleDemurrage = () => {
-    router.push('/demurrage');
-  };
-
-  const handleCompliance = () => {
-    router.push('/compliance');
-  };
-
-  const handleHelpSupport = () => {
-    console.log('Navigate to Help & Support');
-  };
+  // Only define handlers for screens that exist in your routes
+  const handleRequests = () => router.push('/requests');
+  const handleNotifications = () => router.push('/notifications');
+  const handleScan = () => router.push('/scan');
+  const handleUsers = () => router.push('/user');
+  const handleDemurrage = () => router.push('/demurrage');
+  const handleCompliance = () => router.push('/compliance');
+ 
+  // Remove compliance/help if those screens do not exist
 
   return (
     <SafeAreaView style={styles.container}>
@@ -366,7 +348,7 @@ export default function MoreScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Support Section */}
+        {/* Support Section
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Support</Text>
         </View>
@@ -378,7 +360,7 @@ export default function MoreScreen() {
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Bottom spacing */}
         <View style={styles.bottomSpacer} />

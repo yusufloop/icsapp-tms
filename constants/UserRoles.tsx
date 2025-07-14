@@ -40,17 +40,19 @@ export const ICSBOLTZ_ROLE_DEFINITIONS: Record<UserRole, RoleConfig> = {
     allowedActions: ['view_log', 'approve', 'reject'],
     priority: 6,
   },
-  DRIVER: {
-    name: 'Driver',
-    description: 'Transport driver with delivery and status update capabilities',
-    allowedActions: ['view', 'scan'],
-    priority: 5,
-  },
+
+  
   CLIENT: {
     name: 'Client',
     description: 'Customer with booking request capabilities',
     allowedActions: ['scan', 'info', 'resubmit'],
     priority: 4,
+  },
+  DRIVER: {
+    name: 'Driver',
+    description: 'Driver with route management and delivery tracking capabilities',
+    allowedActions: ['view', 'scan', 'update_status', 'navigate', 'contact_customer'],
+    priority: 5,
   },
   GENERAL_MANAGER: {
     name: 'General Manager',

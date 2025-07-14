@@ -3,21 +3,21 @@ import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput } from 'reac
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { supabase } from '../../lib/supabase';
-
-interface DemurrageCharge {
-  id: string;
-  location: string;
-  daily_rate: number;
-  created_at: string;
-}
+import { 
+  getDemurrageCharges, 
+  addDemurrageCharge, 
+  deleteDemurrageCharge,
+  DemurrageCharge 
+} from '../../services/demurrageService';
 
 export default function DemurrageWebScreen() {
   const [demurrageCharges, setDemurrageCharges] = useState<DemurrageCharge[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [location, setLocation] = useState('');
   const [dailyRate, setDailyRate] = useState('');
+  const [daysOverdue, setDaysOverdue] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
 
   useEffect(() => {
     fetchDemurrageCharges();
@@ -25,44 +25,57 @@ export default function DemurrageWebScreen() {
 
   const fetchDemurrageCharges = async () => {
     try {
-      // Mock data for now - replace with real Supabase call when backend is ready
-      const mockData: DemurrageCharge[] = [
-        { id: '1', location: 'Port Klang', daily_rate: 150.00, created_at: '2024-01-15' },
-        { id: '2', location: 'Johor Port', daily_rate: 120.00, created_at: '2024-01-10' },
-        { id: '3', location: 'Penang Port', daily_rate: 180.00, created_at: '2024-01-05' },
-      ];
-      setDemurrageCharges(mockData);
+      setFetchLoading(true);
+      const data = await getDemurrageCharges();
+      setDemurrageCharges(data);
     } catch (error) {
       console.error('Error fetching demurrage charges:', error);
+      Alert.alert('Error', 'Failed to fetch demurrage charges');
+    } finally {
+      setFetchLoading(false);
     }
   };
 
   const handleAddDemurrageCharge = async () => {
-    if (!location.trim() || !dailyRate.trim()) {
+    if (!location.trim() || !dailyRate.trim() || !daysOverdue.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
     const rate = parseFloat(dailyRate);
+    const days = parseInt(daysOverdue);
+    
     if (isNaN(rate) || rate <= 0) {
       Alert.alert('Error', 'Please enter a valid daily rate');
       return;
     }
 
+    if (isNaN(days) || days <= 0) {
+      Alert.alert('Error', 'Please enter valid days overdue');
+      return;
+    }
+
     setLoading(true);
     try {
-      // Mock implementation - replace with real Supabase call when backend is ready
-      const newCharge: DemurrageCharge = {
-        id: Date.now().toString(),
+      const newCharge = {
         location: location.trim(),
         daily_rate: rate,
-        created_at: new Date().toISOString(),
+        days_overdue: days,
+        // You can add booking_id here if you have context of which booking this relates to
+        // booking_id: bookingId
       };
 
-      setDemurrageCharges([newCharge, ...demurrageCharges]);
+      await addDemurrageCharge(newCharge);
+      
+      // Refresh the list
+      await fetchDemurrageCharges();
+      
+      // Reset form
       setLocation('');
       setDailyRate('');
+      setDaysOverdue('');
       setShowAddForm(false);
+      
       Alert.alert('Success', 'Demurrage charge added successfully');
     } catch (error) {
       console.error('Error adding demurrage charge:', error);
@@ -72,7 +85,7 @@ export default function DemurrageWebScreen() {
     }
   };
 
-  const handleDeleteDemurrageCharge = async (id: string) => {
+  const handleDeleteDemurrageCharge = async (demurrageId: string) => {
     Alert.alert(
       'Confirm Delete',
       'Are you sure you want to delete this demurrage charge?',
@@ -83,8 +96,8 @@ export default function DemurrageWebScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              // Mock implementation - replace with real Supabase call when backend is ready
-              setDemurrageCharges(demurrageCharges.filter(charge => charge.id !== id));
+              await deleteDemurrageCharge(demurrageId);
+              await fetchDemurrageCharges(); // Refresh the list
               Alert.alert('Success', 'Demurrage charge deleted successfully');
             } catch (error) {
               console.error('Error deleting demurrage charge:', error);
@@ -98,6 +111,10 @@ export default function DemurrageWebScreen() {
 
   const handleBack = () => {
     router.back();
+  };
+
+  const calculateTotal = (dailyRate: number, daysOverdue: number) => {
+    return dailyRate * daysOverdue;
   };
 
   return (
@@ -136,7 +153,11 @@ export default function DemurrageWebScreen() {
                 <Text className="text-xl font-bold text-text-primary">Current Demurrage Charges</Text>
               </View>
               
-              {demurrageCharges.length === 0 ? (
+              {fetchLoading ? (
+                <View className="px-6 py-12 text-center">
+                  <Text className="text-text-secondary text-center">Loading...</Text>
+                </View>
+              ) : demurrageCharges.length === 0 ? (
                 <View className="px-6 py-12 text-center">
                   <Text className="text-text-secondary text-center">No demurrage charges configured</Text>
                 </View>
@@ -145,25 +166,33 @@ export default function DemurrageWebScreen() {
                   {/* Table Header */}
                   <View className="bg-gray-50 flex-row py-3 px-6 border-b border-gray-200">
                     <Text className="text-text-primary font-semibold flex-1">Location</Text>
-                    <Text className="text-text-primary font-semibold w-40 text-right">Daily Rate (RM)</Text>
+                    <Text className="text-text-primary font-semibold w-32 text-center">Daily Rate</Text>
+                    <Text className="text-text-primary font-semibold w-24 text-center">Days</Text>
+                    <Text className="text-text-primary font-semibold w-32 text-center">Total</Text>
                     <Text className="text-text-primary font-semibold w-20 text-center">Action</Text>
                   </View>
                   
                   {/* Table Rows */}
                   {demurrageCharges.map((charge, index) => (
                     <View
-                      key={charge.id}
+                      key={charge.demurrage_id}
                       className={`flex-row py-4 px-6 border-b border-gray-100 ${
                         index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                       }`}
                     >
                       <Text className="text-text-primary flex-1">{charge.location}</Text>
-                      <Text className="text-text-primary w-40 text-right font-medium">
-                        {charge.daily_rate.toFixed(2)}
+                      <Text className="text-text-primary w-32 text-center font-medium">
+                        RM {charge.daily_rate?.toFixed(2)}
+                      </Text>
+                      <Text className="text-text-primary w-24 text-center">
+                        {charge.days_overdue}
+                      </Text>
+                      <Text className="text-primary w-32 text-center font-semibold">
+                        RM {calculateTotal(charge.daily_rate || 0, charge.days_overdue || 0).toFixed(2)}
                       </Text>
                       <View className="w-20 flex-row justify-center">
                         <TouchableOpacity
-                          onPress={() => handleDeleteDemurrageCharge(charge.id)}
+                          onPress={() => handleDeleteDemurrageCharge(charge.demurrage_id!)}
                           className="p-2 active:opacity-80"
                         >
                           <MaterialIcons name="delete" size={18} color="#ef4444" />
@@ -229,12 +258,27 @@ export default function DemurrageWebScreen() {
                     </View>
                   </View>
 
+                  <View>
+                    <Text className="text-sm font-semibold text-text-primary mb-2">Days Overdue</Text>
+                    <View className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px]">
+                      <TextInput
+                        className="flex-1 text-base text-text-primary"
+                        placeholder="Enter days overdue"
+                        value={daysOverdue}
+                        onChangeText={setDaysOverdue}
+                        keyboardType="numeric"
+                        placeholderTextColor="#8A8A8E"
+                      />
+                    </View>
+                  </View>
+
                   <View className="flex-row space-x-4 pt-4">
                     <TouchableOpacity
                       onPress={() => {
                         setShowAddForm(false);
                         setLocation('');
                         setDailyRate('');
+                        setDaysOverdue('');
                       }}
                       className="flex-1 bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
                     >

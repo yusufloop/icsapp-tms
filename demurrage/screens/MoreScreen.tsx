@@ -14,7 +14,10 @@ interface MoreScreenProps {
 
 export default function MoreScreen({ navigation }: MoreScreenProps) {
   const handleDemurrageCharge = () => {
-    navigation.navigate('DemurrageCharge');
+    // Pass a sample booking ID - in a real app, this would come from context or selection
+    navigation.navigate('DemurrageCharge', { 
+      bookingId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479' // Sample UUID
+    });
   };
 
   const handleHelpSupport = () => {

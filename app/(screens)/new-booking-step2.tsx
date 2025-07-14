@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { DemurrageCharge, getDemurrageCharges } from '../../services/demurrageService';
 
 export default function NewBookingStep2Screen() {
   // Mock data from Step 1 (in real implementation, this would come from navigation params or state management)
@@ -32,12 +33,25 @@ export default function NewBookingStep2Screen() {
   const shipmentTypes = ['LFC', 'CLC'];
   const containerSizes = ['20ft', '40ft', '40ft HC', '45ft'];
   
-  // Mock demurrage locations - in real implementation, this would come from the demurrage management system
-  const demurrageLocations = [
-    { location: 'Port Klang', dailyRate: 150.00 },
-    { location: 'Johor Port', dailyRate: 120.00 },
-    { location: 'Penang Port', dailyRate: 180.00 },
-  ];
+  // Demurrage locations from Supabase
+  const [demurrageLocations, setDemurrageLocations] = useState<DemurrageCharge[]>([]);
+  const [demurrageLoading, setDemurrageLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDemurrageLocations();
+  }, []);
+
+  const fetchDemurrageLocations = async () => {
+    try {
+      setDemurrageLoading(true);
+      const data = await getDemurrageCharges();
+      setDemurrageLocations(data);
+    } catch (error) {
+      console.error('Error fetching demurrage locations:', error);
+    } finally {
+      setDemurrageLoading(false);
+    }
+  };
 
   // Mock compliance charges - in real implementation, this would come from the compliance management system
   const complianceCharges = [
@@ -139,8 +153,8 @@ export default function NewBookingStep2Screen() {
     if (formData.demurrageLocation && formData.daysExpected) {
       const selectedLocation = demurrageLocations.find(loc => loc.location === formData.demurrageLocation);
       const days = parseFloat(formData.daysExpected) || 0;
-      if (selectedLocation && days > 0) {
-        demurrageCost = selectedLocation.dailyRate * days;
+      if (selectedLocation && selectedLocation.daily_rate && days > 0) {
+        demurrageCost = selectedLocation.daily_rate * days;
       }
     }
     
@@ -163,8 +177,8 @@ export default function NewBookingStep2Screen() {
 
   const getDemurrageRate = () => {
     if (formData.demurrageLocation) {
-      const selectedLocation = demurrageLocations.find(loc => loc.location === formData.demurrageLocation);
-      return selectedLocation?.dailyRate || 0;
+      const selectedLocation = demurrageLocations.find((loc) => loc.location === formData.demurrageLocation);
+      return selectedLocation?.daily_rate || 0;
     }
     return 0;
   };
@@ -442,17 +456,17 @@ export default function NewBookingStep2Screen() {
               </TouchableOpacity>
               
               {/* Demurrage Location Picker */}
-              {showDemurrageLocationPicker && (
+              {showDemurrageLocationPicker && demurrageLocations.length > 0 && (
                 <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
                   {demurrageLocations.map((item, index) => (
                     <TouchableOpacity
-                      key={index}
-                      onPress={() => handleDemurrageLocationSelect(item.location)}
+                      key={item.demurrage_id || index}
+                      onPress={() => handleDemurrageLocationSelect(item.location || '')}
                       className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
                     >
                       <View className="flex-row justify-between items-center">
                         <Text className="text-text-primary">{item.location}</Text>
-                        <Text className="text-text-secondary text-sm">RM {item.dailyRate.toFixed(2)}/day</Text>
+                        <Text className="text-text-secondary text-sm">RM {item.daily_rate?.toFixed(2)}/day</Text>
                       </View>
                     </TouchableOpacity>
                   ))}

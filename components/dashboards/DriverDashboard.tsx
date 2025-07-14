@@ -1,16 +1,16 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
+import { PremiumButton } from '@/components/ui/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
-import { PremiumButton } from '@/components/ui/PremiumButton';
-import { RouteMapView } from './RouteMapView';
-import { PerformanceChart } from './PerformanceChart';
+import { MaterialIcons } from '@expo/vector-icons';
+import React from 'react';
+import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { PerformanceChart } from '../dashboard/PerformanceChart';
+import { RouteMapView } from '../dashboard/RouteMapView';
 
 const { width } = Dimensions.get('window');
 
-export function DriverDashboard() {
+export default function DriverDashboard() {
   const getUserGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good Morning';
