@@ -1,16 +1,25 @@
 import { Tabs } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Platform } from "react-native";
 
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { ICSBOLTZ_CURRENT_USER_ROLE } from "@/constants/UserRoles";
+import { UserRole, getCurrentUserRole, subscribeToRoleChanges } from "@/constants/UserRoles";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const currentRole = ICSBOLTZ_CURRENT_USER_ROLE;
+  const [currentRole, setCurrentRole] = useState<UserRole>(getCurrentUserRole());
+
+  // Subscribe to role changes to update navigation dynamically
+  useEffect(() => {
+    const unsubscribe = subscribeToRoleChanges((newRole) => {
+      setCurrentRole(newRole);
+    });
+
+    return unsubscribe;
+  }, []);
 
   // Define role-based tab configurations
   const getRoleBasedTabs = () => {

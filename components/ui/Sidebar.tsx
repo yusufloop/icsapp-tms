@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, usePathname } from 'expo-router';
 import { DesignSystem } from '@/constants/DesignSystem';
+import { UserRole, getCurrentUserRole, subscribeToRoleChanges, getRoleConfig } from '@/constants/UserRoles';
 
 interface SidebarProps {
   className?: string;
@@ -17,16 +18,64 @@ interface NavigationItem {
 
 export function Sidebar({ className = '' }: SidebarProps) {
   const pathname = usePathname();
+  const [currentRole, setCurrentRole] = useState<UserRole>(getCurrentUserRole());
 
-  const mainNavigation: NavigationItem[] = [
-    { id: 'dashboard', title: 'Dashboard', icon: 'dashboard', route: '/' },
-    { id: 'booking', title: 'Booking', icon: 'local-shipping', route: '/requests' },
-    { id: 'users', title: 'Users', icon: 'people', route: '/user' },
-    { id: 'notifications', title: 'Notifications', icon: 'notifications', route: '/notifications' },
-    { id: 'routes', title: 'Routes', icon: 'route', route: '/routes' },
-    { id: 'scan', title: 'QR Scan', icon: 'qr-code-scanner', route: '/scan' },
-    { id: 'more', title: 'More', icon: 'more-horiz', route: '/more' },
-  ];
+  // Subscribe to role changes to update sidebar dynamically
+  useEffect(() => {
+    const unsubscribe = subscribeToRoleChanges((newRole) => {
+      setCurrentRole(newRole);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // Get role-based navigation items
+  const getRoleBasedNavigation = (): NavigationItem[] => {
+    const baseNavigation: NavigationItem[] = [
+      { id: 'dashboard', title: 'Dashboard', icon: 'dashboard', route: '/' },
+      { id: 'booking', title: 'Booking', icon: 'local-shipping', route: '/requests' },
+    ];
+
+    // Role-specific navigation items
+    const roleSpecificItems: NavigationItem[] = [];
+
+    switch (currentRole) {
+      case 'REQUESTER':
+        roleSpecificItems.push(
+          { id: 'scan', title: 'QR Scan', icon: 'qr-code-scanner', route: '/scan' }
+        );
+        break;
+      case 'HEAD_OF_DEPARTMENT':
+      case 'GENERAL_MANAGER':
+        roleSpecificItems.push(
+          { id: 'notifications', title: 'Notifications', icon: 'notifications', route: '/notifications' }
+        );
+        break;
+      case 'DRIVER':
+        roleSpecificItems.push(
+          { id: 'routes', title: 'Routes', icon: 'route', route: '/routes' }
+        );
+        break;
+      case 'ADMIN':
+        roleSpecificItems.push(
+          { id: 'users', title: 'Users', icon: 'people', route: '/user' },
+          { id: 'notifications', title: 'Notifications', icon: 'notifications', route: '/notifications' }
+        );
+        break;
+      default:
+        roleSpecificItems.push(
+          { id: 'scan', title: 'QR Scan', icon: 'qr-code-scanner', route: '/scan' }
+        );
+    }
+
+    return [
+      ...baseNavigation,
+      ...roleSpecificItems,
+      { id: 'more', title: 'More', icon: 'more-horiz', route: '/more' },
+    ];
+  };
+
+  const mainNavigation = getRoleBasedNavigation();
 
   const userNavigation: NavigationItem[] = [
     { id: 'notifications-user', title: 'Notifications', icon: 'notifications', route: '/notifications' },
@@ -123,7 +172,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
             </View>
             <View className="flex-1">
               <Text className="text-sm font-medium text-gray-900">John Doe</Text>
-              <Text className="text-xs text-gray-500">Administrator</Text>
+              <Text className="text-xs text-gray-500">{getRoleConfig(currentRole).name}</Text>
             </View>
           </TouchableOpacity>
 

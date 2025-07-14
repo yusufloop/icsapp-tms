@@ -1,10 +1,11 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Animated, Text, TouchableOpacity, View } from 'react-native';
 import {
   getCurrentUserActions,
+  subscribeToRoleChanges,
   type ButtonAction
 } from '../../constants/UserRoles';
 import { PremiumButton } from './PremiumButton';
@@ -40,9 +41,19 @@ export function RequestCard({
   onToggle,
 }: RequestCardProps) {
   const [contentHeight, setContentHeight] = useState(0);
+  const [allowedActions, setAllowedActions] = useState<ButtonAction[]>(getCurrentUserActions());
   const animatedHeight = useRef(new Animated.Value(0)).current;
   const animatedOpacity = useRef(new Animated.Value(0)).current;
   const animatedRotation = useRef(new Animated.Value(0)).current;
+
+  // Subscribe to role changes to update available actions
+  useEffect(() => {
+    const unsubscribe = subscribeToRoleChanges(() => {
+      setAllowedActions(getCurrentUserActions());
+    });
+
+    return unsubscribe;
+  }, []);
 
   React.useEffect(() => {
     const toValue = isExpanded ? 1 : 0;
@@ -326,9 +337,6 @@ export function RequestCard({
     }
   };
 
-  // Get current user's allowed actions
-  const allowedActions = getCurrentUserActions();
-  
   // Filter actions based on request status for resubmit button
   const getAvailableActions = (): ButtonAction[] => {
     let actions = [...allowedActions];

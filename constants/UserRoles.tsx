@@ -70,24 +70,63 @@ export const ICSBOLTZ_ROLE_DEFINITIONS: Record<UserRole, RoleConfig> = {
     allowedActions: ['scan', 'info', 'resubmit'],
     priority: 1,
   },
-  DRIVER: {
-    name: 'Driver',
-    description: 'Driver with route management and delivery tracking capabilities',
-    allowedActions: ['view', 'scan', 'update_status', 'navigate', 'contact_customer'],
-    priority: 1,
-  },
+  
 };
 
 /**
- * ICSBOLTZ_CURRENT_USER_ROLE - Current user role configuration
+ * ICSBOLTZ_CURRENT_USER_ROLE - Current user role state management
  * 
- * This constant defines the current user's role. 
- * In the future, this should be replaced with dynamic role fetching from user authentication.
- * 
- * TO CHANGE USER ROLE: Modify the value below to test different role permissions
- * Available roles: 'ADMIN', 'CLERK', 'DRIVER', 'CLIENT', 'GENERAL_MANAGER', 'HEAD_OF_DEPARTMENT', 'REQUESTER'
+ * This creates a dynamic system for managing the current user's role.
+ * The role can be changed at runtime through the user interface.
  */
-export const ICSBOLTZ_CURRENT_USER_ROLE: UserRole = 'ADMIN';
+
+// Internal state for current user role
+let _currentUserRole: UserRole = 'DRIVER';
+
+// Listeners for role changes
+type RoleChangeListener = (newRole: UserRole) => void;
+const _roleChangeListeners: RoleChangeListener[] = [];
+
+/**
+ * Get the current user role
+ */
+export const getCurrentUserRole = (): UserRole => {
+  return _currentUserRole;
+};
+
+/**
+ * Set the current user role and notify all listeners
+ */
+export const setCurrentUserRole = (newRole: UserRole): void => {
+  const oldRole = _currentUserRole;
+  _currentUserRole = newRole;
+  
+  // Notify all listeners of the role change
+  _roleChangeListeners.forEach(listener => {
+    try {
+      listener(newRole);
+    } catch (error) {
+      console.error('Error in role change listener:', error);
+    }
+  });
+  
+  console.log(`User role changed from ${oldRole} to ${newRole}`);
+};
+
+/**
+ * Subscribe to role changes
+ */
+export const subscribeToRoleChanges = (listener: RoleChangeListener): (() => void) => {
+  _roleChangeListeners.push(listener);
+  
+  // Return unsubscribe function
+  return () => {
+    const index = _roleChangeListeners.indexOf(listener);
+    if (index > -1) {
+      _roleChangeListeners.splice(index, 1);
+    }
+  };
+};
 
 /**
  * Utility function to get role configuration
@@ -108,12 +147,18 @@ export const hasPermission = (role: UserRole, action: ButtonAction): boolean => 
  * Utility function to get allowed actions for current user
  */
 export const getCurrentUserActions = (): ButtonAction[] => {
-  return getRoleConfig(ICSBOLTZ_CURRENT_USER_ROLE).allowedActions;
+  return getRoleConfig(getCurrentUserRole()).allowedActions;
 };
 
 /**
  * Utility function to get current user role info
  */
-export const getCurrentUserRole = (): RoleConfig => {
-  return getRoleConfig(ICSBOLTZ_CURRENT_USER_ROLE);
+export const getCurrentUserRoleConfig = (): RoleConfig => {
+  return getRoleConfig(getCurrentUserRole());
 };
+
+/**
+ * Legacy export for backward compatibility
+ * @deprecated Use getCurrentUserRole() instead
+ */
+export const ICSBOLTZ_CURRENT_USER_ROLE: UserRole = getCurrentUserRole();
