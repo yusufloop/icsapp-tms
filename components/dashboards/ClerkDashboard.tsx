@@ -7,7 +7,7 @@ import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { DashboardProps } from '@/types/dashboard';
-import { fetchClerkDashboardData, Task, Driver, ClerkStats } from '@/services/clerkService';
+import { fetchClerkDashboardData, fetchClerkDashboardMockData, Task, Driver, ClerkStats } from '@/services/clerkService';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function ClerkDashboard({ user }: DashboardProps) {
