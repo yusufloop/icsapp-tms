@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { DemurrageCharge, getDemurrageCharges } from '../../services/demurrageService';
+import { ComplianceCharge, getComplianceCharges } from '../../services/complianceService';
 
 export default function NewBookingStep2WebScreen() {
   // Mock data from Step 1 (in real implementation, this would come from navigation params or state management)
@@ -31,20 +32,18 @@ export default function NewBookingStep2WebScreen() {
   const [demurrageLocations, setDemurrageLocations] = useState<DemurrageCharge[]>([]);
   const [demurrageLoading, setDemurrageLoading] = useState(true);
 
+  // State for compliance charges from Supabase
+  const [complianceCharges, setComplianceCharges] = useState<ComplianceCharge[]>([]);
+  const [complianceLoading, setComplianceLoading] = useState(true);
+
   // Updated shipment types to only FCL and LCL
   const shipmentTypes = ['FCL', 'LCL'];
   const containerSizes = ['20ft', '40ft', '40ft HC'];
-  
-  // Mock compliance charges - in real implementation, this would come from the compliance management system
-  const complianceCharges = [
-    { id: '1',  name_compliance: 'Environmental Compliance', price: 250.00 },
-    { id: '2',  name_compliance: 'Safety Inspection', price: 180.00 },
-    { id: '3',  name_compliance: 'Documentation Fee', price: 120.00 },
-  ];
 
-  // Fetch demurrage locations from Supabase
+  // Fetch both demurrage locations and compliance charges from Supabase
   useEffect(() => {
     fetchDemurrageLocations();
+    fetchComplianceCharges();
   }, []);
 
   const fetchDemurrageLocations = async () => {
@@ -54,10 +53,22 @@ export default function NewBookingStep2WebScreen() {
       setDemurrageLocations(data);
     } catch (error) {
       console.error('Error fetching demurrage locations:', error);
-      // Show user-friendly error message
       Alert.alert('Error', 'Failed to load demurrage locations. Please try again.');
     } finally {
       setDemurrageLoading(false);
+    }
+  };
+
+  const fetchComplianceCharges = async () => {
+    try {
+      setComplianceLoading(true);
+      const data = await getComplianceCharges();
+      setComplianceCharges(data);
+    } catch (error) {
+      console.error('Error fetching compliance charges:', error);
+      Alert.alert('Error', 'Failed to load compliance charges. Please try again.');
+    } finally {
+      setComplianceLoading(false);
     }
   };
 
@@ -159,7 +170,7 @@ export default function NewBookingStep2WebScreen() {
       }
     }
     
-    // Compliance charges calculation
+    // Compliance charges calculation using real Supabase data
     let complianceCost = 0;
     if (formData.selectedCompliance.length > 0) {
       complianceCost = formData.selectedCompliance.reduce((total, complianceId) => {
@@ -532,39 +543,51 @@ export default function NewBookingStep2WebScreen() {
                   )}
                 </View>
 
-                {/* Compliance */}
+                {/* Other Charges - Now using dynamic compliance charges from Supabase */}
                 <View className="mb-6">
                   <Text className="text-lg font-bold text-text-primary mb-4">
                     Other Charges
                   </Text>
                   
-                  {complianceCharges.map((compliance) => (
-                    <TouchableOpacity
-                      key={compliance.id}
-                      onPress={() => handleComplianceToggle(compliance.id)}
-                      className="flex-row items-center justify-between bg-bg-secondary border border-gray-300 rounded-lg px-4 py-3 mb-2 active:opacity-80"
-                    >
-                      <View className="flex-row items-center flex-1">
-                        <View className={`w-5 h-5 rounded border-2 mr-3 items-center justify-center ${
-                          formData.selectedCompliance.includes(compliance.id) 
-                            ? 'bg-primary border-primary' 
-                            : 'border-gray-400'
-                        }`}>
-                          {formData.selectedCompliance.includes(compliance.id) && (
-                            <MaterialIcons name="check" size={14} color="white" />
-                          )}
-                        </View>
-                        <View className="flex-1">
-                          <Text className="text-base font-medium text-text-primary">
-                            {compliance. name_compliance}
-                          </Text>
-                          <Text className="text-sm text-text-secondary">
-                            RM {compliance.price.toFixed(2)}
-                          </Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
+                  {complianceLoading ? (
+                    <View className="bg-bg-secondary border border-gray-300 rounded-lg px-4 py-6">
+                      <Text className="text-text-secondary text-center">Loading compliance charges...</Text>
+                    </View>
+                  ) : complianceCharges.length === 0 ? (
+                    <View className="bg-bg-secondary border border-gray-300 rounded-lg px-4 py-6">
+                      <Text className="text-text-secondary text-center">No compliance charges available</Text>
+                    </View>
+                  ) : (
+                    complianceCharges
+                      .filter(compliance => typeof compliance.id === 'string')
+                      .map((compliance) => (
+                        <TouchableOpacity
+                          key={compliance.id!}
+                          onPress={() => handleComplianceToggle(compliance.id!)}
+                          className="flex-row items-center justify-between bg-bg-secondary border border-gray-300 rounded-lg px-4 py-3 mb-2 active:opacity-80"
+                        >
+                          <View className="flex-row items-center flex-1">
+                            <View className={`w-5 h-5 rounded border-2 mr-3 items-center justify-center ${
+                              formData.selectedCompliance.includes(compliance.id!) 
+                                ? 'bg-primary border-primary' 
+                                : 'border-gray-400'
+                            }`}>
+                              {formData.selectedCompliance.includes(compliance.id!) && (
+                                <MaterialIcons name="check" size={14} color="white" />
+                              )}
+                            </View>
+                            <View className="flex-1">
+                              <Text className="text-base font-medium text-text-primary">
+                                {compliance.name_compliance}
+                              </Text>
+                              <Text className="text-sm text-text-secondary">
+                                RM {compliance.price.toFixed(2)}
+                              </Text>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                      ))
+                  )}
                 </View>
 
                 {/* Estimated Total */}
@@ -625,7 +648,7 @@ export default function NewBookingStep2WebScreen() {
                           Container Size Adjustment ({formData.containerSize})
                         </Text>
                         <Text className="text-sm text-text-primary">
-                          {formData.containerSize === '40ft' || formData.containerSize === '40ft HC' ? '+50%' : '+80%'}
+                          {formData.containerSize === '40ft' ? '+50%' : formData.containerSize === '40ft HC' ? '+80%' : '+50%'}
                         </Text>
                       </View>
                     )}
@@ -646,7 +669,7 @@ export default function NewBookingStep2WebScreen() {
                       return compliance ? (
                         <View key={complianceId} className="flex-row justify-between">
                           <Text className="text-sm text-text-secondary">
-                            {compliance. name_compliance}
+                            {compliance.name_compliance}
                           </Text>
                           <Text className="text-sm text-text-primary">
                             RM {compliance.price.toFixed(2)}
@@ -695,13 +718,11 @@ export default function NewBookingStep2WebScreen() {
                   
                   {/* Continue Button */}
                   <TouchableOpacity
-                              onPress={handleContinue}
-                              className="flex-1 bg-blue-500 border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
-                            >
-                              
-                                <Text className="text-base font-semibold text-white">Continue</Text>
-                              
-                            </TouchableOpacity>
+                    onPress={handleContinue}
+                    className="flex-1 bg-blue-500 border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
+                  >
+                    <Text className="text-base font-semibold text-white">Continue</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
