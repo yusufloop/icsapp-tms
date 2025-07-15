@@ -205,12 +205,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading) return;
 
+    // Get the current route path
     const inAuthGroup = segments[0] === "(auth)";
+    const isSigningOut = segments.includes("sign-out");
 
-    if (!user && !inAuthGroup) {
+    if (!user && !inAuthGroup && !isSigningOut) {
       // Redirect to sign-in if not authenticated
       router.replace("/(auth)/sign-in");
-    } else if (user && inAuthGroup) {
+    } else if (user && inAuthGroup && !isSigningOut) {
       // Redirect to app if authenticated
       router.replace("/(app)/(tabs)");
     }
@@ -312,26 +314,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     try {
-      console.log('[Auth] Starting sign out process...');
+      setLoading(true);
+      console.log('[Auth] Starting sign out process');
       
-      // Step 1: Clear local storage first
-      await clearLocalStorage();
-      
-      // Step 2: Clear app state
-      setUser(null);
-      setSession(null);
-      
-      // Step 3: Sign out from Supabase
+      // First sign out from Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error("Supabase sign out error:", error);
-        // Even if Supabase signOut fails, we've already cleared local state
-      } else {
-        console.log('[Auth] Supabase sign out successful');
+        throw error;
       }
       
-      console.log('[Auth] Sign out process completed');
+      // Then clear local storage
+      await clearLocalStorage();
+      
+      // Finally clear app state
+      setUser(null);
+      setSession(null);
+      
+      console.log('[Auth] Sign out process completed successfully');
+      
+      // Force navigation to sign-in screen
+      router.replace("/(auth)/sign-in");
       
     } catch (err) {
       console.error("Sign out error:", err);
@@ -339,8 +343,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setSession(null);
       await clearLocalStorage();
+      
+      // Force navigation to sign-in screen even if there was an error
+      router.replace("/(auth)/sign-in");
+    } finally {
+      setLoading(false);
     }
-  }, [clearLocalStorage]);
+  }, [clearLocalStorage, router]);
 
   const getUserRoles = useCallback((): string[] => {
     return user?.roles || [];
