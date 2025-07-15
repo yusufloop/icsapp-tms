@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function SummaryScreen() {
   // Mock data representing a completed booking
   const bookingData = {
-    bookingName: 'Melaka to KL',
+    bookingName: 'PNG to KL',
     bookingId: 'xxxxxPNGxKLGxxxx',
     client: 'Johan',
     consignee: 'Johani',

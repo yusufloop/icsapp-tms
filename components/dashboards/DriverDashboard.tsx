@@ -34,8 +34,8 @@ export default function DriverDashboard() {
     totalStops: 12,
     completedStops: 8,
     nextStop: {
-      address: 'Bandar Bukit Puchong',
-      customerName: 'Isense ASV',
+      address: 'Bandar Baru Bangi',
+      customerName: 'Logitrax',
       package: 'PKG-001',
       estimatedArrival: '02:30 PM'
     }

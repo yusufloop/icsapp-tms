@@ -86,19 +86,17 @@ export default function SignInScreen() {
             <View className="max-w-sm w-full mx-auto">
               {/* Header */}
               <View className="items-center mb-8">
-                <View className="w-96 h-16 items-center justify-center mb-4">
-                   
-                  {/* <Image
-                    source={require("@/assets/images/gpsearch.png")} // Make sure the path is correct
-                     className="w-full h-full "
+                <View className="items-center justify-center mb-4" style={{ maxWidth: 280, width: '100%' }}>
+                  <Image
+                    source={require("@/assets/images/Logitrax_Lg.png")}
+                    style={{
+                      width: '100%',
+                      height: 80,
+                      maxWidth: 280,
+                    }}
                     resizeMode="contain"
-                  /> */}
-                  <Text className="text-3xl font-bold text-indigo-800 ">
-                  Logitrax
-                </Text>
-            
+                  />
                 </View>
-                
               </View>
 
               {/* Form */}

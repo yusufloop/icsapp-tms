@@ -9,7 +9,7 @@ export default function RecallScreen() {
 
   // Mock data representing a completed booking (subset of summary data)
   const bookingData = {
-    bookingName: 'Melaka to KL',
+    bookingName: 'PNG to KL',
     bookingId: 'xxxxxPNGxKLGxxxx',
     client: 'Johan',
     consignee: 'Johani',

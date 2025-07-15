@@ -135,11 +135,15 @@ export function Sidebar({ className = '' }: SidebarProps) {
     <View className={`bg-white border-r border-gray-200 ${className}`} style={{ width: 280 }}>
       {/* Logo Section */}
       <View className="px-6 py-6 border-b border-gray-100">
-        <View className="flex-row items-center">
-          <View className="w-8 h-8 bg-blue-600 rounded-lg items-center justify-center mr-3">
-            <Text className="text-white font-bold text-sm">GP</Text>
-          </View>
-          <Text className="text-xl font-bold text-gray-900">GP SEARCH</Text>
+        <View className="flex-row items-center justify-center">
+          <Image
+            source={require('@/assets/images/Logitrax_Lg.png')}
+            style={{
+              width: 180,
+              height: 40,
+            }}
+            resizeMode="contain"
+          />
         </View>
       </View>
 
@@ -164,7 +168,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
           
           {/* Profile Section with Avatar */}
           <TouchableOpacity
-            onPress={() => handleNavigation('/profile', 'profile')}
+            //nPress={() => handleNavigation('/profile', 'profile')}
             className="flex-row items-center px-4 py-3 mx-3 rounded-lg hover:bg-gray-50 active:bg-gray-100"
           >
             <View className="w-8 h-8 bg-gray-300 rounded-full items-center justify-center mr-3">

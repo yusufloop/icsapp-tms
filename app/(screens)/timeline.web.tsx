@@ -6,7 +6,7 @@ import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 export default function TimelineWebScreen() {
   // Mock data representing a booking timeline
   const bookingData = {
-    bookingName: 'Melaka to KL',
+    bookingName: 'PNG to KL',
     bookingId: 'xxxxxPNGxKLGxxxx',
     client: 'Johan',
     consignee: 'Johani',
