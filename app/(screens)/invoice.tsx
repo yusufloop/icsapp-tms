@@ -331,7 +331,7 @@ export default function InvoiceScreen() {
 
       {/* Sticky Footer with Action Buttons */}
       <View className="absolute bottom-0 left-0 right-0 bg-bg-secondary border-t border-gray-200 px-6 py-4">
-        <View className="flex-row space-x-4">
+        <View className="flex-row space-x-4 gap-4">
           {/* Print Invoice Button */}
           <TouchableOpacity
             onPress={handlePrintInvoice}

@@ -84,6 +84,8 @@ export default function NewBookingStep3WebScreen() {
   const [showDriverModal, setShowDriverModal] = useState(false);
   const [modalDriver, setModalDriver] = useState<any>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successDriver, setSuccessDriver] = useState<any>(null);
 
   // Filter drivers based on search query
   const filteredDrivers = mockDrivers.filter(driver =>
@@ -111,25 +113,35 @@ export default function NewBookingStep3WebScreen() {
   };
 
   const handleCreateBooking = () => {
+    console.log('🚀 Create Booking button pressed! (WEB VERSION)');
+    console.log('📋 Selected driver:', selectedDriver);
+    
     if (!selectedDriver) {
+      console.log('❌ No driver selected, showing error alert');
       Alert.alert('Error', 'Please select a driver to continue');
       return;
     }
 
     const driver = mockDrivers.find(d => d.id === selectedDriver);
-    Alert.alert(
-      'Booking Created',
-      `Booking successfully created with ${driver?.name}!`,
-      [
-        {
-          text: 'OK',
-          onPress: () => {
-            // Navigate back to requests or dashboard
-            router.push('/(app)/(tabs)/requests');
-          }
-        }
-      ]
-    );
+    console.log('👨‍💼 Found driver:', driver);
+    console.log('🎉 About to show success modal (WEB)');
+    
+    // Show custom success modal instead of Alert.alert
+    setSuccessDriver(driver);
+    setShowSuccessModal(true);
+    console.log('✅ Success modal triggered (WEB)');
+  };
+
+  const handleBackToBooking = () => {
+    console.log('🔙 User selected: Back to Booking (WEB)');
+    setShowSuccessModal(false);
+    router.push('/(app)/(tabs)/requests');
+  };
+
+  const handleViewInvoice = () => {
+    console.log('📄 User selected: View Invoice (WEB)');
+    setShowSuccessModal(false);
+    router.push('/(screens)/invoice');
   };
 
   const handleBack = () => {
@@ -521,6 +533,67 @@ export default function NewBookingStep3WebScreen() {
                 </View>
               )
             )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Success Modal */}
+      <Modal
+        visible={showSuccessModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowSuccessModal(false)}
+      >
+        <View className="flex-1 bg-black/50 items-center justify-center px-6">
+          <View className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            {/* Success Header */}
+            <View className="px-6 py-6 border-b border-gray-200">
+              <View className="items-center">
+                <View className="w-16 h-16 rounded-full bg-green-100 items-center justify-center mb-4">
+                  <MaterialIcons name="check-circle" size={32} color="#10B981" />
+                </View>
+                <Text className="text-xl font-bold text-text-primary text-center mb-2">
+                  Booking Created Successfully!
+                </Text>
+                <Text className="text-text-secondary text-center">
+                  Your booking has been created with {successDriver?.name}. What would you like to do next?
+                </Text>
+              </View>
+            </View>
+
+            {/* Action Buttons */}
+            <View className="px-6 py-6">
+                          <View className="gap-3 ">
+                            {/* View Invoice Button */}
+                            <TouchableOpacity
+                              onPress={handleViewInvoice}
+                              className="active:opacity-80  rounded-xl"
+                            >
+                              <LinearGradient
+                                colors={['#409CFF', '#0A84FF']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                className="rounded-2xl px-4 py-3 min-h-[44px] items-center justify-center"
+                              >
+                                <View className="flex-row items-center">
+                                  <MaterialIcons name="receipt" size={18} color="white" style={{ marginRight: 8 }} />
+                                  <Text className="text-base font-semibold text-white">View Invoice</Text>
+                                </View>
+                              </LinearGradient>
+                            </TouchableOpacity>
+            
+                            {/* Back to Booking Button */}
+                            <TouchableOpacity
+                              onPress={handleBackToBooking}
+                              className="bg-gray-100 border border-gray-300 rounded-2xl px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
+                            >
+                              <View className="flex-row items-center">
+                                <MaterialIcons name="arrow-back" size={18} color="#1C1C1E" style={{ marginRight: 8 }} />
+                                <Text className="text-base font-semibold text-gray-600">Back to Booking</Text>
+                              </View>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
           </View>
         </View>
       </Modal>

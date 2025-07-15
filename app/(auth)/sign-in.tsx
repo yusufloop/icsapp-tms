@@ -88,11 +88,11 @@ export default function SignInScreen() {
               <View className="items-center mb-8">
                 <View className="w-96 h-16 items-center justify-center mb-4">
                    
-                  <Image
+                  {/* <Image
                     source={require("@/assets/images/gpsearch.png")} // Make sure the path is correct
                      className="w-full h-full "
                     resizeMode="contain"
-                  />
+                  /> */}
                   <Text className="text-3xl font-bold text-indigo-800 ">
                   Logitrax
                 </Text>

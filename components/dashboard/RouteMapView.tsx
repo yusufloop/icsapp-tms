@@ -2,8 +2,9 @@ import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Dimensions, Text, View } from 'react-native';
-// import MapView, { Marker } from 'react-native-maps';
+import { Dimensions, Text, View, ImageBackground, Image} from 'react-native';
+//import MapView, { Marker } from 'react-native-maps';
+
 
 const { width } = Dimensions.get('window');
 
@@ -43,14 +44,11 @@ export function RouteMapView({ currentRoute }: RouteMapViewProps) {
       <Text className="text-lg font-semibold text-text-primary mb-4">
         Your next route
       </Text>
-      
+
       <PremiumCard className="mb-4">
         {/* Real Map using react-native-maps */}
-        <View 
-          className="rounded-lg mb-4 overflow-hidden"
-          style={{ height: 200 }}
-        >
-          {/* <MapView
+        
+          {/*<MapView
             style={{ flex: 1 }}
             initialRegion={destinationCoordinates}
             showsUserLocation={true}
@@ -65,15 +63,19 @@ export function RouteMapView({ currentRoute }: RouteMapViewProps) {
               title={currentRoute.nextStop.customerName}
               description={currentRoute.nextStop.address}
             />
-          </MapView> */}
+          </MapView>*/}
+
+          <ImageBackground
+          source={require("@/assets/images/Screenshot 2025-07-15 221221.png")} 
+          resizeMode="cover" // This makes the image cover the whole area, like a map would
+          className="rounded-lg mb-4 overflow-hidden"
+          style={{ height: 350 }}
+        >
+        </ImageBackground>
           
-          
-          <View className="absolute top-2 right-2 bg-white rounded-lg px-3 py-1 shadow-sm">
-            <Text className="text-xs font-medium text-gray-700">2.3 km</Text>
-            <Text className="text-xs text-gray-500">~8 min</Text>
-          </View>
-        </View>
-        
+
+      
+
         {/* Next Stop Info */}
         <View className="bg-blue-50 rounded-lg p-4 flex-row items-center">
           <View className="w-12 h-12 bg-primary rounded-full items-center justify-center mr-4">
@@ -81,7 +83,7 @@ export function RouteMapView({ currentRoute }: RouteMapViewProps) {
               {currentRoute.nextStop.customerName.split(' ').map(name => name[0]).join('').substring(0, 2)}
             </Text>
           </View>
-          
+
           <View className="flex-1">
             <Text className="font-semibold text-text-primary">
               {currentRoute.nextStop.customerName}
@@ -96,10 +98,10 @@ export function RouteMapView({ currentRoute }: RouteMapViewProps) {
               </Text>
             </View>
           </View>
-          
+
           <View className="items-end">
-            <PremiumStatusBadge 
-              status="warning" 
+            <PremiumStatusBadge
+              status="warning"
               text={currentRoute.nextStop.package}
               size="sm"
             />
