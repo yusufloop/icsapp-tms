@@ -10,7 +10,7 @@ interface SignOutButtonProps {
 }
 
 export function SignOutButton({ style }: SignOutButtonProps) {
-  const { signOut } = useAuth();
+  const { signOut, loading } = useAuth();
 
   const handleSignOut = () => {
     Alert.alert(
@@ -25,12 +25,7 @@ export function SignOutButton({ style }: SignOutButtonProps) {
           text: 'Sign Out',
           style: 'destructive',
           onPress: async () => {
-            try {
-              await signOut();
-              router.replace('/(tabs)/signin');
-            } catch (error) {
-              Alert.alert('Error', 'Failed to sign out. Please try again.');
-            }
+            await signOut();
           },
         },
       ]
@@ -44,13 +39,13 @@ export function SignOutButton({ style }: SignOutButtonProps) {
       onPress={handleSignOut}
       activeOpacity={0.7}
     >
-      <View className="flex-row items-center">
+      <View className="flex-row items-center justify-between">
         <MaterialIcons name="logout" size={20} color="#FF453A" className="mr-3" />
-        <Text className="text-base text-red-500 font-semibold">
-          Sign Out
+        <Text className="text-base text-red-500 font-semibold ml-2 flex-1">
+          {loading ? "Signing out..." : "Sign Out"}
         </Text>
+        <MaterialIcons name="chevron-right" size={20} color="#FF453A" />
       </View>
-      <MaterialIcons name="chevron-right" size={20} color="#FF453A" />
     </TouchableOpacity>
   );
 }
