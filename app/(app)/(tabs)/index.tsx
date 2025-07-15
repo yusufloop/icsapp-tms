@@ -45,28 +45,28 @@ export default function DashboardScreen() {
     case 'CLIENT':
       return <>
         <ClientDashboard user={mockUser} />
-        {/* <N8nChatWebView /> */}
+    <N8nChatWebView />
       </>;
     case 'CLERK':
       return <>
         <ClerkDashboard user={mockUser} />
-        {/* <N8nChatWebView /> */}
+    
       </>;
     case 'ADMIN':
       return <>
         <AdminDashboard user={mockUser} />
-        {/* <N8nChatWebView /> */}
+      
       </>;
     case 'DRIVER':
       return <>
         <DriverDashboard />
-        {/* <N8nChatWebView /> */}
+       
       </>;
     default:
       // Default fallback to Client dashboard
       return <>
         <ClientDashboard user={mockUser} />
-        {/* <N8nChatWebView /> */}
+       
       </>;
   }
 }

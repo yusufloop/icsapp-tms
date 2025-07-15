@@ -2,6 +2,9 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { useRouter, useSegments } from "expo-router";
 import { supabase } from "./supabase";
 import type { User, Session } from "@supabase/supabase-js";
+import * as SecureStore from "expo-secure-store";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 // Extended user type that includes role information
 interface ExtendedUser extends User {
@@ -36,6 +39,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// Keys for any custom storage you might use
+const STORAGE_KEYS = {
+  USER_PREFERENCES: 'user_preferences',
+  CACHED_USER_DATA: 'cached_user_data',
+  APP_SETTINGS: 'app_settings',
+  // Add any other keys you use in your app
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -43,6 +54,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const router = useRouter();
   const segments = useSegments();
+
+  // Function to clear all local storage
+  const clearLocalStorage = useCallback(async () => {
+    try {
+      console.log('[Auth] Clearing local storage...');
+      
+      // Clear AsyncStorage items
+      const asyncStorageKeys = Object.values(STORAGE_KEYS);
+      await Promise.all(
+        asyncStorageKeys.map(async (key) => {
+          try {
+            await AsyncStorage.removeItem(key);
+          } catch (error) {
+            console.warn(`Failed to clear AsyncStorage key: ${key}`, error);
+          }
+        })
+      );
+
+      // Clear SecureStore items (if you use any custom ones)
+      const secureStoreKeys = [
+        'custom_token',
+        'user_credentials',
+        // Add any SecureStore keys you use
+      ];
+      
+      await Promise.all(
+        secureStoreKeys.map(async (key) => {
+          try {
+            await SecureStore.deleteItemAsync(key);
+          } catch (error) {
+            console.warn(`Failed to clear SecureStore key: ${key}`, error);
+          }
+        })
+      );
+
+      // Clear web storage if on web platform
+      if (Platform.OS === 'web') {
+        try {
+          // Clear only app-specific localStorage keys, not all
+          const webStorageKeys = [
+            'supabase.auth.token',
+            'sb-',
+            // Add any specific web storage keys
+          ];
+          
+          webStorageKeys.forEach(key => {
+            try {
+              if (key.endsWith('-')) {
+                // Clear keys that start with the prefix
+                Object.keys(localStorage).forEach(storageKey => {
+                  if (storageKey.startsWith(key)) {
+                    localStorage.removeItem(storageKey);
+                  }
+                });
+              } else {
+                localStorage.removeItem(key);
+              }
+            } catch (error) {
+              console.warn(`Failed to clear web storage key: ${key}`, error);
+            }
+          });
+        } catch (error) {
+          console.warn('Failed to clear web storage:', error);
+        }
+      }
+      
+      console.log('[Auth] Local storage cleared successfully');
+    } catch (error) {
+      console.error('[Auth] Error clearing local storage:', error);
+    }
+  }, []);
 
   // Function to fetch user with roles
   const fetchUserWithRoles = async (userId: string): Promise<ExtendedUser | null> => {
@@ -103,12 +185,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[Auth] Auth state changed:', event);
       setSession(session);
       
       if (event === "SIGNED_IN" && session?.user) {
         const userWithRoles = await fetchUserWithRoles(session.user.id);
         setUser(userWithRoles);
       } else if (event === "SIGNED_OUT") {
+        console.log('[Auth] User signed out, clearing state');
         setUser(null);
       }
       
@@ -228,14 +312,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     try {
+      console.log('[Auth] Starting sign out process...');
+      
+      // Step 1: Clear local storage first
+      await clearLocalStorage();
+      
+      // Step 2: Clear app state
+      setUser(null);
+      setSession(null);
+      
+      // Step 3: Sign out from Supabase
       const { error } = await supabase.auth.signOut();
+      
       if (error) {
-        console.error("Sign out error:", error);
+        console.error("Supabase sign out error:", error);
+        // Even if Supabase signOut fails, we've already cleared local state
+      } else {
+        console.log('[Auth] Supabase sign out successful');
       }
+      
+      console.log('[Auth] Sign out process completed');
+      
     } catch (err) {
       console.error("Sign out error:", err);
+      // Even if there's an error, ensure local state is cleared
+      setUser(null);
+      setSession(null);
+      await clearLocalStorage();
     }
-  }, []);
+  }, [clearLocalStorage]);
 
   const getUserRoles = useCallback((): string[] => {
     return user?.roles || [];

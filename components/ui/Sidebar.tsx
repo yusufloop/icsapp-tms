@@ -4,6 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router, usePathname } from 'expo-router';
 import { DesignSystem } from '@/constants/DesignSystem';
 import { UserRole, getCurrentUserRole, subscribeToRoleChanges, getRoleConfig } from '@/constants/UserRoles';
+import { useAuth } from '@/lib/auth';
 
 interface SidebarProps {
   className?: string;
@@ -19,7 +20,7 @@ interface NavigationItem {
 export function Sidebar({ className = '' }: SidebarProps) {
   const pathname = usePathname();
   const [currentRole, setCurrentRole] = useState<UserRole>(getCurrentUserRole());
-
+const { signOut } = useAuth();
   // Subscribe to role changes to update sidebar dynamically
   useEffect(() => {
     const unsubscribe = subscribeToRoleChanges((newRole) => {
@@ -91,8 +92,8 @@ export function Sidebar({ className = '' }: SidebarProps) {
 
   const handleNavigation = (route: string, id: string) => {
     if (id === 'logout') {
-      // Handle logout logic here
-      console.log('Logout clicked');
+      
+        signOut();
       return;
     }
     router.push(route as any);

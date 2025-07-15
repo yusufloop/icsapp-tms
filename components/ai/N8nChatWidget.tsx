@@ -1,170 +1,64 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import Constants from 'expo-constants';
-import React, { useState } from 'react';
-import { Modal } from 'react-native';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { WebView } from 'react-native-webview';
+import { createChat } from '@n8n/chat';
+// import '@n8n/chat/style.css';
+import { useEffect } from 'react';
 
-const N8nChatWebView = () => {
-  const [isChatOpen, setIsChatOpen] = useState(false);
+const N8nChatWidget = () => {
+	useEffect(() => {
+		createChat({
+	webhookUrl: 'https://above-dinosaur-weekly.ngrok-free.app/webhook/b4eb85b7-8b54-4465-a206-a44ac666fd4c/chat'
+,
+	webhookConfig: {
+		method: 'POST',
+		headers: {}
+	},
+	target: '#n8n-chat',
+	mode: 'window',
+	chatInputKey: 'chatInput',
+	chatSessionKey: 'sessionId',
+	loadPreviousSession: true,
+	metadata: {},
+	showWelcomeScreen: false,
+	defaultLanguage: 'en',
+	initialMessages: [
+		
+		'My name is Mustaqim Bot. How can I assist you today?'
+	],
+	i18n: {
+		en: {
+			title: 'Hi there! 👋',
+			subtitle: "Start a chat. We're here to help you 24/7 in Logitrax.",
+			footer: '',
+			getStarted: 'New Conversation',
+			inputPlaceholder: 'Type your question..',
+		},
+	},
+});
+	}, []);
 
-  // HTML content that includes the n8n chat widget
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>n8n Chat</title>
-        <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
-        <style>
-            body {
-                margin: 0;
-                padding: 0;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-                background-color: #f5f5f5;
-            }
-            .chat-container {
-                height: 100vh;
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="chat-container">
-            <div id="n8n-chat"></div>
-        </div>
-        
-        <script type="module">
-            import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
-            
-            try {
-                createChat({
-                    webhookUrl: 'https://above-dinosaur-weekly.ngrok-free.app/webhook/b4eb85b7-8b54-4465-a206-a44ac666fd4c/chat',
-                    target: '#n8n-chat'
-                });
-            } catch (error) {
-                console.error('Error initializing n8n chat:', error);
-                document.body.innerHTML = '<div style="padding: 20px; text-align: center;">Error loading chat widget</div>';
-            }
-        </script>
-    </body>
-    </html>
-  `;
-
-   return (
-    <SafeAreaView style={styles.container}>
-      {/* Floating Chat Button */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => setIsChatOpen(true)}
-        activeOpacity={0.8}
-      >
-        <MaterialIcons name="chat" size={28} color="white" />
-      </TouchableOpacity>
-
-      {/* Fullscreen Chat Modal */}
-      <Modal
-        visible={isChatOpen}
-        animationType="slide"
-        presentationStyle="fullScreen"
-        onRequestClose={() => setIsChatOpen(false)}
-        transparent={false}
-      >
-        <SafeAreaView style={styles.fullscreenModal}>
-          {/* Close Button */}
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => setIsChatOpen(false)}
-            activeOpacity={0.8}
-          >
-            <MaterialIcons name="close" size={28} color="white" />
-          </TouchableOpacity>
-          {/* Chat WebView */}
-          <WebView
-            originWhitelist={['*']}
-            source={{ html: htmlContent }}
-            style={styles.webview}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            startInLoadingState={true}
-            scalesPageToFit={true}
-            onError={(syntheticEvent) => {
-              const { nativeEvent } = syntheticEvent;
-              console.warn('WebView error: ', nativeEvent);
-            }}
-            onHttpError={(syntheticEvent) => {
-              const { nativeEvent } = syntheticEvent;
-              console.warn('WebView HTTP error: ', nativeEvent);
-            }}
-            renderLoading={() => (
-              <View style={styles.loadingContainer}>
-                <Text>Loading chat...</Text>
-              </View>
-            )}
-          />
-        </SafeAreaView>
-      </Modal>
-    </SafeAreaView>
+  // User-friendly chat widget container with header and close button
+  return (
+	<div
+	  className="fixed bottom-6 right-6 z-50 w-96 max-w-full bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden flex flex-col"
+	  style={{ minHeight: 420 }}
+	>
+	  {/* Header */}
+	  <div className="flex items-center justify-between px-4 py-2 bg-blue-600 text-white">
+		<span className="font-semibold text-lg">Chat with Mustaqim Bot</span>
+		<button
+		  className="text-white hover:text-blue-200 text-xl font-bold focus:outline-none"
+		  onClick={() => {
+			const el = document.querySelector('.fixed.bottom-6.right-6');
+			if (el) (el as HTMLElement).style.display = 'none';
+		  }}
+		  aria-label="Close chat"
+		>
+		  ×
+		</button>
+	  </div>
+	  {/* Chat body */}
+	  <div id="n8n-chat" className="flex-1 p-3 overflow-y-auto" />
+	</div>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    paddingTop: Constants.statusBarHeight,
-  },
-  webview: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-  },
-  fab: {
-    position: 'absolute',
-    bottom: 32,
-    right: 32,
-    backgroundColor: '#2563eb',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    zIndex: 1000,
-  },
-  fullscreenModal: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 32,
-    right: 32,
-    zIndex: 1001,
-    backgroundColor: '#2563eb',
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-});
-
-
-export default N8nChatWebView;
+export default N8nChatWidget;
