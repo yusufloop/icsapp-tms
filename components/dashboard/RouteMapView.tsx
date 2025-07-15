@@ -3,7 +3,7 @@ import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { Dimensions, Text, View } from 'react-native';
-//import MapView, { Marker } from 'react-native-maps';
+// import MapView, { Marker } from 'react-native-maps';
 
 const { width } = Dimensions.get('window');
 
@@ -65,7 +65,7 @@ export function RouteMapView({ currentRoute }: RouteMapViewProps) {
               title={currentRoute.nextStop.customerName}
               description={currentRoute.nextStop.address}
             />
-          </MapView>8/}
+          </MapView>
           
           {/* Map Overlay - Distance/Time Info */}
           <View className="absolute top-2 right-2 bg-white rounded-lg px-3 py-1 shadow-sm">

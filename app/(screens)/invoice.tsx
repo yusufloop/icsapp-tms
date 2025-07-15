@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import React from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function InvoiceScreen() {
   // Mock data representing a booking invoice
@@ -10,7 +10,7 @@ export default function InvoiceScreen() {
     invoiceNumber: 'INV-2025-001234',
     invoiceDate: '2025-04-06',
     dueDate: '2025-04-20',
-    bookingName: 'Uranium to KL',
+    bookingName: 'Melaka to KL',
     bookingId: 'xxxxxPNGxKLGxxxx',
     client: {
       name: 'Johan',

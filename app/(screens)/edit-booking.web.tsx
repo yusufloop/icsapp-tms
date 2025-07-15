@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Alert, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function EditBookingWebScreen() {
   const params = useLocalSearchParams();
@@ -49,8 +48,8 @@ export default function EditBookingWebScreen() {
     'Jack@gmail.com',
   ];
 
-  const shipmentTypes = ['LFC', 'CLC'];
-  const containerSizes = ['20ft', '40ft', '40ft HC', '45ft'];
+  const shipmentTypes = ['LFC', 'LCL'];
+  const containerSizes = ['20ft', '40ft', '40ft HC'];
 
   // Pre-populate form with booking data
   useEffect(() => {
@@ -194,7 +193,7 @@ export default function EditBookingWebScreen() {
     
     if (formData.shipmentType === 'LFC') {
       baseRate = 2500;
-    } else if (formData.shipmentType === 'CLC') {
+    } else if (formData.shipmentType === 'LCL') {
       baseRate = 4500;
     }
     

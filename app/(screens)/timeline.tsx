@@ -1,13 +1,13 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import React from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TimelineScreen() {
   // Mock data representing a booking timeline
   const bookingData = {
-    bookingName: 'Uranium to KL',
+    bookingName: 'Melaka to KL',
     bookingId: 'xxxxxPNGxKLGxxxx',
     client: 'Johan',
     consignee: 'Johani',

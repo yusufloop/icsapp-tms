@@ -350,7 +350,7 @@ export default function RequestsScreen() {
             className="bg-gradient-to-br from-[#409CFF] to-[#0A84FF] rounded-xl w-12 h-12 items-center justify-center shadow-lg active:opacity-90 active:scale-95"
             onPress={handleCreateRequest}
           >
-            <MaterialIcons name="add" size={36} color="white" />
+            <MaterialIcons name="add" size={36} color="darkblue" />
           </TouchableOpacity>
         </View>
 

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 // Mock driver data
 const mockDrivers = [
@@ -45,7 +45,7 @@ const mockDrivers = [
       time: '16:00',
       totalVolume: '18.2 CBM',
       totalGrossWeight: '890 KG',
-      shipmentType: 'CLC',
+      shipmentType: 'LCL',
       containerSize: '20ft',
       twinning: 'No'
     }

@@ -1,42 +1,52 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { MaterialIcons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function NewBookingWebScreen() {
   // The form starts with an empty state
   const [formData, setFormData] = useState({
-    bookingName: '',
-    client: '',
-    consignee: '',
+    bookingName: "",
+    client: "",
+    consignee: "",
     date: new Date(),
-    pickupState: '',
-    pickupAddress: '',
+    pickupState: "",
+    pickupAddress: "",
     pickupTime: new Date(),
-    deliveryState: '',
-    deliveryAddress: '',
+    deliveryState: "",
+    deliveryAddress: "",
     deliveryTime: new Date(),
   });
 
   // --- 1. API endpoint for autofill data ---
-  const API_ENDPOINT = 'https://above-dinosaur-weekly.ngrok-free.app/webhook/auto1';
+  const API_ENDPOINT =
+    "https://above-dinosaur-weekly.ngrok-free.app/webhook/auto1";
   const [isLoading, setIsLoading] = useState(false);
 
   // --- 2. Function to fetch and populate the form with API data ---
   const handleAutofill = async () => {
     if (isLoading) return; // Prevent multiple calls
-    
+
     try {
       setIsLoading(true);
-      
+
       const response = await fetch(API_ENDPOINT, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           // Add ngrok-skip-browser-warning header to bypass ngrok browser warning
-          'ngrok-skip-browser-warning': 'true',
+          "ngrok-skip-browser-warning": "true",
         },
       });
 
@@ -45,33 +55,37 @@ export default function NewBookingWebScreen() {
       }
 
       const data = await response.json();
-      
+
       // Extract the first item from the array and get the output object
       if (data && Array.isArray(data) && data.length > 0 && data[0].output) {
         const bookingData = data[0].output;
-        
+
         setFormData({
-          bookingName: bookingData.bookingName || '',
-          client: bookingData.client || '',
-          consignee: bookingData.consignee || '',
+          bookingName: bookingData.bookingName || "",
+          client: bookingData.client || "",
+          consignee: bookingData.consignee || "",
           date: bookingData.date ? new Date(bookingData.date) : new Date(),
-          pickupState: bookingData.pickupState || '',
-          pickupAddress: bookingData.pickupAddress || '',
-          pickupTime: bookingData.pickupTime ? new Date(bookingData.pickupTime) : new Date(),
-          deliveryState: bookingData.deliveryState || '',
-          deliveryAddress: bookingData.deliveryAddress || '',
-          deliveryTime: bookingData.deliveryTime ? new Date(bookingData.deliveryTime) : new Date(),
+          pickupState: bookingData.pickupState || "",
+          pickupAddress: bookingData.pickupAddress || "",
+          pickupTime: bookingData.pickupTime
+            ? new Date(bookingData.pickupTime)
+            : new Date(),
+          deliveryState: bookingData.deliveryState || "",
+          deliveryAddress: bookingData.deliveryAddress || "",
+          deliveryTime: bookingData.deliveryTime
+            ? new Date(bookingData.deliveryTime)
+            : new Date(),
         });
-        
-        Alert.alert('Success', 'Form has been autofilled with API data.');
+
+        Alert.alert("Success", "Form has been autofilled with API data.");
       } else {
-        throw new Error('Invalid data structure received from API');
+        throw new Error("Invalid data structure received from API");
       }
     } catch (error) {
-      console.error('Autofill error:', error);
+      console.error("Autofill error:", error);
       Alert.alert(
-        'Error', 
-        `Failed to fetch autofill data: ${error instanceof Error ? error.message : 'Unknown error'}`
+        "Error",
+        `Failed to fetch autofill data: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     } finally {
       setIsLoading(false);
@@ -106,33 +120,33 @@ export default function NewBookingWebScreen() {
   const handleContinue = () => {
     // Basic validation
     if (!formData.bookingName.trim()) {
-      Alert.alert('Error', 'Please enter a booking name');
+      Alert.alert("Error", "Please enter a booking name");
       return;
     }
     if (!formData.client.trim()) {
-      Alert.alert('Error', 'Please select a client');
+      Alert.alert("Error", "Please select a client");
       return;
     }
     if (!formData.consignee.trim()) {
-      Alert.alert('Error', 'Please enter a consignee');
+      Alert.alert("Error", "Please enter a consignee");
       return;
     }
     if (!formData.pickupState.trim() || !formData.pickupAddress.trim()) {
-      Alert.alert('Error', 'Please fill in pickup details');
+      Alert.alert("Error", "Please fill in pickup details");
       return;
     }
     if (!formData.deliveryState.trim() || !formData.deliveryAddress.trim()) {
-      Alert.alert('Error', 'Please fill in delivery details');
+      Alert.alert("Error", "Please fill in delivery details");
       return;
     }
 
     // Navigate to step 2
-    router.push('/new-booking-step2');
+    router.push("/new-booking-step2");
   };
 
   const handleBack = () => {
     // Navigate to requests page instead of router.back() to avoid navigation errors
-    router.push('/requests');
+    router.push("/requests");
   };
 
   const formatDate = (date: Date) => {
@@ -140,7 +154,7 @@ export default function NewBookingWebScreen() {
   };
 
   const formatTime = (time: Date) => {
-    return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -148,7 +162,7 @@ export default function NewBookingWebScreen() {
       {/* Header */}
       <View className="bg-white border-b border-gray-200 px-6 py-4">
         <View className="flex-row items-center max-w-4xl mx-auto w-full">
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleBack}
             className="mr-4 p-2 -ml-2 active:opacity-80"
           >
@@ -176,7 +190,7 @@ export default function NewBookingWebScreen() {
               </View>
               <View className="flex-1 h-1 bg-primary ml-2" />
             </View>
-            
+
             {/* Step 2 - Inactive */}
             <View className="flex-row items-center flex-1">
               <View className="w-8 h-8 rounded-full bg-gray-300 items-center justify-center ml-2">
@@ -184,7 +198,7 @@ export default function NewBookingWebScreen() {
               </View>
               <View className="flex-1 h-1 bg-gray-300 ml-2" />
             </View>
-            
+
             {/* Step 3 - Inactive */}
             <View className="flex-row items-center">
               <View className="w-8 h-8 rounded-full bg-gray-300 items-center justify-center ml-2">
@@ -196,30 +210,29 @@ export default function NewBookingWebScreen() {
       </View>
 
       {/* Main Content Container */}
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={true}
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         <View className="px-6 py-6">
           <View className="max-w-2xl mx-auto w-full">
-            
             {/* --- 3. Autofill button is placed here --- */}
             <TouchableOpacity
               onPress={handleAutofill}
               disabled={isLoading}
-              className={`${isLoading ? 'bg-gray-400' : 'bg-teal-500'} rounded-lg py-3 mb-6 items-center justify-center shadow ${!isLoading && 'active:opacity-80'}`}
+              className={`${isLoading ? "bg-gray-400" : "bg-teal-500"} rounded-lg py-3 mb-6 items-center justify-center shadow ${!isLoading && "active:opacity-80"}`}
             >
               <View className="flex-row items-center">
                 {isLoading && (
-                  <ActivityIndicator 
-                    size="small" 
-                    color="white" 
-                    style={{ marginRight: 8 }} 
+                  <ActivityIndicator
+                    size="small"
+                    color="white"
+                    style={{ marginRight: 8 }}
                   />
                 )}
                 <Text className="text-white font-bold text-base">
-                  {isLoading ? 'Loading...' : 'Autofill Form (For Web Testing)'}
+                  {isLoading ? "Loading..." : "Autofill Form (For Web Testing)"}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -237,7 +250,9 @@ export default function NewBookingWebScreen() {
                     <TextInput
                       className="flex-1 text-base text-text-primary"
                       value={formData.bookingName}
-                      onChangeText={(text: string) => setFormData({ ...formData, bookingName: text })}
+                      onChangeText={(text: string) =>
+                        setFormData({ ...formData, bookingName: text })
+                      }
                       placeholder="Enter booking name"
                       placeholderTextColor="#8A8A8E"
                     />
@@ -253,7 +268,9 @@ export default function NewBookingWebScreen() {
                     <TextInput
                       className="flex-1 text-base text-text-primary"
                       value={formData.client}
-                      onChangeText={(text: string) => setFormData({ ...formData, client: text })}
+                      onChangeText={(text: string) =>
+                        setFormData({ ...formData, client: text })
+                      }
                       placeholder="Enter client name"
                       placeholderTextColor="#8A8A8E"
                     />
@@ -268,7 +285,9 @@ export default function NewBookingWebScreen() {
                     <TextInput
                       className="flex-1 text-base text-text-primary"
                       value={formData.consignee}
-                      onChangeText={(text: string) => setFormData({ ...formData, consignee: text })}
+                      onChangeText={(text: string) =>
+                        setFormData({ ...formData, consignee: text })
+                      }
                       placeholder="Enter consignee name"
                       placeholderTextColor="#8A8A8E"
                     />
@@ -284,7 +303,12 @@ export default function NewBookingWebScreen() {
                     onPress={() => setShowDatePicker(true)}
                     className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
                   >
-                    <MaterialIcons name="event" size={20} color="#8A8A8E" style={{ marginRight: 12 }} />
+                    <MaterialIcons
+                      name="event"
+                      size={20}
+                      color="#8A8A8E"
+                      style={{ marginRight: 12 }}
+                    />
                     <Text className="flex-1 text-base text-text-primary">
                       {formatDate(formData.date)}
                     </Text>
@@ -296,7 +320,7 @@ export default function NewBookingWebScreen() {
                   <Text className="text-lg font-bold text-text-primary mb-4">
                     Pickup
                   </Text>
-                  
+
                   <View className="mb-4">
                     <Text className="text-sm font-semibold text-text-primary mb-2">
                       State
@@ -305,7 +329,9 @@ export default function NewBookingWebScreen() {
                       <TextInput
                         className="flex-1 text-base text-text-primary"
                         value={formData.pickupState}
-                        onChangeText={(text: string) => setFormData({ ...formData, pickupState: text })}
+                        onChangeText={(text: string) =>
+                          setFormData({ ...formData, pickupState: text })
+                        }
                         placeholder="Enter pickup state"
                         placeholderTextColor="#8A8A8E"
                       />
@@ -317,10 +343,17 @@ export default function NewBookingWebScreen() {
                       Address
                     </Text>
                     <View className="rounded-lg bg-bg-secondary border border-gray-300 flex-row px-4 py-3 min-h-[80px]">
-                      <MaterialIcons name="location-on" size={20} color="#8A8A8E" style={{ marginRight: 12, marginTop: 2 }} />
+                      <MaterialIcons
+                        name="location-on"
+                        size={20}
+                        color="#8A8A8E"
+                        style={{ marginRight: 12, marginTop: 2 }}
+                      />
                       <TextInput
                         value={formData.pickupAddress}
-                        onChangeText={(text) => setFormData({ ...formData, pickupAddress: text })}
+                        onChangeText={(text) =>
+                          setFormData({ ...formData, pickupAddress: text })
+                        }
                         placeholder="Enter pickup address"
                         placeholderTextColor="#8A8A8E"
                         multiline
@@ -340,7 +373,12 @@ export default function NewBookingWebScreen() {
                       onPress={() => setShowPickupTimePicker(true)}
                       className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
                     >
-                      <MaterialIcons name="access-time" size={20} color="#8A8A8E" style={{ marginRight: 12 }} />
+                      <MaterialIcons
+                        name="access-time"
+                        size={20}
+                        color="#8A8A8E"
+                        style={{ marginRight: 12 }}
+                      />
                       <Text className="flex-1 text-base text-text-primary">
                         {formatTime(formData.pickupTime)}
                       </Text>
@@ -353,7 +391,7 @@ export default function NewBookingWebScreen() {
                   <Text className="text-lg font-bold text-text-primary mb-4">
                     Delivery
                   </Text>
-                  
+
                   <View className="mb-4">
                     <Text className="text-sm font-semibold text-text-primary mb-2">
                       State
@@ -362,7 +400,9 @@ export default function NewBookingWebScreen() {
                       <TextInput
                         className="flex-1 text-base text-text-primary"
                         value={formData.deliveryState}
-                        onChangeText={(text: string) => setFormData({ ...formData, deliveryState: text })}
+                        onChangeText={(text: string) =>
+                          setFormData({ ...formData, deliveryState: text })
+                        }
                         placeholder="Enter delivery state"
                         placeholderTextColor="#8A8A8E"
                       />
@@ -374,10 +414,17 @@ export default function NewBookingWebScreen() {
                       Address
                     </Text>
                     <View className="rounded-lg bg-bg-secondary border border-gray-300 flex-row px-4 py-3 min-h-[80px]">
-                      <MaterialIcons name="location-on" size={20} color="#8A8A8E" style={{ marginRight: 12, marginTop: 2 }} />
+                      <MaterialIcons
+                        name="location-on"
+                        size={20}
+                        color="#8A8A8E"
+                        style={{ marginRight: 12, marginTop: 2 }}
+                      />
                       <TextInput
                         value={formData.deliveryAddress}
-                        onChangeText={(text) => setFormData({ ...formData, deliveryAddress: text })}
+                        onChangeText={(text) =>
+                          setFormData({ ...formData, deliveryAddress: text })
+                        }
                         placeholder="Enter delivery address"
                         placeholderTextColor="#8A8A8E"
                         multiline
@@ -397,7 +444,12 @@ export default function NewBookingWebScreen() {
                       onPress={() => setShowDeliveryTimePicker(true)}
                       className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
                     >
-                      <MaterialIcons name="access-time" size={20} color="#8A8A8E" style={{ marginRight: 12 }} />
+                      <MaterialIcons
+                        name="access-time"
+                        size={20}
+                        color="#8A8A8E"
+                        style={{ marginRight: 12 }}
+                      />
                       <Text className="flex-1 text-base text-text-primary">
                         {formatTime(formData.deliveryTime)}
                       </Text>
@@ -414,22 +466,19 @@ export default function NewBookingWebScreen() {
                     onPress={handleBack}
                     className="flex-1 bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
                   >
-                    <Text className="text-base font-semibold text-gray-600">Back</Text>
+                    <Text className="text-base font-semibold text-gray-600">
+                      Back
+                    </Text>
                   </TouchableOpacity>
-                  
+
                   {/* Continue Button */}
                   <TouchableOpacity
                     onPress={handleContinue}
-                    className="flex-1 active:opacity-80"
+                    className="flex-1 bg-blue-500 border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
                   >
-                    <LinearGradient
-                      colors={['#409CFF', '#0A84FF']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      className="rounded-lg px-4 py-3 min-h-[44px] items-center justify-center"
-                    >
-                      <Text className="text-base font-semibold text-white">Continue</Text>
-                    </LinearGradient>
+                    <Text className="text-base font-semibold text-white">
+                      Continue
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -443,7 +492,7 @@ export default function NewBookingWebScreen() {
         <DateTimePicker
           value={formData.date}
           mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={handleDateChange}
         />
       )}
@@ -452,7 +501,7 @@ export default function NewBookingWebScreen() {
         <DateTimePicker
           value={formData.pickupTime}
           mode="time"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={handlePickupTimeChange}
         />
       )}
@@ -461,7 +510,7 @@ export default function NewBookingWebScreen() {
         <DateTimePicker
           value={formData.deliveryTime}
           mode="time"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={handleDeliveryTimeChange}
         />
       )}

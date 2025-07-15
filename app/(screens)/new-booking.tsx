@@ -454,7 +454,7 @@ export default function NewBookingScreen() {
 
       {/* Sticky Footer with Action Buttons */}
       <View className="absolute bottom-0 left-0 right-0 bg-bg-secondary border-t border-gray-200 px-6 py-4">
-        <View className="flex-row space-x-4">
+        <View className="flex-row space-x-4 gap-4">
           {/* Back Button */}
           <TouchableOpacity
             onPress={handleBack}
@@ -466,16 +466,11 @@ export default function NewBookingScreen() {
           {/* Continue Button */}
           <TouchableOpacity
             onPress={handleContinue}
-            className="flex-1 active:opacity-80"
+            className="flex-1 bg-blue-500 border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
           >
-            <LinearGradient
-              colors={['#409CFF', '#0A84FF']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              className="rounded-lg px-4 py-3 min-h-[44px] items-center justify-center"
-            >
+            
               <Text className="text-base font-semibold text-white">Continue</Text>
-            </LinearGradient>
+            
           </TouchableOpacity>
         </View>
       </View>

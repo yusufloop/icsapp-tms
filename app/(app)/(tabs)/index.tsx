@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { getCurrentUserRole, subscribeToRoleChanges, type UserRole } from '@/constants/UserRoles';
-import { 
-  ClientDashboard,
-  ClerkDashboard,
+import N8nChatWebView from '@/components/ai/N8nChatWidget';
+import {
   AdminDashboard,
+  ClerkDashboard,
+  ClientDashboard,
   DriverDashboard
 } from '@/components/dashboards';
-import { supabase } from '@/lib/supabase';
+import { getCurrentUserRole, subscribeToRoleChanges, type UserRole } from '@/constants/UserRoles';
 import { testSupabaseConnection } from '@/lib/supabase';
+import React, { useEffect, useState } from 'react';
 
 export default function DashboardScreen() {
   const [currentRole, setCurrentRole] = useState<UserRole>(getCurrentUserRole());
@@ -43,19 +43,30 @@ export default function DashboardScreen() {
   // Render role-specific dashboards
   switch (currentRole) {
     case 'CLIENT':
-      return <ClientDashboard user={mockUser} />;
-    
+      return <>
+        <ClientDashboard user={mockUser} />
+        {/* <N8nChatWebView /> */}
+      </>;
     case 'CLERK':
-      return <ClerkDashboard user={mockUser} />;
-    
+      return <>
+        <ClerkDashboard user={mockUser} />
+        {/* <N8nChatWebView /> */}
+      </>;
     case 'ADMIN':
-      return <AdminDashboard user={mockUser} />;
-    
+      return <>
+        <AdminDashboard user={mockUser} />
+        {/* <N8nChatWebView /> */}
+      </>;
     case 'DRIVER':
-      return <DriverDashboard />;
-    
+      return <>
+        <DriverDashboard />
+        {/* <N8nChatWebView /> */}
+      </>;
     default:
       // Default fallback to Client dashboard
-      return <ClientDashboard user={mockUser} />;
+      return <>
+        <ClientDashboard user={mockUser} />
+        {/* <N8nChatWebView /> */}
+      </>;
   }
 }

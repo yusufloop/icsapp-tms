@@ -1,5 +1,4 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -32,9 +31,9 @@ export default function NewBookingStep2WebScreen() {
   const [demurrageLocations, setDemurrageLocations] = useState<DemurrageCharge[]>([]);
   const [demurrageLoading, setDemurrageLoading] = useState(true);
 
-  // Updated shipment types to only LFC and CLC
-  const shipmentTypes = ['LFC', 'CLC'];
-  const containerSizes = ['20ft', '40ft', '40ft HC', '45ft'];
+  // Updated shipment types to only LFC and LCL
+  const shipmentTypes = ['LFC', 'LCL'];
+  const containerSizes = ['20ft', '40ft', '40ft HC'];
   
   // Mock compliance charges - in real implementation, this would come from the compliance management system
   const complianceCharges = [
@@ -126,8 +125,8 @@ export default function NewBookingStep2WebScreen() {
     // Base rate depends on shipment type
     if (formData.shipmentType === 'LFC') {
       baseRate = 2500; // LFC (Less than Full Container Load) base rate
-    } else if (formData.shipmentType === 'CLC') {
-      baseRate = 4500; // CLC (Container Load Cargo) base rate
+    } else if (formData.shipmentType === 'LCL') {
+      baseRate = 4500; // LCL (Container Load Cargo) base rate
     }
     
     // Weight-based calculation (RM per KG)
@@ -582,7 +581,7 @@ export default function NewBookingStep2WebScreen() {
                           Base Rate ({formData.shipmentType})
                         </Text>
                         <Text className="text-sm text-text-primary">
-                          RM {formData.shipmentType === 'LFC' ? '2,500' : formData.shipmentType === 'CLC' ? '4,500' : '0'}
+                          RM {formData.shipmentType === 'LFC' ? '2,500' : formData.shipmentType === 'LCL' ? '4,500' : '0'}
                         </Text>
                       </View>
                     )}
@@ -685,7 +684,7 @@ export default function NewBookingStep2WebScreen() {
 
               {/* Sticky Footer with Action Buttons */}
               <View className="border-t border-gray-200 px-6 py-4 bg-white">
-                <View className="flex-row space-x-4">
+                <View className="flex-row space-x-4 gap-4">
                   {/* Back Button */}
                   <TouchableOpacity
                     onPress={handleBack}
@@ -696,18 +695,13 @@ export default function NewBookingStep2WebScreen() {
                   
                   {/* Continue Button */}
                   <TouchableOpacity
-                    onPress={handleContinue}
-                    className="flex-1 active:opacity-80"
-                  >
-                    <LinearGradient
-                      colors={['#409CFF', '#0A84FF']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      className="rounded-lg px-4 py-3 min-h-[44px] items-center justify-center"
-                    >
-                      <Text className="text-base font-semibold text-white">Continue</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
+                              onPress={handleContinue}
+                              className="flex-1 bg-blue-500 border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
+                            >
+                              
+                                <Text className="text-base font-semibold text-white">Continue</Text>
+                              
+                            </TouchableOpacity>
                 </View>
               </View>
             </View>
