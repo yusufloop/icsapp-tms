@@ -48,14 +48,14 @@ export default function EditBookingWebScreen() {
     'Jack@gmail.com',
   ];
 
-  const shipmentTypes = ['LFC', 'LCL'];
+  const shipmentTypes = ['FCL', 'LCL'];
   const containerSizes = ['20ft', '40ft', '40ft HC'];
 
   // Pre-populate form with booking data
   useEffect(() => {
     if (params && params.bookingName) {
       setFormData({
-        bookingName: (params.bookingName as string) || 'Nvidia 1999 to KL',
+        bookingName: (params.bookingName as string) || 'Current Booking',
         client: (params.client as string) || 'John@gmail.com',
         consignee: (params.consignee as string) || 'Jane Doe',
         date: params.date ? new Date(params.date as string) : new Date(),
@@ -65,7 +65,7 @@ export default function EditBookingWebScreen() {
         deliveryState: (params.deliveryState as string) || 'Kuala Lumpur',
         deliveryAddress: (params.deliveryAddress as string) || '456 Delivery Avenue, KLCC',
         deliveryTime: params.deliveryTime ? new Date(params.deliveryTime as string) : new Date(),
-        shipmentType: (params.shipmentType as string) || 'LFC',
+        shipmentType: (params.shipmentType as string) || 'FCL',
         containerSize: (params.containerSize as string) || '40ft',
         items: params.items ? JSON.parse(params.items as string) : ['Electronics', 'Computer Parts'],
         totalGrossWeight: (params.totalGrossWeight as string) || '1500',
@@ -191,7 +191,7 @@ export default function EditBookingWebScreen() {
   const calculateEstimatedTotal = () => {
     let baseRate = 0;
     
-    if (formData.shipmentType === 'LFC') {
+    if (formData.shipmentType === 'FCL') {
       baseRate = 2500;
     } else if (formData.shipmentType === 'LCL') {
       baseRate = 4500;
@@ -207,9 +207,9 @@ export default function EditBookingWebScreen() {
     const itemHandlingFee = itemCount * 150;
     
     let containerMultiplier = 1;
-    if (formData.containerSize === '40ft' || formData.containerSize === '40ft HC') {
+    if (formData.containerSize === '40ft') {
       containerMultiplier = 1.5;
-    } else if (formData.containerSize === '45ft') {
+    } else if (formData.containerSize === '40ft HC') {
       containerMultiplier = 1.8;
     }
     

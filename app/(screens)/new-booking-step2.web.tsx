@@ -7,7 +7,7 @@ import { DemurrageCharge, getDemurrageCharges } from '../../services/demurrageSe
 export default function NewBookingStep2WebScreen() {
   // Mock data from Step 1 (in real implementation, this would come from navigation params or state management)
   const bookingData = {
-    bookingName: 'Nvidia 1999 to KL',
+    bookingName: 'Current Booking',
     bookingId: 'BK-2025-001234',
   };
 
@@ -31,8 +31,8 @@ export default function NewBookingStep2WebScreen() {
   const [demurrageLocations, setDemurrageLocations] = useState<DemurrageCharge[]>([]);
   const [demurrageLoading, setDemurrageLoading] = useState(true);
 
-  // Updated shipment types to only LFC and LCL
-  const shipmentTypes = ['LFC', 'LCL'];
+  // Updated shipment types to only FCL and LCL
+  const shipmentTypes = ['FCL', 'LCL'];
   const containerSizes = ['20ft', '40ft', '40ft HC'];
   
   // Mock compliance charges - in real implementation, this would come from the compliance management system
@@ -123,8 +123,8 @@ export default function NewBookingStep2WebScreen() {
     let baseRate = 0;
     
     // Base rate depends on shipment type
-    if (formData.shipmentType === 'LFC') {
-      baseRate = 2500; // LFC (Less than Full Container Load) base rate
+    if (formData.shipmentType === 'FCL') {
+      baseRate = 2500; // FCL (Less than Full Container Load) base rate
     } else if (formData.shipmentType === 'LCL') {
       baseRate = 4500; // LCL (Container Load Cargo) base rate
     }
@@ -143,9 +143,9 @@ export default function NewBookingStep2WebScreen() {
     
     // Container size multiplier
     let containerMultiplier = 1;
-    if (formData.containerSize === '40ft' || formData.containerSize === '40ft HC') {
+    if (formData.containerSize === '40ft') {
       containerMultiplier = 1.5;
-    } else if (formData.containerSize === '45ft') {
+    } else if (formData.containerSize === '40ft HC') {
       containerMultiplier = 1.8;
     }
     
@@ -581,7 +581,7 @@ export default function NewBookingStep2WebScreen() {
                           Base Rate ({formData.shipmentType})
                         </Text>
                         <Text className="text-sm text-text-primary">
-                          RM {formData.shipmentType === 'LFC' ? '2,500' : formData.shipmentType === 'LCL' ? '4,500' : '0'}
+                          RM {formData.shipmentType === 'FCL' ? '2,500' : formData.shipmentType === 'LCL' ? '4,500' : '0'}
                         </Text>
                       </View>
                     )}

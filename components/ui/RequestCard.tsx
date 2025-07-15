@@ -257,7 +257,7 @@ export function RequestCard({
         deliveryState: 'Kuala Lumpur',
         deliveryAddress: '456 Delivery Avenue, KLCC',
         deliveryTime: new Date().toISOString(),
-        shipmentType: 'LFC',
+        shipmentType: 'FCL',
         containerSize: '40ft',
         items: JSON.stringify(items || ['Electronics', 'Computer Parts']),
         totalGrossWeight: '1500',

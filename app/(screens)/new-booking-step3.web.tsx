@@ -19,7 +19,7 @@ const mockDrivers = [
       time: '14:30',
       totalVolume: '25.5 CBM',
       totalGrossWeight: '1,250 KG',
-      shipmentType: 'LFC',
+      shipmentType: 'FCL',
       containerSize: '40ft',
       twinning: 'Yes'
     }
@@ -71,7 +71,7 @@ const mockDrivers = [
       time: '09:15',
       totalVolume: '32.1 CBM',
       totalGrossWeight: '1,580 KG',
-      shipmentType: 'LFC',
+      shipmentType: 'FCL',
       containerSize: '40ft HC',
       twinning: 'Yes'
     }

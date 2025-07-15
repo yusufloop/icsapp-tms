@@ -3,7 +3,7 @@ import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { Dimensions, Text, View } from 'react-native';
-// import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 
 const { width } = Dimensions.get('window');
 
@@ -50,7 +50,7 @@ export function RouteMapView({ currentRoute }: RouteMapViewProps) {
           className="rounded-lg mb-4 overflow-hidden"
           style={{ height: 200 }}
         >
-          {/*<MapView
+          <MapView
             style={{ flex: 1 }}
             initialRegion={destinationCoordinates}
             showsUserLocation={true}
@@ -67,7 +67,7 @@ export function RouteMapView({ currentRoute }: RouteMapViewProps) {
             />
           </MapView>
           
-          {/* Map Overlay - Distance/Time Info */}
+          
           <View className="absolute top-2 right-2 bg-white rounded-lg px-3 py-1 shadow-sm">
             <Text className="text-xs font-medium text-gray-700">2.3 km</Text>
             <Text className="text-xs text-gray-500">~8 min</Text>
