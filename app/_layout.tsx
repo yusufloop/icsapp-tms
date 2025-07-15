@@ -11,6 +11,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import '../global.css';
+import { AuthProvider } from '@/lib/auth';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -35,9 +36,9 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <AuthProvider>
       <Slot />
       <StatusBar style="auto" />
-    </>
+    </AuthProvider>
   );
 }

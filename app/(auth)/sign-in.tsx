@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
+  Image,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Alert,
+  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
@@ -53,71 +55,100 @@ export default function SignInScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <SafeAreaView className="flex-1 bg-gray-100">
+      <ImageBackground
+        source={require('@/assets/images/container-truck-illustration-cargo-delivery-truck-side-view-isolated-on-white-background-vector.jpg')}
+        style={{
+          flex: 1,
+          opacity: 1, // Very low opacity for subtle background effect
+        }}
+        imageStyle={{
+          resizeMode: 'contain', // Maintains aspect ratio
+          opacity: 0.05, // Additional opacity control for the image itself
+          // Position the image - you can adjust these values as needed
+          position: 'absolute',
+          left: 50, // Move image to the right
+          top: -100, // Move image up from bottom
+          width: '120%', // Make image larger
+          height: '60%', // Control height
+        }}
       >
-        <ScrollView
+        <KeyboardAvoidingView
           className="flex-1"
-          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <View className="max-w-sm w-full mx-auto">
-            {/* Header */}
-            <View className="items-center mb-8">
-              <View className="w-16 h-16 bg-blue-500 rounded-full items-center justify-center mb-4">
-                <Text className="text-white text-2xl font-bold">A</Text>
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View className="max-w-sm w-full mx-auto">
+              {/* Header */}
+              <View className="items-center mb-8">
+                <View className="w-96 h-16 items-center justify-center mb-4">
+                   
+                  {/* <Image
+                    source={require("@/assets/images/GP-Search-Logo-Design-Final-02-2-1980x346 (1).png")} // Make sure the path is correct
+                     className="w-full h-full "
+                    resizeMode="contain"
+                    
+                  /> */}
+                  <Text className="text-3xl font-bold text-indigo-800 ">
+                  Logitrax
+                </Text>
+            
+                </View>
+                
               </View>
-              <Text className="text-3xl font-bold text-gray-900 mb-2">
-                Welcome Back
-              </Text>
-              <Text className="text-gray-600 text-center">
-                Sign in to your account to continue
-              </Text>
-            </View>
 
-            {/* Form */}
-            <View className="bg-white rounded-2xl p-6 shadow-lg">
-              <AuthInput
-                label="Email"
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Enter your email"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                error={errors.email}
-              />
+              {/* Form */}
+              <View className="bg-white rounded-2xl p-6 shadow-lg">
+                <Text className="text-3xl font-bold text-gray-900 mb-2 text-center">
+                  Welcome Back
+                </Text>
+                <Text className="text-gray-600 text-center mb-8">
+                  Sign in to your account to continue
+                </Text>
+                <AuthInput
+                  label="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Enter your email"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  error={errors.email}
+                />
 
-              <AuthInput
-                label="Password"
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Enter your password"
-                secureTextEntry
-                error={errors.password}
-              />
+                <AuthInput
+                  label="Password"
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Enter your password"
+                  secureTextEntry
+                  error={errors.password}
+                />
 
-              <AuthButton
-                title="Sign In"
-                onPress={handleSignIn}
-                loading={loading}
-                className="mb-4"
-              />
+                <AuthButton
+                  title="Sign In"
+                  onPress={handleSignIn}
+                  loading={loading}
+                  className="mb-4"
+                />
 
-              <View className="flex-row justify-center items-center">
-                <Text className="text-gray-600">Don't have an account? </Text>
-                <Link href="/(auth)/sign-up" asChild>
-                  <TouchableOpacity>
-                    <Text className="text-blue-500 font-semibold">Sign up</Text>
-                  </TouchableOpacity>
-                </Link>
+                <View className="flex-row justify-center items-center">
+                  <Text className="text-gray-600">Don't have an account? </Text>
+                  <Link href="/(auth)/sign-up" asChild>
+                    <TouchableOpacity>
+                      <Text className="text-blue-500 font-semibold">Sign up</Text>
+                    </TouchableOpacity>
+                  </Link>
+                </View>
               </View>
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </ImageBackground>
     </SafeAreaView>
   );
 }
