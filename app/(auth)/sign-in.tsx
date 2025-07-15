@@ -89,7 +89,7 @@ export default function SignInScreen() {
                 <View className="w-96 h-16 items-center justify-center mb-4">
                    
                   <Image
-                    source={require("@/assets/images/gpsearch.jpg")} // Make sure the path is correct
+                    source={require("@/assets/images/gpsearch.png")} // Make sure the path is correct
                      className="w-full h-full "
                     resizeMode="contain"
                   />
