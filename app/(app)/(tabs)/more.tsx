@@ -18,12 +18,15 @@ export default function MoreScreen() {
     return unsubscribe;
   }, []);
 
-  // Get all available roles
-  const roleOptions = Object.entries(ICSBOLTZ_ROLE_DEFINITIONS).map(([key, config]) => ({
-    value: key as UserRole,
-    label: config.name,
-    description: config.description,
-  }));
+  // Get mobile-specific roles (Admin, Driver only)
+  const mobileRoles: UserRole[] = ['ADMIN', 'DRIVER'];
+  const roleOptions = Object.entries(ICSBOLTZ_ROLE_DEFINITIONS)
+    .filter(([key]) => mobileRoles.includes(key as UserRole))
+    .map(([key, config]) => ({
+      value: key as UserRole,
+      label: config.name,
+      description: config.description,
+    }));
 
   const handleRoleChange = (newRole: UserRole) => {
     // Update the global role state
@@ -179,7 +182,7 @@ export default function MoreScreen() {
           <TouchableOpacity style={styles.menuItem} onPress={handleRequests}>
             <View style={styles.menuItemLeft}>
               <Ionicons name="list-outline" size={20} color="#666" style={styles.menuIcon} />
-              <Text style={styles.menuItemText}>My Requests</Text>
+              <Text style={styles.menuItemText}>My Booking</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
@@ -234,16 +237,6 @@ export default function MoreScreen() {
 
           <View style={styles.separator} />
 
-          {/* New Request */}
-          <TouchableOpacity style={styles.menuItem} onPress={handleNewRequest}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="document-outline" size={20} color="#666" style={styles.menuIcon} />
-              <Text style={styles.menuItemText}>New Request</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#999" />
-          </TouchableOpacity>
-
-          <View style={styles.separator} />
 
           {/* New User */}
           <TouchableOpacity style={styles.menuItem} onPress={handleNewUser}>
@@ -260,33 +253,23 @@ export default function MoreScreen() {
           <Text style={styles.sectionTitle}>Request Management</Text>
         </View>
         <View style={styles.menuContainer}>
-          {/* View Request */}
-          <TouchableOpacity style={styles.menuItem} onPress={handleViewRequest}>
+          {/* View Booking */}
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/edit-booking')}>
             <View style={styles.menuItemLeft}>
               <Ionicons name="eye-outline" size={20} color="#666" style={styles.menuIcon} />
-              <Text style={styles.menuItemText}>View Request</Text>
+              <Text style={styles.menuItemText}>View Booking</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
 
           <View style={styles.separator} />
 
-          {/* Resubmit Request */}
-          <TouchableOpacity style={styles.menuItem} onPress={handleResubmitRequest}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="refresh-outline" size={20} color="#666" style={styles.menuIcon} />
-              <Text style={styles.menuItemText}>Resubmit Request</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#999" />
-          </TouchableOpacity>
-
-          <View style={styles.separator} />
 
           {/* Recall */}
           <TouchableOpacity style={styles.menuItem} onPress={handleRecall}>
             <View style={styles.menuItemLeft}>
               <Ionicons name="return-up-back-outline" size={20} color="#666" style={styles.menuIcon} />
-              <Text style={styles.menuItemText}>Recall Request</Text>
+              <Text style={styles.menuItemText}>Recall Booking</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
@@ -327,7 +310,7 @@ export default function MoreScreen() {
           <TouchableOpacity style={styles.menuItem} onPress={handleCompliance}>
             <View style={styles.menuItemLeft}>
               <Ionicons name="shield-checkmark-outline" size={20} color="#666" style={styles.menuIcon} />
-              <Text style={styles.menuItemText}>Compliance Management</Text>
+              <Text style={styles.menuItemText}>Other Charges Management</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
@@ -348,19 +331,19 @@ export default function MoreScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Support Section
+        {/* Support Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Support</Text>
         </View>
         <View style={styles.menuContainer}>
-          <TouchableOpacity style={styles.menuItem} onPress={handleHelpSupport}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
             <View style={styles.menuItemLeft}>
               <Ionicons name="chatbubble-outline" size={20} color="#666" style={styles.menuIcon} />
               <Text style={styles.menuItemText}>Help & Support</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
-        </View> */}
+        </View>
 
         {/* Bottom spacing */}
         <View style={styles.bottomSpacer} />

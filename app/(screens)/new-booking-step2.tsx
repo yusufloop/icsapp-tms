@@ -605,7 +605,7 @@ export default function NewBookingStep2Screen() {
 
           <View className="mb-6">
             <Text className="text-lg font-bold text-text-primary mb-4">
-              Compliance
+              Other Charges 
             </Text>
             {complianceCharges
               .filter(compliance => typeof compliance.id === 'string')

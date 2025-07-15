@@ -9,7 +9,7 @@ export default function InvoiceWebScreen() {
     invoiceNumber: 'INV-2025-001234',
     invoiceDate: '2025-04-06',
     dueDate: '2025-04-20',
-    bookingName: 'Uranium to KL',
+    bookingName: 'PNG to KL',
     bookingId: 'xxxxxPNGxKLGxxxx',
     client: {
       name: 'Johan',

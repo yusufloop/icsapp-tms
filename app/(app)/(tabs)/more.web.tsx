@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 import { PremiumCard } from '@/components/ui/PremiumCard';
-import { router } from 'expo-router';
 import { DesignSystem } from '@/constants/DesignSystem';
-import { UserRole, ICSBOLTZ_ROLE_DEFINITIONS, getCurrentUserRole, setCurrentUserRole, subscribeToRoleChanges } from '@/constants/UserRoles';
+import { ICSBOLTZ_ROLE_DEFINITIONS, UserRole, getCurrentUserRole, setCurrentUserRole, subscribeToRoleChanges } from '@/constants/UserRoles';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 interface MenuItem {
   id: string;
@@ -28,12 +28,15 @@ export default function WebMoreScreen() {
     return unsubscribe;
   }, []);
 
-  // Get all available roles
-  const roleOptions = Object.entries(ICSBOLTZ_ROLE_DEFINITIONS).map(([key, config]) => ({
-    value: key as UserRole,
-    label: config.name,
-    description: config.description,
-  }));
+  // Get web-specific roles (Admin, Clerk, Client, Driver)
+  const webRoles: UserRole[] = ['ADMIN', 'CLERK', 'CLIENT', 'DRIVER'];
+  const roleOptions = Object.entries(ICSBOLTZ_ROLE_DEFINITIONS)
+    .filter(([key]) => webRoles.includes(key as UserRole))
+    .map(([key, config]) => ({
+      value: key as UserRole,
+      label: config.name,
+      description: config.description,
+    }));
 
   const handleRoleChange = (newRole: UserRole) => {
     // Update the global role state
@@ -50,33 +53,31 @@ export default function WebMoreScreen() {
   const menuItems: MenuItem[] = [
     // Navigation
     { id: 'dashboard', title: 'Dashboard', description: 'View system overview and analytics', icon: 'dashboard', route: '/', category: 'Navigation' },
-    { id: 'requests', title: 'My Requests', description: 'Manage booking requests', icon: 'local-shipping', route: '/requests', category: 'Navigation' },
+    { id: 'requests', title: 'My Booking', description: 'Manage booking requests', icon: 'local-shipping', route: '/requests', category: 'Navigation' },
     { id: 'notifications', title: 'Notifications', description: 'View system notifications', icon: 'notifications', route: '/notifications', category: 'Navigation' },
     { id: 'scan', title: 'QR Scan', description: 'Scan QR codes for quick access', icon: 'qr-code-scanner', route: '/scan', category: 'Navigation' },
     { id: 'users', title: 'Users', description: 'Manage system users', icon: 'people', route: '/user', category: 'Navigation' },
     
     // Create New
     { id: 'new-booking', title: 'New Booking', description: 'Create a new booking request', icon: 'add-box', route: '/new-booking', category: 'Create New' },
-    { id: 'new-request', title: 'New Request', description: 'Submit a new request for approval', icon: 'note-add', route: '/new-request', category: 'Create New' },
     { id: 'new-user', title: 'New User', description: 'Add a new user to the system', icon: 'person-add', route: '/new-user', category: 'Create New' },
     
     // Request Management
-    { id: 'view-request', title: 'View Request', description: 'View detailed request information', icon: 'visibility', route: '/view-request', category: 'Request Management' },
-    { id: 'resubmit-request', title: 'Resubmit Request', description: 'Resubmit a rejected request', icon: 'refresh', route: '/resubmit-request', category: 'Request Management' },
-    { id: 'recall-request', title: 'Recall Request', description: 'Recall a submitted request', icon: 'undo', route: '/recall', category: 'Request Management' },
+    { id: 'view-request', title: 'View Booking', description: 'View detailed booking information', icon: 'visibility', route: '/edit-booking', category: 'Request Management' },
+    { id: 'recall-request', title: 'Recall Booking', description: 'Recall a submitted booking', icon: 'undo', route: '/recall', category: 'Request Management' },
     
     // User Management
     { id: 'edit-user', title: 'Edit User', description: 'Modify user information and settings', icon: 'edit', route: '/edit-user', category: 'User Management' },
     
     // Configuration
     { id: 'demurrage', title: 'Demurrage Management', description: 'Manage demurrage charges for different locations', icon: 'local-shipping', route: '/demurrage', category: 'Configuration' },
-    { id: 'compliance', title: 'Compliance Management', description: 'Manage compliance charges and requirements', icon: 'shield', route: '/compliance', category: 'Configuration' },
+    { id: 'compliance', title: 'Other Charges Management', description: 'Manage other charges and requirements', icon: 'shield', route: '/compliance', category: 'Configuration' },
     
     // Reports
     { id: 'summary', title: 'Summary Report', description: 'View comprehensive system reports', icon: 'assessment', route: '/summary', category: 'Reports' },
     
     // Support
-    { id: 'help', title: 'Help & Support', description: 'Get help and support resources', icon: 'help', route: '/help', category: 'Support' },
+    { id: 'help', title: 'Help & Support', description: 'Get help and support resources', icon: 'help', route: '', category: 'Support' },
   ];
 
   const groupedItems = menuItems.reduce((acc, item) => {
@@ -88,7 +89,9 @@ export default function WebMoreScreen() {
   }, {} as Record<string, MenuItem[]>);
 
   const handleItemPress = (route: string) => {
-    router.push(route as any);
+    if (route) {
+      router.push(route as any);
+    }
   };
 
   const getCategoryIcon = (category: string) => {
