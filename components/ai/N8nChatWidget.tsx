@@ -21,7 +21,7 @@ const N8nChatWidget = () => {
 	defaultLanguage: 'en',
 	initialMessages: [
 		
-		'My name is Mustaqim Bot. How can I assist you today?'
+		'My name is logibot. How can I assist you today?'
 	],
 	i18n: {
 		en: {
