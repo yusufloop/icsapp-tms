@@ -18,6 +18,10 @@ export default function DashboardScreen() {
       const isConnected = await testSupabaseConnection();
       console.log('Supabase connection test:', isConnected ? 'SUCCESS' : 'FAILED');
     };
+     if (typeof document !== 'undefined') {
+  // Safe to use document here
+  document.getElementById('example');
+}
     
     testConnection();
   }, []);
@@ -31,6 +35,7 @@ export default function DashboardScreen() {
 
     return unsubscribe;
   }, []);
+ 
 
   // Mock user data - in real app this would come from authentication
   const mockUser = {
@@ -45,7 +50,7 @@ export default function DashboardScreen() {
     case 'CLIENT':
       return <>
         <ClientDashboard user={mockUser} />
-    <N8nChatWebView />
+    {/* <N8nChatWebView /> */}
       </>;
     case 'CLERK':
       return <>
