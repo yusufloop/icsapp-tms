@@ -43,7 +43,7 @@ const N8nChatWidget = () => {
 	>
 	  {/* Header */}
 	  <div className="flex items-center justify-between px-4 py-2 bg-blue-600 text-white">
-		<span className="font-semibold text-lg">Chat with Mustaqim Bot</span>
+		<span className="font-semibold text-lg">Chat with logibot</span>
 		<button
 		  className="text-white hover:text-blue-200 text-xl font-bold focus:outline-none"
 		  onClick={() => {
