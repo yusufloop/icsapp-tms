@@ -1,21 +1,21 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { GLView } from 'expo-gl';
+import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { ArrowRight, Lock, Moon, Move, Package, Plus, Sun, Trash2, Clock as Unlock } from 'lucide-react-native';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
+  Alert,
+  FlatList,
+  PanResponder,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  Alert,
-  ScrollView,
-  Dimensions,
-  PanResponder,
-  Platform,
+  View
 } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { GLView } from 'expo-gl';
 import * as THREE from 'three';
-import { Package, Plus, Trash2, Move, Lock, Clock as Unlock, Sun, Moon, ArrowRight } from 'lucide-react-native';
 
 // Simple UUID generator for Expo compatibility
 const generateUUID = () => {
@@ -557,7 +557,7 @@ export default function ContainerPackerScreen() {
     const x = ((screenX - glViewLayout.x) / glViewLayout.width) * 2 - 1;
     const y = -((screenY - glViewLayout.y) / glViewLayout.height) * 2 + 1;
 
-    raycasterRef.current.setFromCamera({ x, y }, cameraRef.current);
+    raycasterRef.current.setFromCamera(new THREE.Vector2(x, y), cameraRef.current);
 
     // Create a plane at y=0 (floor level) for raycasting
     const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -781,8 +781,8 @@ export default function ContainerPackerScreen() {
 
   const updateBoxesInScene = (scene: THREE.Scene) => {
     // Remove existing boxes
-    const existingBoxes = scene.children.filter(child => child.name === 'box');
-    existingBoxes.forEach(box => scene.remove(box));
+    const existingBoxes = scene.children.filter((child: THREE.Object3D) => child.name === 'box');
+    existingBoxes.forEach((box: THREE.Object3D) => scene.remove(box));
 
     // Add current boxes
     boxes.forEach(box => {
@@ -881,6 +881,11 @@ export default function ContainerPackerScreen() {
     </View>
   );
 
+  // Handle back navigation
+  const handleBack = () => {
+    router.back();
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style={isDark ? "light" : "dark"} />
@@ -888,6 +893,13 @@ export default function ContainerPackerScreen() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
+          <TouchableOpacity
+            className="rounded-full bg-transparent p-2 mr-2 border border-gray-300 dark:border-gray-600"
+            onPress={handleBack}
+            accessibilityLabel="Go back"
+          >
+            <Text className="text-xl font-bold text-gray-800 dark:text-white">←</Text>
+          </TouchableOpacity>
           <Package size={24} color={theme.text} />
           <Text style={styles.title}>Container Packer 3D {editMode ? '(Edit Mode)' : ''}</Text>
           <View style={styles.headerActions}>
@@ -901,6 +913,7 @@ export default function ContainerPackerScreen() {
             </TouchableOpacity>
           </View>
         </View>
+
 
         {/* Container Selection */}
         {!editMode && (
@@ -1030,8 +1043,9 @@ export default function ContainerPackerScreen() {
               onContextCreate={onContextCreate}
               onLayout={(event) => {
                 if (Platform.OS === 'web') {
-                  const { target } = event.nativeEvent;
-                  if (target && target.getBoundingClientRect) {
+                  const nativeEvent = event.nativeEvent as any;
+                  const target = nativeEvent.target;
+                  if (target && typeof target.getBoundingClientRect === 'function') {
                     const rect = target.getBoundingClientRect();
                     setGlViewLayout({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
                   }

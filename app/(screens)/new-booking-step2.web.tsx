@@ -2,8 +2,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { DemurrageCharge, getDemurrageCharges } from '../../services/demurrageService';
 import { ComplianceCharge, getComplianceCharges } from '../../services/complianceService';
+import { DemurrageCharge, getDemurrageCharges } from '../../services/demurrageService';
 
 export default function NewBookingStep2WebScreen() {
   // Mock data from Step 1 (in real implementation, this would come from navigation params or state management)
@@ -284,7 +284,7 @@ export default function NewBookingStep2WebScreen() {
                 {/* 3D Object Placeholder */}
                 <TouchableOpacity 
                   className="mb-6"
-                  onPress={() => router.push('/container-packer')}
+onPress={() => router.push('/threejs-viewer')}
                   activeOpacity={0.8}
                 >
                   <View className="h-48 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200 items-center justify-center shadow-lg hover:shadow-xl transition-shadow">
