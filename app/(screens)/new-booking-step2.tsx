@@ -2,6 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   ScrollView,
   Text,
   TextInput,
@@ -324,14 +325,21 @@ export default function NewBookingStep2Screen() {
           </View>
 
           {/* 3D Object Placeholder */}
-          <View className="mb-6">
-            <View className="h-48 bg-bg-secondary rounded-lg border border-gray-300 items-center justify-center">
+          <TouchableOpacity 
+            className="mb-6"
+            onPress={() => router.push('/container-packer')}
+            activeOpacity={0.8}
+          >
+            <View className="h-48 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200 items-center justify-center shadow-lg">
               <MaterialIcons name="view-in-ar" size={64} color="#8A8A8E" />
-              <Text className="text-text-secondary mt-2 text-sm">
-                3D Object Preview
+              <Text className="text-blue-600 mt-4 text-lg font-semibold">
+                3D Container Packer
+              </Text>
+              <Text className="text-blue-500 mt-1 text-sm">
+                Tap to visualize and arrange your cargo
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
           {/* Shipment Details */}
           <View className="mb-6">
