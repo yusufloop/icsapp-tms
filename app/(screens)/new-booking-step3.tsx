@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Modal,
@@ -12,11 +12,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { 
-  fetchDriversWithStatus, 
-  searchDrivers, 
+import {
+  fetchDriversWithStatus,
   getMockDrivers,
-  type Driver 
+  searchDrivers,
+  type Driver
 } from '../../services/driverService';
 
 
@@ -41,10 +41,10 @@ export default function NewBookingStep3Screen() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Try to fetch real drivers from database
       const realDrivers = await fetchDriversWithStatus();
-      
+
       if (realDrivers.length > 0) {
         setDrivers(realDrivers);
         console.log('✅ Loaded real drivers from database:', realDrivers.length);
@@ -57,7 +57,7 @@ export default function NewBookingStep3Screen() {
     } catch (err) {
       console.error('❌ Error loading drivers:', err);
       setError('Failed to load drivers');
-      
+
       // Use mock data as fallback
       const mockDrivers = getMockDrivers();
       setDrivers(mockDrivers);
@@ -69,7 +69,7 @@ export default function NewBookingStep3Screen() {
   // Search drivers
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
-    
+
     if (!query.trim()) {
       loadDrivers();
       return;
@@ -127,7 +127,7 @@ export default function NewBookingStep3Screen() {
       Alert.alert('Error', 'Selected driver not found');
       return;
     }
-    
+
     setSuccessDriver(driver);
     setShowSuccessModal(true);
   };
@@ -287,7 +287,7 @@ export default function NewBookingStep3Screen() {
           {error && (
             <View className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
               <Text className="text-red-700 text-center">{error}</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={loadDrivers}
                 className="mt-2 bg-red-500 px-4 py-2 rounded-lg"
               >
@@ -295,16 +295,15 @@ export default function NewBookingStep3Screen() {
               </TouchableOpacity>
             </View>
           )}
-          
+
           {drivers.map((driver) => (
             <TouchableOpacity
               key={driver.driver_id}
               onPress={() => handleDriverTap(driver)}
-              className={`bg-bg-secondary border rounded-lg p-4 mb-3 flex-row items-center active:opacity-80 ${
-                selectedDriver === driver.driver_id
-                  ? "border-primary bg-blue-50"
-                  : "border-gray-300"
-              }`}
+              className={`bg-bg-secondary border rounded-lg p-4 mb-3 flex-row items-center active:opacity-80 ${selectedDriver === driver.driver_id
+                ? "border-primary bg-blue-50"
+                : "border-gray-300"
+                }`}
             >
               {/* Selection Radio */}
               <TouchableOpacity
@@ -312,11 +311,10 @@ export default function NewBookingStep3Screen() {
                 className="mr-4"
               >
                 <View
-                  className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-                    selectedDriver === driver.driver_id
-                      ? "border-primary bg-primary"
-                      : "border-gray-400"
-                  }`}
+                  className={`w-6 h-6 rounded-full border-2 items-center justify-center ${selectedDriver === driver.driver_id
+                    ? "border-primary bg-primary"
+                    : "border-gray-400"
+                    }`}
                 >
                   {selectedDriver === driver.driver_id && (
                     <View className="w-3 h-3 rounded-full bg-white" />
@@ -338,19 +336,21 @@ export default function NewBookingStep3Screen() {
                   {/* Status Badge */}
                   <View
                     className={`px-2 py-1 rounded-full ${
-                      driver.status === "available"
+                      // FIX: Using .toLowerCase() for consistency
+                      driver.status.toLowerCase() === "available"
                         ? "bg-green-100"
                         : "bg-orange-100"
                     }`}
                   >
                     <Text
                       className={`text-xs font-medium ${
-                        driver.status === "Available"
+                        // FIX: Using .toLowerCase() for consistency
+                        driver.status.toLowerCase() === "available"
                           ? "text-green-700"
                           : "text-orange-700"
                       }`}
                     >
-                      {driver.status === "available" ? "Available" : "Busy"}
+                      {driver.status.toLowerCase() === "available" ? "Available" : "Busy"}
                     </Text>
                   </View>
                 </View>
@@ -392,17 +392,21 @@ export default function NewBookingStep3Screen() {
           </TouchableOpacity>
 
           {/* Create Booking Button */}
-
           <TouchableOpacity
             onPress={handleCreateBooking}
             className="flex-1 bg-blue-500 border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
           >
-            <Text className="text-base font-semibold text-white">Continue</Text>
+            {/* FIX: Changed label for better UX */}
+            <Text className="text-base font-semibold text-white">Create Booking</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Driver Details Modal */}
+      {/* 
+        ====================================================
+        == DRIVER DETAILS MODAL - ALL FIXES APPLIED BELOW ==
+        ====================================================
+      */}
       <Modal
         visible={showDriverModal}
         transparent={true}
@@ -411,7 +415,8 @@ export default function NewBookingStep3Screen() {
       >
         <View className="flex-1 bg-black/50 items-center justify-center px-6">
           <View className="bg-bg-primary rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
-            {modalDriver?.status === "Available" ? (
+            {modalDriver && modalDriver.status.toLowerCase() === 'available' ? (
+              // AVAILABLE DRIVER VIEW
               <View>
                 {/* Available Driver Header */}
                 <View className="px-6 py-6 border-b border-gray-200 relative">
@@ -421,7 +426,6 @@ export default function NewBookingStep3Screen() {
                   >
                     <MaterialIcons name="close" size={24} color="#1C1C1E" />
                   </TouchableOpacity>
-
                   <View className="items-center">
                     <View className="w-16 h-16 rounded-full bg-gray-200 items-center justify-center mb-3">
                       <Text className="text-3xl">{getDriverAvatar(modalDriver.name)}</Text>
@@ -438,22 +442,24 @@ export default function NewBookingStep3Screen() {
                 {/* Available Content */}
                 <View className="px-6 py-8 items-center">
                   <View className="w-16 h-16 rounded-full bg-green-100 items-center justify-center mb-4">
+                    {/* FIX 1: Invalid prop replaced with 'name' prop */}
                     <MaterialIcons
-                          driver.status === "Available"
+                      name="check-circle"
                       size={32}
                       color="#10B981"
                     />
                   </View>
-                        {driver.status}
+                  {/* FIX 2: Stray text nodes wrapped in <Text> components */}
+                  <Text className="text-xl font-bold text-green-700">
                     Driver Available
                   </Text>
-                  <Text className="text-text-secondary text-center">
-                    This driver is currently available and has no active
-                    {driver.phone || driver.email || `License: ${driver.license_no || 'N/A'}`}
+                  <Text className="text-text-secondary text-center mt-1">
+                    This driver is currently available and has no active bookings.
                   </Text>
                 </View>
-              </View>
+              </View> // <-- FIX 3: Extraneous </View> removed.
             ) : (
+              // BUSY DRIVER VIEW
               modalDriver && (
                 <View>
                   {/* Busy Driver Header */}
@@ -487,7 +493,6 @@ export default function NewBookingStep3Screen() {
                         <MaterialIcons name="work" size={20} color="#F59E0B" />
                         <Text className="text-orange-700 font-semibold ml-2">Currently Busy</Text>
                       </View>
-                      
                       <View className="space-y-2">
                         <Text className="text-orange-800">
                           Assigned Bookings: {modalDriver.assigned_bookings}
@@ -572,6 +577,6 @@ export default function NewBookingStep3Screen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </SafeAreaView >
   );
 }
