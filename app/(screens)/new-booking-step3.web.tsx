@@ -1,103 +1,97 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-
-// Mock driver data
-const mockDrivers = [
-  {
-    id: '1',
-    name: 'Driver 1',
-    phone: '+60 12-345 6789',
-    avatar: '👨‍💼',
-    status: 'busy',
-    currentJob: {
-      origin: 'PNG',
-      destination: 'KLG',
-      date: '2025-01-13',
-      time: '14:30',
-      totalVolume: '25.5 CBM',
-      totalGrossWeight: '1,250 KG',
-      shipmentType: 'FCL',
-      containerSize: '40ft',
-      twinning: 'Yes'
-    }
-  },
-  {
-    id: '2',
-    name: 'Driver 2',
-    phone: '+60 12-456 7890',
-    avatar: '👨‍🚛',
-    status: 'available',
-    currentJob: null
-  },
-  {
-    id: '3',
-    name: 'Driver 3',
-    phone: '+60 12-567 8901',
-    avatar: '👩‍💼',
-    status: 'busy',
-    currentJob: {
-      origin: 'KL',
-      destination: 'JB',
-      date: '2025-01-13',
-      time: '16:00',
-      totalVolume: '18.2 CBM',
-      totalGrossWeight: '890 KG',
-      shipmentType: 'LCL',
-      containerSize: '20ft',
-      twinning: 'No'
-    }
-  },
-  {
-    id: '4',
-    name: 'Driver 4',
-    phone: '+60 12-678 9012',
-    avatar: '👨‍🔧',
-    status: 'available',
-    currentJob: null
-  },
-  {
-    id: '5',
-    name: 'Driver 5',
-    phone: '+60 12-789 0123',
-    avatar: '👩‍🚛',
-    status: 'busy',
-    currentJob: {
-      origin: 'PG',
-      destination: 'KT',
-      date: '2025-01-13',
-      time: '09:15',
-      totalVolume: '32.1 CBM',
-      totalGrossWeight: '1,580 KG',
-      shipmentType: 'FCL',
-      containerSize: '40ft HC',
-      twinning: 'Yes'
-    }
-  }
-];
+import { 
+  fetchDriversWithStatus, 
+  searchDrivers, 
+  getMockDrivers,
+  type Driver 
+} from '../../services/driverService';
 
 export default function NewBookingStep3WebScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
   const [showDriverModal, setShowDriverModal] = useState(false);
-  const [modalDriver, setModalDriver] = useState<any>(null);
+  const [modalDriver, setModalDriver] = useState<Driver | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successDriver, setSuccessDriver] = useState<any>(null);
+  const [successDriver, setSuccessDriver] = useState<Driver | null>(null);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Filter drivers based on search query
-  const filteredDrivers = mockDrivers.filter(driver =>
-    driver.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    driver.phone.includes(searchQuery)
-  );
+  // Load drivers on component mount
+  useEffect(() => {
+    loadDrivers();
+  }, []);
+
+  const loadDrivers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Try to fetch real drivers from database
+      const realDrivers = await fetchDriversWithStatus();
+      
+      if (realDrivers.length > 0) {
+        setDrivers(realDrivers);
+        console.log('✅ Loaded real drivers from database:', realDrivers.length);
+      } else {
+        // Fallback to mock data if no real drivers found
+        const mockDrivers = getMockDrivers();
+        setDrivers(mockDrivers);
+        console.log('⚠️ Using mock drivers as fallback');
+      }
+    } catch (err) {
+      console.error('❌ Error loading drivers:', err);
+      setError('Failed to load drivers');
+      
+      // Use mock data as fallback
+      const mockDrivers = getMockDrivers();
+      setDrivers(mockDrivers);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Search drivers
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    
+    if (!query.trim()) {
+      loadDrivers();
+      return;
+    }
+
+    try {
+      const searchResults = await searchDrivers(query);
+      setDrivers(searchResults);
+    } catch (err) {
+      console.error('Error searching drivers:', err);
+      // Filter current drivers locally as fallback
+      const filtered = drivers.filter(driver =>
+        driver.name.toLowerCase().includes(query.toLowerCase()) ||
+        (driver.license_no && driver.license_no.toLowerCase().includes(query.toLowerCase())) ||
+        (driver.phone && driver.phone.includes(query))
+      );
+      setDrivers(filtered);
+    }
+  };
+
+  // Get avatar based on driver name
+  const getDriverAvatar = (name: string) => {
+    const avatars = ['👨‍💼', '👩‍💼', '👨‍🚛', '👩‍🚛', '👨‍🔧', '👩‍🔧'];
+    const index = name.length % avatars.length;
+    return avatars[index];
+  };
 
   const handleDriverSelect = (driverId: string) => {
     setSelectedDriver(driverId);
   };
 
-  const handleDriverTap = (driver: any) => {
+  const handleDriverTap = (driver: Driver) => {
     setModalDriver(driver);
     setShowDriverModal(true);
   };
@@ -113,33 +107,27 @@ export default function NewBookingStep3WebScreen() {
   };
 
   const handleCreateBooking = () => {
-    console.log('🚀 Create Booking button pressed! (WEB VERSION)');
-    console.log('📋 Selected driver:', selectedDriver);
-    
     if (!selectedDriver) {
-      console.log('❌ No driver selected, showing error alert');
       Alert.alert('Error', 'Please select a driver to continue');
       return;
     }
 
-    const driver = mockDrivers.find(d => d.id === selectedDriver);
-    console.log('👨‍💼 Found driver:', driver);
-    console.log('🎉 About to show success modal (WEB)');
+    const driver = drivers.find(d => d.driver_id === selectedDriver);
+    if (!driver) {
+      Alert.alert('Error', 'Selected driver not found');
+      return;
+    }
     
-    // Show custom success modal instead of Alert.alert
     setSuccessDriver(driver);
     setShowSuccessModal(true);
-    console.log('✅ Success modal triggered (WEB)');
   };
 
   const handleBackToBooking = () => {
-    console.log('🔙 User selected: Back to Booking (WEB)');
     setShowSuccessModal(false);
     router.push('/(app)/(tabs)/requests');
   };
 
   const handleViewInvoice = () => {
-    console.log('📄 User selected: View Invoice (WEB)');
     setShowSuccessModal(false);
     router.push('/(screens)/invoice');
   };
@@ -230,7 +218,7 @@ export default function NewBookingStep3WebScreen() {
                   <TextInput
                     className="flex-1 text-base text-text-primary"
                     value={searchQuery}
-                    onChangeText={setSearchQuery}
+                    onChangeText={handleSearch}
                     placeholder="Search drivers..."
                     placeholderTextColor="#8A8A8E"
                   />
@@ -274,25 +262,43 @@ export default function NewBookingStep3WebScreen() {
             {/* Driver List Card */}
             <View className="bg-white rounded-lg shadow-sm border border-gray-200">
               <View className="px-6 py-6">
-                {filteredDrivers.length > 0 ? (
+                {loading ? (
+                  <View className="items-center py-12">
+                    <MaterialIcons name="hourglass-empty" size={48} color="#8A8A8E" />
+                    <Text className="text-text-secondary mt-4 text-center">
+                      Loading drivers...
+                    </Text>
+                  </View>
+                ) : error ? (
+                  <View className="items-center py-12">
+                    <MaterialIcons name="error-outline" size={48} color="#EF4444" />
+                    <Text className="text-red-500 mt-4 text-center">{error}</Text>
+                    <TouchableOpacity 
+                      onPress={loadDrivers}
+                      className="mt-4 bg-red-500 px-4 py-2 rounded-lg"
+                    >
+                      <Text className="text-white font-medium">Retry</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : drivers.length > 0 ? (
                   <View className="space-y-3">
-                    {filteredDrivers.map((driver) => (
+                    {drivers.map((driver) => (
                       <TouchableOpacity
-                        key={driver.id}
+                        key={driver.driver_id}
                         onPress={() => handleDriverTap(driver)}
                         className={`border rounded-lg p-4 flex-row items-center active:opacity-80 ${
-                          selectedDriver === driver.id ? 'border-primary bg-blue-50' : 'border-gray-300 bg-bg-secondary'
+                          selectedDriver === driver.driver_id ? 'border-primary bg-blue-50' : 'border-gray-300 bg-bg-secondary'
                         }`}
                       >
                         {/* Selection Radio */}
                         <TouchableOpacity
-                          onPress={() => handleDriverSelect(driver.id)}
+                          onPress={() => handleDriverSelect(driver.driver_id)}
                           className="mr-4"
                         >
                           <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-                            selectedDriver === driver.id ? 'border-primary bg-primary' : 'border-gray-400'
+                            selectedDriver === driver.driver_id ? 'border-primary bg-primary' : 'border-gray-400'
                           }`}>
-                            {selectedDriver === driver.id && (
+                            {selectedDriver === driver.driver_id && (
                               <View className="w-3 h-3 rounded-full bg-white" />
                             )}
                           </View>
@@ -300,7 +306,7 @@ export default function NewBookingStep3WebScreen() {
 
                         {/* Driver Avatar */}
                         <View className="w-12 h-12 rounded-full bg-gray-200 items-center justify-center mr-4">
-                          <Text className="text-2xl">{driver.avatar}</Text>
+                          <Text className="text-2xl">{getDriverAvatar(driver.name)}</Text>
                         </View>
 
                         {/* Driver Info */}
@@ -311,17 +317,17 @@ export default function NewBookingStep3WebScreen() {
                             </Text>
                             {/* Status Badge */}
                             <View className={`px-2 py-1 rounded-full ${
-                              driver.status === 'available' ? 'bg-green-100' : 'bg-orange-100'
+                              driver.status === 'Available' ? 'bg-green-100' : 'bg-orange-100'
                             }`}>
                               <Text className={`text-xs font-medium ${
-                                driver.status === 'available' ? 'text-green-700' : 'text-orange-700'
+                                driver.status === 'Available' ? 'text-green-700' : 'text-orange-700'
                               }`}>
-                                {driver.status === 'available' ? 'Available' : 'Busy'}
+                                {driver.status}
                               </Text>
                             </View>
                           </View>
                           <Text className="text-sm text-text-secondary mt-1">
-                            {driver.phone}
+                            {driver.phone || driver.email || `License: ${driver.license_no || 'N/A'}`}
                           </Text>
                         </View>
 
@@ -381,7 +387,7 @@ export default function NewBookingStep3WebScreen() {
       >
         <View className="flex-1 bg-black/50 items-center justify-center px-6">
           <View className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
-            {modalDriver?.status === 'available' ? (
+            {modalDriver?.status === 'Available' ? (
               <View>
                 {/* Available Driver Header */}
                 <View className="px-6 py-6 border-b border-gray-200 relative">
@@ -394,13 +400,13 @@ export default function NewBookingStep3WebScreen() {
                   
                   <View className="items-center">
                     <View className="w-16 h-16 rounded-full bg-gray-200 items-center justify-center mb-3">
-                      <Text className="text-3xl">{modalDriver.avatar}</Text>
+                      <Text className="text-3xl">{getDriverAvatar(modalDriver.name)}</Text>
                     </View>
                     <Text className="text-xl font-bold text-text-primary">
                       {modalDriver.name}
                     </Text>
                     <Text className="text-text-secondary text-sm">
-                      {modalDriver.phone}
+                      {modalDriver.phone || modalDriver.email || `License: ${modalDriver.license_no || 'N/A'}`}
                     </Text>
                   </View>
                 </View>
@@ -419,7 +425,7 @@ export default function NewBookingStep3WebScreen() {
                 </View>
               </View>
             ) : (
-              modalDriver?.currentJob && (
+              modalDriver && (
                 <View>
                   {/* Busy Driver Header */}
                   <View className="px-6 py-4 border-b border-gray-200 relative">
@@ -432,101 +438,41 @@ export default function NewBookingStep3WebScreen() {
                     
                     <View className="flex-row items-center">
                       <View className="w-12 h-12 rounded-full bg-gray-200 items-center justify-center mr-3">
-                        <Text className="text-xl">{modalDriver.avatar}</Text>
+                        <Text className="text-xl">{getDriverAvatar(modalDriver.name)}</Text>
                       </View>
                       <View className="flex-1">
                         <Text className="text-lg font-bold text-text-primary">
                           {modalDriver.name}
                         </Text>
                         <Text className="text-text-secondary text-sm">
-                          {modalDriver.phone}
+                          {modalDriver.phone || modalDriver.email || `License: ${modalDriver.license_no || 'N/A'}`}
                         </Text>
                       </View>
                     </View>
                   </View>
 
-                  {/* Route Section */}
-                  <View className="px-6 py-4 border-b border-gray-200">
-                    <View className="flex-row items-center justify-between">
-                      <View className="items-center">
-                        <Text className="text-2xl font-bold text-text-primary">
-                          {modalDriver.currentJob.origin}
-                        </Text>
-                        <Text className="text-xs text-text-secondary mt-1">
-                          {formatDate(modalDriver.currentJob.date)}
-                        </Text>
-                        <Text className="text-xs text-text-secondary">
-                          {formatTime(modalDriver.currentJob.time)}
-                        </Text>
-                      </View>
-                      
-                      <View className="flex-1 items-center mx-4">
-                        <MaterialIcons name="local-shipping" size={28} color="#409CFF" />
-                        <View className="flex-row items-center mt-1">
-                          <View className="w-8 h-0.5 bg-gray-300" />
-                          <MaterialIcons name="arrow-forward" size={16} color="#8A8A8E" />
-                          <View className="w-8 h-0.5 bg-gray-300" />
-                        </View>
-                      </View>
-                      
-                      <View className="items-center">
-                        <Text className="text-2xl font-bold text-text-primary">
-                          {modalDriver.currentJob.destination}
-                        </Text>
-                        <Text className="text-xs text-text-secondary mt-1">
-                          {formatDate(modalDriver.currentJob.date)}
-                        </Text>
-                        <Text className="text-xs text-text-secondary">
-                          {formatTime(modalDriver.currentJob.time)}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-
-                  {/* Details Grid */}
+                  {/* Driver Details */}
                   <View className="px-6 py-4">
-                    <View className="space-y-4">
-                      {/* Row 1 */}
-                      <View className="flex-row">
-                        <View className="flex-1 mr-2">
-                          <Text className="text-xs text-text-secondary mb-1">Total Volume (CBM)</Text>
-                          <Text className="text-lg font-bold text-text-primary">
-                            {modalDriver.currentJob.totalVolume.replace(' CBM', '')}
-                          </Text>
-                        </View>
-                        <View className="flex-1 ml-2">
-                          <Text className="text-xs text-text-secondary mb-1">Total Gross Weight (KG)</Text>
-                          <Text className="text-lg font-bold text-text-primary">
-                            {modalDriver.currentJob.totalGrossWeight.replace(' KG', '')}
-                          </Text>
-                        </View>
+                    <View className="bg-orange-50 rounded-lg p-4">
+                      <View className="flex-row items-center mb-3">
+                        <MaterialIcons name="work" size={20} color="#F59E0B" />
+                        <Text className="text-orange-700 font-semibold ml-2">Currently Busy</Text>
                       </View>
-
-                      {/* Row 2 */}
-                      <View className="flex-row">
-                        <View className="flex-1 mr-2">
-                          <Text className="text-xs text-text-secondary mb-1">Shipment Type</Text>
-                          <Text className="text-lg font-bold text-text-primary">
-                            {modalDriver.currentJob.shipmentType}
+                      
+                      <View className="space-y-2">
+                        <Text className="text-orange-800">
+                          Assigned Bookings: {modalDriver.assigned_bookings}
+                        </Text>
+                        {modalDriver.license_no && (
+                          <Text className="text-orange-800">
+                            License: {modalDriver.license_no}
                           </Text>
-                        </View>
-                        <View className="flex-1 ml-2">
-                          <Text className="text-xs text-text-secondary mb-1">Container Size (ft)</Text>
-                          <Text className="text-lg font-bold text-text-primary">
-                            {modalDriver.currentJob.containerSize.replace('ft', '')}
+                        )}
+                        {modalDriver.last_updated && (
+                          <Text className="text-orange-600 text-sm">
+                            Last Updated: {new Date(modalDriver.last_updated).toLocaleString()}
                           </Text>
-                        </View>
-                      </View>
-
-                      {/* Row 3 */}
-                      <View className="flex-row">
-                        <View className="flex-1">
-                          <Text className="text-xs text-text-secondary mb-1">Twinning</Text>
-                          <Text className="text-lg font-bold text-text-primary">
-                            {modalDriver.currentJob.twinning}
-                          </Text>
-                        </View>
-                        <View className="flex-1" />
+                        )}
                       </View>
                     </View>
                   </View>
