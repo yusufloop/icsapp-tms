@@ -1,13 +1,12 @@
-import DriverDashboard from '@/components/dashboards/DriverDashboard';
+import N8nChatWebView from '@/components/ai/N8nChatWidget';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
 import { getCurrentUserRole, subscribeToRoleChanges, type UserRole } from '@/constants/UserRoles';
-import { Div } from '@expo/html-elements';
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import N8nChatWebView from '@/components/ai/N8nChatWidget';
+import { DriverDashboard } from '../../../components/dashboards';
 
 const { width } = Dimensions.get('window');
 
