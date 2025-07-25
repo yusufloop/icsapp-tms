@@ -1,3 +1,4 @@
+import '@/lib/polyfills';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import {
   Inter_400Regular,

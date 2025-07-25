@@ -1,91 +1,104 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import React, { useState, useEffect } from 'react';
-import { Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { 
-  fetchDriversWithStatus, 
-  searchDrivers, 
-  getMockDrivers,
-  type Driver 
-} from '../../services/driverService';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+  Alert,
+  Modal,
+} from "react-native";
+import { useState, useEffect } from "react";
+import { MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import {
+  fetchDriversWithStatus,
+  searchDrivers,
+  type Driver,
+} from "@/services/driverService";
+
+// Driver avatars for UI
+const driverAvatars = ["👨‍💼", "👨‍🚛", "👩‍💼", "👨‍🔧", "👩‍🚛", "👨‍💻", "👩‍🔬"];
 
 export default function NewBookingStep3WebScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
   const [showDriverModal, setShowDriverModal] = useState(false);
   const [modalDriver, setModalDriver] = useState<Driver | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successDriver, setSuccessDriver] = useState<Driver | null>(null);
+  const [successDriver, setSuccessDriver] = useState<any>(null);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Load drivers on component mount
   useEffect(() => {
+    const loadDrivers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        console.log("🌐 Loading drivers for Step 3 (Web)...");
+        const fetchedDrivers = await fetchDriversWithStatus();
+        console.log(`✅ Loaded ${fetchedDrivers.length} drivers (Web)`);
+        setDrivers(fetchedDrivers);
+      } catch (err) {
+        console.error("❌ Error loading drivers (Web):", err);
+        setError("Failed to load drivers. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadDrivers();
   }, []);
 
-  const loadDrivers = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Try to fetch real drivers from database
-      const realDrivers = await fetchDriversWithStatus();
-      
-      if (realDrivers.length > 0) {
-        setDrivers(realDrivers);
-        console.log('✅ Loaded real drivers from database:', realDrivers.length);
-      } else {
-        // Fallback to mock data if no real drivers found
-        const mockDrivers = getMockDrivers();
-        setDrivers(mockDrivers);
-        console.log('⚠️ Using mock drivers as fallback');
+  // Handle search with debouncing
+  useEffect(() => {
+    const searchDriversAsync = async () => {
+      if (!searchQuery.trim()) {
+        // If search is empty, reload all drivers
+        try {
+          const fetchedDrivers = await fetchDriversWithStatus();
+          setDrivers(fetchedDrivers);
+        } catch (err) {
+          console.error("Error reloading drivers (Web):", err);
+        }
+        return;
       }
-    } catch (err) {
-      console.error('❌ Error loading drivers:', err);
-      setError('Failed to load drivers');
-      
-      // Use mock data as fallback
-      const mockDrivers = getMockDrivers();
-      setDrivers(mockDrivers);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  // Search drivers
-  const handleSearch = async (query: string) => {
-    setSearchQuery(query);
-    
-    if (!query.trim()) {
-      loadDrivers();
-      return;
-    }
+      try {
+        console.log(`🔍 Searching drivers with query (Web): "${searchQuery}"`);
+        const searchResults = await searchDrivers(searchQuery);
+        console.log(
+          `📋 Found ${searchResults.length} drivers matching search (Web)`
+        );
+        setDrivers(searchResults);
+      } catch (err) {
+        console.error("❌ Error searching drivers (Web):", err);
+        setError("Failed to search drivers. Please try again.");
+      }
+    };
 
-    try {
-      const searchResults = await searchDrivers(query);
-      setDrivers(searchResults);
-    } catch (err) {
-      console.error('Error searching drivers:', err);
-      // Filter current drivers locally as fallback
-      const filtered = drivers.filter(driver =>
-        driver.name.toLowerCase().includes(query.toLowerCase()) ||
-        (driver.license_no && driver.license_no.toLowerCase().includes(query.toLowerCase())) ||
-        (driver.phone && driver.phone.includes(query))
-      );
-      setDrivers(filtered);
-    }
-  };
+    // Debounce search by 500ms
+    const timeoutId = setTimeout(searchDriversAsync, 500);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
-  // Get avatar based on driver name
-  const getDriverAvatar = (name: string) => {
-    const avatars = ['👨‍💼', '👩‍💼', '👨‍🚛', '👩‍🚛', '👨‍🔧', '👩‍🔧'];
-    const index = name.length % avatars.length;
-    return avatars[index];
-  };
+  // Transform drivers to include UI-specific data
+  const transformedDrivers = drivers.map((driver, index) => ({
+    id: driver.driver_id,
+    name: driver.name,
+    phone: driver.phone || "No phone provided",
+    no_plate: driver.no_plate || "No vehicle assigned",
+    avatar: driverAvatars[index % driverAvatars.length],
+    status: driver.status.toLowerCase(),
+    currentJob: driver.status === "Busy" ? driver.current_job : null,
+    originalDriver: driver,
+  }));
+
+  // Use transformed drivers for filtering (this will be empty while searching)
+  const filteredDrivers = transformedDrivers;
 
   const handleDriverSelect = (driverId: string) => {
     setSelectedDriver(driverId);
@@ -99,37 +112,43 @@ export default function NewBookingStep3WebScreen() {
   const handleBookmark = () => {
     setIsBookmarked(!isBookmarked);
     Alert.alert(
-      isBookmarked ? 'Template Removed' : 'Template Saved',
-      isBookmarked 
-        ? 'Configuration removed from templates' 
-        : 'Configuration from Steps 1 & 2 saved as template'
+      isBookmarked ? "Template Removed" : "Template Saved",
+      isBookmarked
+        ? "Configuration removed from templates"
+        : "Configuration from Steps 1 & 2 saved as template"
     );
   };
 
   const handleCreateBooking = () => {
+    console.log("🚀 Create Booking button pressed! (WEB VERSION)");
+    console.log("📋 Selected driver:", selectedDriver);
+
     if (!selectedDriver) {
-      Alert.alert('Error', 'Please select a driver to continue');
+      console.log("❌ No driver selected, showing error alert");
+      Alert.alert("Error", "Please select a driver to continue");
       return;
     }
 
-    const driver = drivers.find(d => d.driver_id === selectedDriver);
-    if (!driver) {
-      Alert.alert('Error', 'Selected driver not found');
-      return;
-    }
-    
+    const driver = transformedDrivers.find((d) => d.id === selectedDriver);
+    console.log("👨‍💼 Found driver:", driver);
+    console.log("🎉 About to show success modal (WEB)");
+
+    // Show custom success modal instead of Alert.alert
     setSuccessDriver(driver);
     setShowSuccessModal(true);
+    console.log("✅ Success modal triggered (WEB)");
   };
 
   const handleBackToBooking = () => {
+    console.log("🔙 User selected: Back to Booking (WEB)");
     setShowSuccessModal(false);
-    router.push('/(app)/(tabs)/requests');
+    router.push("/(app)/(tabs)/requests");
   };
 
   const handleViewInvoice = () => {
+    console.log("📄 User selected: View Invoice (WEB)");
     setShowSuccessModal(false);
-    router.push('/(screens)/invoice');
+    router.push("/(screens)/invoice");
   };
 
   const handleBack = () => {
@@ -138,10 +157,10 @@ export default function NewBookingStep3WebScreen() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      year: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
@@ -154,7 +173,7 @@ export default function NewBookingStep3WebScreen() {
       {/* Header */}
       <View className="bg-white border-b border-gray-200 px-6 py-4">
         <View className="flex-row items-center max-w-4xl mx-auto w-full">
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleBack}
             className="mr-4 p-2 -ml-2 active:opacity-80"
           >
@@ -182,7 +201,7 @@ export default function NewBookingStep3WebScreen() {
               </View>
               <View className="flex-1 h-1 bg-green-500 ml-2" />
             </View>
-            
+
             {/* Step 2 - Completed */}
             <View className="flex-row items-center flex-1">
               <View className="w-8 h-8 rounded-full bg-green-500 items-center justify-center ml-2">
@@ -190,7 +209,7 @@ export default function NewBookingStep3WebScreen() {
               </View>
               <View className="flex-1 h-1 bg-green-500 ml-2" />
             </View>
-            
+
             {/* Step 3 - Active */}
             <View className="flex-row items-center">
               <View className="w-8 h-8 rounded-full bg-primary items-center justify-center ml-2">
@@ -202,7 +221,7 @@ export default function NewBookingStep3WebScreen() {
       </View>
 
       {/* Main Content Container */}
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={true}
         contentContainerStyle={{ paddingBottom: 120 }}
@@ -214,7 +233,12 @@ export default function NewBookingStep3WebScreen() {
               <View className="px-6 py-4">
                 {/* Search Input */}
                 <View className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 mb-4">
-                  <MaterialIcons name="search" size={20} color="#8A8A8E" style={{ marginRight: 12 }} />
+                  <MaterialIcons
+                    name="search"
+                    size={20}
+                    color="#8A8A8E"
+                    style={{ marginRight: 12 }}
+                  />
                   <TextInput
                     className="flex-1 text-base text-text-primary"
                     value={searchQuery}
@@ -230,13 +254,21 @@ export default function NewBookingStep3WebScreen() {
                     {/* Sort Button */}
                     <TouchableOpacity className="bg-bg-secondary border border-gray-300 rounded-lg px-4 py-2 flex-row items-center active:opacity-80">
                       <MaterialIcons name="sort" size={18} color="#1C1C1E" />
-                      <Text className="text-sm font-medium text-text-primary ml-2">Sort</Text>
+                      <Text className="text-sm font-medium text-text-primary ml-2">
+                        Sort
+                      </Text>
                     </TouchableOpacity>
 
                     {/* Filter Button with Badge */}
                     <TouchableOpacity className="bg-bg-secondary border border-gray-300 rounded-lg px-4 py-2 flex-row items-center active:opacity-80 relative">
-                      <MaterialIcons name="filter-list" size={18} color="#1C1C1E" />
-                      <Text className="text-sm font-medium text-text-primary ml-2">Filter</Text>
+                      <MaterialIcons
+                        name="filter-list"
+                        size={18}
+                        color="#1C1C1E"
+                      />
+                      <Text className="text-sm font-medium text-text-primary ml-2">
+                        Filter
+                      </Text>
                       {/* Notification Badge */}
                       <View className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full items-center justify-center">
                         <Text className="text-xs font-bold text-white">2</Text>
@@ -245,14 +277,14 @@ export default function NewBookingStep3WebScreen() {
                   </View>
 
                   {/* Bookmark Button */}
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     onPress={handleBookmark}
                     className="p-2 active:opacity-80"
                   >
-                    <MaterialIcons 
-                      name={isBookmarked ? "bookmark" : "bookmark-border"} 
-                      size={24} 
-                      color={isBookmarked ? "#0A84FF" : "#8A8A8E"} 
+                    <MaterialIcons
+                      name={isBookmarked ? "bookmark" : "bookmark-border"}
+                      size={24}
+                      color={isBookmarked ? "#0A84FF" : "#8A8A8E"}
                     />
                   </TouchableOpacity>
                 </View>
@@ -287,7 +319,9 @@ export default function NewBookingStep3WebScreen() {
                         key={driver.driver_id}
                         onPress={() => handleDriverTap(driver)}
                         className={`border rounded-lg p-4 flex-row items-center active:opacity-80 ${
-                          selectedDriver === driver.driver_id ? 'border-primary bg-blue-50' : 'border-gray-300 bg-bg-secondary'
+                          selectedDriver === driver.id
+                            ? "border-primary bg-blue-50"
+                            : "border-gray-300 bg-bg-secondary"
                         }`}
                       >
                         {/* Selection Radio */}
@@ -295,10 +329,14 @@ export default function NewBookingStep3WebScreen() {
                           onPress={() => handleDriverSelect(driver.driver_id)}
                           className="mr-4"
                         >
-                          <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-                            selectedDriver === driver.driver_id ? 'border-primary bg-primary' : 'border-gray-400'
-                          }`}>
-                            {selectedDriver === driver.driver_id && (
+                          <View
+                            className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
+                              selectedDriver === driver.id
+                                ? "border-primary bg-primary"
+                                : "border-gray-400"
+                            }`}
+                          >
+                            {selectedDriver === driver.id && (
                               <View className="w-3 h-3 rounded-full bg-white" />
                             )}
                           </View>
@@ -316,29 +354,48 @@ export default function NewBookingStep3WebScreen() {
                               {driver.name}
                             </Text>
                             {/* Status Badge */}
-                            <View className={`px-2 py-1 rounded-full ${
-                              driver.status === 'Available' ? 'bg-green-100' : 'bg-orange-100'
-                            }`}>
-                              <Text className={`text-xs font-medium ${
-                                driver.status === 'Available' ? 'text-green-700' : 'text-orange-700'
-                              }`}>
-                                {driver.status}
+                            <View
+                              className={`px-2 py-1 rounded-full ${
+                                driver.status === "available"
+                                  ? "bg-green-100"
+                                  : "bg-orange-100"
+                              }`}
+                            >
+                              <Text
+                                className={`text-xs font-medium ${
+                                  driver.status === "available"
+                                    ? "text-green-700"
+                                    : "text-orange-700"
+                                }`}
+                              >
+                                {driver.status === "available"
+                                  ? "Available"
+                                  : "Busy"}
                               </Text>
                             </View>
                           </View>
                           <Text className="text-sm text-text-secondary mt-1">
-                            {driver.phone || driver.email || `License: ${driver.license_no || 'N/A'}`}
+                            {driver.no_plate}
                           </Text>
                         </View>
 
                         {/* Tap Indicator */}
-                        <MaterialIcons name="chevron-right" size={20} color="#8A8A8E" className="ml-2" />
+                        <MaterialIcons
+                          name="chevron-right"
+                          size={20}
+                          color="#8A8A8E"
+                          className="ml-2"
+                        />
                       </TouchableOpacity>
                     ))}
                   </View>
                 ) : (
                   <View className="items-center py-12">
-                    <MaterialIcons name="search-off" size={48} color="#8A8A8E" />
+                    <MaterialIcons
+                      name="search-off"
+                      size={48}
+                      color="#8A8A8E"
+                    />
                     <Text className="text-text-secondary mt-4 text-center">
                       No drivers found matching your search
                     </Text>
@@ -354,21 +411,25 @@ export default function NewBookingStep3WebScreen() {
                     onPress={handleBack}
                     className="flex-1 bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
                   >
-                    <Text className="text-base font-semibold text-gray-600">Back</Text>
+                    <Text className="text-base font-semibold text-gray-600">
+                      Back
+                    </Text>
                   </TouchableOpacity>
-                  
+
                   {/* Create Booking Button */}
                   <TouchableOpacity
                     onPress={handleCreateBooking}
                     className="flex-1 active:opacity-80"
                   >
                     <LinearGradient
-                      colors={['#409CFF', '#0A84FF']}
+                      colors={["#409CFF", "#0A84FF"]}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                       className="rounded-lg px-4 py-3 min-h-[44px] items-center justify-center"
                     >
-                      <Text className="text-base font-semibold text-white">Create Booking</Text>
+                      <Text className="text-base font-semibold text-white">
+                        Create Booking
+                      </Text>
                     </LinearGradient>
                   </TouchableOpacity>
                 </View>
@@ -387,7 +448,7 @@ export default function NewBookingStep3WebScreen() {
       >
         <View className="flex-1 bg-black/50 items-center justify-center px-6">
           <View className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
-            {modalDriver?.status === 'Available' ? (
+            {modalDriver?.status === "available" ? (
               <View>
                 {/* Available Driver Header */}
                 <View className="px-6 py-6 border-b border-gray-200 relative">
@@ -397,7 +458,7 @@ export default function NewBookingStep3WebScreen() {
                   >
                     <MaterialIcons name="close" size={24} color="#1C1C1E" />
                   </TouchableOpacity>
-                  
+
                   <View className="items-center">
                     <View className="w-16 h-16 rounded-full bg-gray-200 items-center justify-center mb-3">
                       <Text className="text-3xl">{getDriverAvatar(modalDriver.name)}</Text>
@@ -406,7 +467,7 @@ export default function NewBookingStep3WebScreen() {
                       {modalDriver.name}
                     </Text>
                     <Text className="text-text-secondary text-sm">
-                      {modalDriver.phone || modalDriver.email || `License: ${modalDriver.license_no || 'N/A'}`}
+                      {modalDriver.no_plate}
                     </Text>
                   </View>
                 </View>
@@ -414,13 +475,18 @@ export default function NewBookingStep3WebScreen() {
                 {/* Available Content */}
                 <View className="px-6 py-8 items-center">
                   <View className="w-16 h-16 rounded-full bg-green-100 items-center justify-center mb-4">
-                    <MaterialIcons name="check-circle" size={32} color="#10B981" />
+                    <MaterialIcons
+                      name="check-circle"
+                      size={32}
+                      color="#10B981"
+                    />
                   </View>
                   <Text className="text-lg font-semibold text-text-primary text-center mb-2">
                     Driver Available
                   </Text>
                   <Text className="text-text-secondary text-center">
-                    This driver is currently available and has no active booking.
+                    This driver is currently available and has no active
+                    booking.
                   </Text>
                 </View>
               </View>
@@ -435,7 +501,7 @@ export default function NewBookingStep3WebScreen() {
                     >
                       <MaterialIcons name="close" size={24} color="#1C1C1E" />
                     </TouchableOpacity>
-                    
+
                     <View className="flex-row items-center">
                       <View className="w-12 h-12 rounded-full bg-gray-200 items-center justify-center mr-3">
                         <Text className="text-xl">{getDriverAvatar(modalDriver.name)}</Text>
@@ -445,7 +511,7 @@ export default function NewBookingStep3WebScreen() {
                           {modalDriver.name}
                         </Text>
                         <Text className="text-text-secondary text-sm">
-                          {modalDriver.phone || modalDriver.email || `License: ${modalDriver.license_no || 'N/A'}`}
+                          {modalDriver.no_plate}
                         </Text>
                       </View>
                     </View>
@@ -458,21 +524,101 @@ export default function NewBookingStep3WebScreen() {
                         <MaterialIcons name="work" size={20} color="#F59E0B" />
                         <Text className="text-orange-700 font-semibold ml-2">Currently Busy</Text>
                       </View>
-                      
-                      <View className="space-y-2">
-                        <Text className="text-orange-800">
-                          Assigned Bookings: {modalDriver.assigned_bookings}
+
+                      <View className="flex-1 items-center mx-4">
+                        <MaterialIcons
+                          name="local-shipping"
+                          size={28}
+                          color="#409CFF"
+                        />
+                        <View className="flex-row items-center mt-1">
+                          <View className="w-8 h-0.5 bg-gray-300" />
+                          <MaterialIcons
+                            name="arrow-forward"
+                            size={16}
+                            color="#8A8A8E"
+                          />
+                          <View className="w-8 h-0.5 bg-gray-300" />
+                        </View>
+                      </View>
+
+                      <View className="items-center">
+                        <Text className="text-2xl font-bold text-text-primary">
+                          {modalDriver.currentJob.destination}
                         </Text>
-                        {modalDriver.license_no && (
-                          <Text className="text-orange-800">
-                            License: {modalDriver.license_no}
+                        <Text className="text-xs text-text-secondary mt-1">
+                          {formatDate(modalDriver.currentJob.date)}
+                        </Text>
+                        <Text className="text-xs text-text-secondary">
+                          {formatTime(modalDriver.currentJob.time)}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Details Grid */}
+                  <View className="px-6 py-4">
+                    <View className="space-y-4">
+                      {/* Row 1 */}
+                      <View className="flex-row">
+                        <View className="flex-1 mr-2">
+                          <Text className="text-xs text-text-secondary mb-1">
+                            Total Volume (CBM)
                           </Text>
-                        )}
-                        {modalDriver.last_updated && (
-                          <Text className="text-orange-600 text-sm">
-                            Last Updated: {new Date(modalDriver.last_updated).toLocaleString()}
+                          <Text className="text-lg font-bold text-text-primary">
+                            {modalDriver.currentJob.totalVolume.replace(
+                              " CBM",
+                              ""
+                            )}
                           </Text>
-                        )}
+                        </View>
+                        <View className="flex-1 ml-2">
+                          <Text className="text-xs text-text-secondary mb-1">
+                            Total Gross Weight (KG)
+                          </Text>
+                          <Text className="text-lg font-bold text-text-primary">
+                            {modalDriver.currentJob.totalGrossWeight.replace(
+                              " KG",
+                              ""
+                            )}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Row 2 */}
+                      <View className="flex-row">
+                        <View className="flex-1 mr-2">
+                          <Text className="text-xs text-text-secondary mb-1">
+                            Shipment Type
+                          </Text>
+                          <Text className="text-lg font-bold text-text-primary">
+                            {modalDriver.currentJob.shipmentType}
+                          </Text>
+                        </View>
+                        <View className="flex-1 ml-2">
+                          <Text className="text-xs text-text-secondary mb-1">
+                            Container Size (ft)
+                          </Text>
+                          <Text className="text-lg font-bold text-text-primary">
+                            {modalDriver.currentJob.containerSize.replace(
+                              "ft",
+                              ""
+                            )}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Row 3 */}
+                      <View className="flex-row">
+                        <View className="flex-1">
+                          <Text className="text-xs text-text-secondary mb-1">
+                            Twinning
+                          </Text>
+                          <Text className="text-lg font-bold text-text-primary">
+                            {modalDriver.currentJob.twinning}
+                          </Text>
+                        </View>
+                        <View className="flex-1" />
                       </View>
                     </View>
                   </View>
@@ -496,50 +642,69 @@ export default function NewBookingStep3WebScreen() {
             <View className="px-6 py-6 border-b border-gray-200">
               <View className="items-center">
                 <View className="w-16 h-16 rounded-full bg-green-100 items-center justify-center mb-4">
-                  <MaterialIcons name="check-circle" size={32} color="#10B981" />
+                  <MaterialIcons
+                    name="check-circle"
+                    size={32}
+                    color="#10B981"
+                  />
                 </View>
                 <Text className="text-xl font-bold text-text-primary text-center mb-2">
                   Booking Created Successfully!
                 </Text>
                 <Text className="text-text-secondary text-center">
-                  Your booking has been created with {successDriver?.name}. What would you like to do next?
+                  Your booking has been created with {successDriver?.name}. What
+                  would you like to do next?
                 </Text>
               </View>
             </View>
 
             {/* Action Buttons */}
             <View className="px-6 py-6">
-                          <View className="gap-3 ">
-                            {/* View Invoice Button */}
-                            <TouchableOpacity
-                              onPress={handleViewInvoice}
-                              className="active:opacity-80  rounded-xl"
-                            >
-                              <LinearGradient
-                                colors={['#409CFF', '#0A84FF']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                                className="rounded-2xl px-4 py-3 min-h-[44px] items-center justify-center"
-                              >
-                                <View className="flex-row items-center">
-                                  <MaterialIcons name="receipt" size={18} color="white" style={{ marginRight: 8 }} />
-                                  <Text className="text-base font-semibold text-white">View Invoice</Text>
-                                </View>
-                              </LinearGradient>
-                            </TouchableOpacity>
-            
-                            {/* Back to Booking Button */}
-                            <TouchableOpacity
-                              onPress={handleBackToBooking}
-                              className="bg-gray-100 border border-gray-300 rounded-2xl px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
-                            >
-                              <View className="flex-row items-center">
-                                <MaterialIcons name="arrow-back" size={18} color="#1C1C1E" style={{ marginRight: 8 }} />
-                                <Text className="text-base font-semibold text-gray-600">Back to Booking</Text>
-                              </View>
-                            </TouchableOpacity>
-                          </View>
-                        </View>
+              <View className="gap-3 ">
+                {/* View Invoice Button */}
+                <TouchableOpacity
+                  onPress={handleViewInvoice}
+                  className="active:opacity-80  rounded-xl"
+                >
+                  <LinearGradient
+                    colors={["#409CFF", "#0A84FF"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    className="rounded-2xl px-4 py-3 min-h-[44px] items-center justify-center"
+                  >
+                    <View className="flex-row items-center">
+                      <MaterialIcons
+                        name="receipt"
+                        size={18}
+                        color="white"
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text className="text-base font-semibold text-white">
+                        View Invoice
+                      </Text>
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                {/* Back to Booking Button */}
+                <TouchableOpacity
+                  onPress={handleBackToBooking}
+                  className="bg-gray-100 border border-gray-300 rounded-2xl px-4 py-3 min-h-[44px] items-center justify-center active:opacity-80"
+                >
+                  <View className="flex-row items-center">
+                    <MaterialIcons
+                      name="arrow-back"
+                      size={18}
+                      color="#1C1C1E"
+                      style={{ marginRight: 8 }}
+                    />
+                    <Text className="text-base font-semibold text-gray-600">
+                      Back to Booking
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         </View>
       </Modal>

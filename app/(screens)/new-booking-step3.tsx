@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Alert,
   Modal,
@@ -12,13 +12,25 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  fetchDriversWithStatus,
-  getMockDrivers,
-  searchDrivers,
-  type Driver
-} from '../../services/driverService';
+import { fetchDriversWithStatus, searchDrivers, type Driver } from '@/services/driverService';
 
+// Driver avatars for UI
+const driverAvatars = ["👨‍💼", "👨‍🚛", "👩‍💼", "👨‍🔧", "👩‍🚛", "👨‍💻", "👩‍🔬"];
+
+// Mock current job data (in real implementation, this would come from bookings service)
+const mockCurrentJobs: Record<string, any> = {
+  "busy": {
+    origin: "KL",
+    destination: "JB",
+    date: "2025-01-13",
+    time: "16:00",
+    totalVolume: "18.2 CBM",
+    totalGrossWeight: "890 KG",
+    shipmentType: "LCL",
+    containerSize: "20ft",
+    twinning: "No",
+  }
+};
 
 export default function NewBookingStep3Screen() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,75 +39,76 @@ export default function NewBookingStep3Screen() {
   const [modalDriver, setModalDriver] = useState<Driver | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successDriver, setSuccessDriver] = useState<Driver | null>(null);
+  const [successDriver, setSuccessDriver] = useState<any>(null);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Load drivers on component mount
   useEffect(() => {
+    const loadDrivers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        console.log('📱 Loading drivers for Step 3...');
+        const fetchedDrivers = await fetchDriversWithStatus();
+        console.log(`✅ Loaded ${fetchedDrivers.length} drivers`);
+        setDrivers(fetchedDrivers);
+      } catch (err) {
+        console.error('❌ Error loading drivers:', err);
+        setError('Failed to load drivers. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadDrivers();
   }, []);
 
-  const loadDrivers = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Try to fetch real drivers from database
-      const realDrivers = await fetchDriversWithStatus();
-
-      if (realDrivers.length > 0) {
-        setDrivers(realDrivers);
-        console.log('✅ Loaded real drivers from database:', realDrivers.length);
-      } else {
-        // Fallback to mock data if no real drivers found
-        const mockDrivers = getMockDrivers();
-        setDrivers(mockDrivers);
-        console.log('⚠️ Using mock drivers as fallback');
+  // Handle search with debouncing
+  useEffect(() => {
+    const searchDriversAsync = async () => {
+      if (!searchQuery.trim()) {
+        // If search is empty, reload all drivers
+        try {
+          const fetchedDrivers = await fetchDriversWithStatus();
+          setDrivers(fetchedDrivers);
+        } catch (err) {
+          console.error('Error reloading drivers:', err);
+        }
+        return;
       }
-    } catch (err) {
-      console.error('❌ Error loading drivers:', err);
-      setError('Failed to load drivers');
 
-      // Use mock data as fallback
-      const mockDrivers = getMockDrivers();
-      setDrivers(mockDrivers);
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        console.log(`🔍 Searching drivers with query: "${searchQuery}"`);
+        const searchResults = await searchDrivers(searchQuery);
+        console.log(`📋 Found ${searchResults.length} drivers matching search`);
+        setDrivers(searchResults);
+      } catch (err) {
+        console.error('❌ Error searching drivers:', err);
+        setError('Failed to search drivers. Please try again.');
+      }
+    };
 
-  // Search drivers
-  const handleSearch = async (query: string) => {
-    setSearchQuery(query);
+    // Debounce search by 500ms
+    const timeoutId = setTimeout(searchDriversAsync, 500);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
-    if (!query.trim()) {
-      loadDrivers();
-      return;
-    }
+  // Transform drivers to include UI-specific data
+  const transformedDrivers = drivers.map((driver, index) => ({
+    id: driver.driver_id,
+    name: driver.name,
+    phone: driver.phone || 'No phone provided',
+    no_plate: driver.no_plate || 'No vehicle assigned',
+    avatar: driverAvatars[index % driverAvatars.length],
+    status: driver.status.toLowerCase(),
+    currentJob: driver.status === 'Busy' ? mockCurrentJobs.busy : null,
+    originalDriver: driver
+  }));
 
-    try {
-      const searchResults = await searchDrivers(query);
-      setDrivers(searchResults);
-    } catch (err) {
-      console.error('Error searching drivers:', err);
-      // Filter current drivers locally as fallback
-      const filtered = drivers.filter(driver =>
-        driver.name.toLowerCase().includes(query.toLowerCase()) ||
-        (driver.license_no && driver.license_no.toLowerCase().includes(query.toLowerCase())) ||
-        (driver.phone && driver.phone.includes(query))
-      );
-      setDrivers(filtered);
-    }
-  };
-
-  // Get avatar based on driver name
-  const getDriverAvatar = (name: string) => {
-    const avatars = ['👨‍💼', '👩‍💼', '👨‍🚛', '👩‍🚛', '👨‍🔧', '👩‍🔧'];
-    const index = name.length % avatars.length;
-    return avatars[index];
-  };
+  // Use transformed drivers for filtering (this will be empty while searching)
+  const filteredDrivers = transformedDrivers;
 
   const handleDriverSelect = (driverId: string) => {
     setSelectedDriver(driverId);
@@ -122,12 +135,11 @@ export default function NewBookingStep3Screen() {
       return;
     }
 
-    const driver = drivers.find(d => d.driver_id === selectedDriver);
-    if (!driver) {
-      Alert.alert('Error', 'Selected driver not found');
-      return;
-    }
-
+    const driver = transformedDrivers.find(d => d.id === selectedDriver);
+    console.log('👨‍💼 Found driver:', driver);
+    console.log('🎉 About to show success modal');
+    
+    // Show custom success modal instead of Alert.alert
     setSuccessDriver(driver);
     setShowSuccessModal(true);
   };
@@ -284,19 +296,50 @@ export default function NewBookingStep3Screen() {
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         <View className="px-6 py-4">
-          {error && (
-            <View className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-              <Text className="text-red-700 text-center">{error}</Text>
-              <TouchableOpacity
-                onPress={loadDrivers}
-                className="mt-2 bg-red-500 px-4 py-2 rounded-lg"
+          {loading ? (
+            <View className="items-center py-12">
+              <MaterialIcons name="hourglass-empty" size={48} color="#8A8A8E" />
+              <Text className="text-text-secondary mt-4 text-center">
+                Loading drivers...
+              </Text>
+            </View>
+          ) : error ? (
+            <View className="items-center py-12">
+              <MaterialIcons name="error-outline" size={48} color="#FF453A" />
+              <Text className="text-red-600 mt-4 text-center">
+                {error}
+              </Text>
+              <TouchableOpacity 
+                onPress={() => {
+                  setError(null);
+                  // Trigger reload
+                  const loadDrivers = async () => {
+                    try {
+                      setLoading(true);
+                      const fetchedDrivers = await fetchDriversWithStatus();
+                      setDrivers(fetchedDrivers);
+                    } catch (err) {
+                      setError('Failed to load drivers. Please try again.');
+                    } finally {
+                      setLoading(false);
+                    }
+                  };
+                  loadDrivers();
+                }}
+                className="mt-4 bg-primary px-4 py-2 rounded-lg"
               >
-                <Text className="text-white text-center font-medium">Retry</Text>
+                <Text className="text-white font-medium">Retry</Text>
               </TouchableOpacity>
             </View>
-          )}
-
-          {drivers.map((driver) => (
+          ) : filteredDrivers.length === 0 ? (
+            <View className="items-center py-12">
+              <MaterialIcons name="search-off" size={48} color="#8A8A8E" />
+              <Text className="text-text-secondary mt-4 text-center">
+                {searchQuery ? 'No drivers found matching your search' : 'No drivers available'}
+              </Text>
+            </View>
+          ) : (
+            filteredDrivers.map((driver) => (
             <TouchableOpacity
               key={driver.driver_id}
               onPress={() => handleDriverTap(driver)}
@@ -355,7 +398,7 @@ export default function NewBookingStep3Screen() {
                   </View>
                 </View>
                 <Text className="text-sm text-text-secondary mt-1">
-                  {driver.phone}
+                  {driver.no_plate}
                 </Text>
               </View>
 
@@ -367,15 +410,7 @@ export default function NewBookingStep3Screen() {
                 className="ml-2"
               />
             </TouchableOpacity>
-          ))}
-
-          {drivers.length === 0 && !loading && (
-            <View className="items-center py-12">
-              <MaterialIcons name="search-off" size={48} color="#8A8A8E" />
-              <Text className="text-text-secondary mt-4 text-center">
-                No drivers found matching your search
-              </Text>
-            </View>
+          ))
           )}
         </View>
       </ScrollView>
@@ -434,7 +469,7 @@ export default function NewBookingStep3Screen() {
                       {modalDriver.name}
                     </Text>
                     <Text className="text-text-secondary text-sm">
-                      {modalDriver.phone || modalDriver.email || `License: ${modalDriver.license_no || 'N/A'}`}
+                      {modalDriver.no_plate}
                     </Text>
                   </View>
                 </View>
@@ -442,19 +477,14 @@ export default function NewBookingStep3Screen() {
                 {/* Available Content */}
                 <View className="px-6 py-8 items-center">
                   <View className="w-16 h-16 rounded-full bg-green-100 items-center justify-center mb-4">
-                    {/* FIX 1: Invalid prop replaced with 'name' prop */}
-                    <MaterialIcons
-                      name="check-circle"
-                      size={32}
-                      color="#10B981"
-                    />
+                    <MaterialIcons name="check-circle" size={32} color="#10B981" />
                   </View>
                   {/* FIX 2: Stray text nodes wrapped in <Text> components */}
                   <Text className="text-xl font-bold text-green-700">
                     Driver Available
                   </Text>
-                  <Text className="text-text-secondary text-center mt-1">
-                    This driver is currently available and has no active bookings.
+                  <Text className="text-text-secondary text-center">
+                    This driver is currently available and has no active booking.
                   </Text>
                 </View>
               </View> // <-- FIX 3: Extraneous </View> removed.
@@ -480,7 +510,7 @@ export default function NewBookingStep3Screen() {
                           {modalDriver.name}
                         </Text>
                         <Text className="text-text-secondary text-sm">
-                          {modalDriver.phone || modalDriver.email || `License: ${modalDriver.license_no || 'N/A'}`}
+                          {modalDriver.no_plate}
                         </Text>
                       </View>
                     </View>
