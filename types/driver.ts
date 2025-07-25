@@ -1,3 +1,12 @@
+export interface Vehicle {
+  id: string;
+  name?: string;
+  no_plate?: string;
+  type_vehicle?: string;
+  driver_id: string;
+  created_at?: string;
+}
+
 export interface Driver {
   driver_id: string;
   user_id?: string;
@@ -9,6 +18,8 @@ export interface Driver {
   current_location?: string;
   assigned_bookings?: number;
   last_updated?: string;
+  vehicle?: Vehicle;
+  no_plate?: string;
   current_job?: {
     origin: string;
     destination: string;

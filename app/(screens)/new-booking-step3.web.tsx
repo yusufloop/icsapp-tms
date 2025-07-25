@@ -14,8 +14,8 @@ import { router } from "expo-router";
 import {
   fetchDriversWithStatus,
   searchDrivers,
-} from "../../services/driverService";
-import type { Driver } from "../../types/driver";
+  type Driver,
+} from "@/services/driverService";
 
 // Driver avatars for UI
 const driverAvatars = ["👨‍💼", "👨‍🚛", "👩‍💼", "👨‍🔧", "👩‍🚛", "👨‍💻", "👩‍🔬"];
@@ -90,6 +90,7 @@ export default function NewBookingStep3WebScreen() {
     id: driver.driver_id,
     name: driver.name,
     phone: driver.phone || "No phone provided",
+    no_plate: driver.no_plate || "No vehicle assigned",
     avatar: driverAvatars[index % driverAvatars.length],
     status: driver.status.toLowerCase(),
     currentJob: driver.status === "Busy" ? driver.current_job : null,
@@ -356,7 +357,7 @@ export default function NewBookingStep3WebScreen() {
                             </View>
                           </View>
                           <Text className="text-sm text-text-secondary mt-1">
-                            {driver.phone}
+                            {driver.no_plate}
                           </Text>
                         </View>
 
@@ -448,7 +449,7 @@ export default function NewBookingStep3WebScreen() {
                       {modalDriver.name}
                     </Text>
                     <Text className="text-text-secondary text-sm">
-                      {modalDriver.phone}
+                      {modalDriver.no_plate}
                     </Text>
                   </View>
                 </View>
@@ -492,7 +493,7 @@ export default function NewBookingStep3WebScreen() {
                           {modalDriver.name}
                         </Text>
                         <Text className="text-text-secondary text-sm">
-                          {modalDriver.phone}
+                          {modalDriver.no_plate}
                         </Text>
                       </View>
                     </View>

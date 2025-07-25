@@ -100,6 +100,7 @@ export default function NewBookingStep3Screen() {
     id: driver.driver_id,
     name: driver.name,
     phone: driver.phone || 'No phone provided',
+    no_plate: driver.no_plate || 'No vehicle assigned',
     avatar: driverAvatars[index % driverAvatars.length],
     status: driver.status.toLowerCase(),
     currentJob: driver.status === 'Busy' ? mockCurrentJobs.busy : null,
@@ -391,7 +392,7 @@ export default function NewBookingStep3Screen() {
                   </View>
                 </View>
                 <Text className="text-sm text-text-secondary mt-1">
-                  {driver.phone}
+                  {driver.no_plate}
                 </Text>
               </View>
 
@@ -458,7 +459,7 @@ export default function NewBookingStep3Screen() {
                       {modalDriver.name}
                     </Text>
                     <Text className="text-text-secondary text-sm">
-                      {modalDriver.phone}
+                      {modalDriver.no_plate}
                     </Text>
                   </View>
                 </View>
@@ -497,7 +498,7 @@ export default function NewBookingStep3Screen() {
                           {modalDriver.name}
                         </Text>
                         <Text className="text-text-secondary text-sm">
-                          {modalDriver.phone}
+                          {modalDriver.no_plate}
                         </Text>
                       </View>
                     </View>
