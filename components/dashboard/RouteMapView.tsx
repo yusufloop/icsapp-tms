@@ -27,16 +27,16 @@ interface RouteMapViewProps {
 export function RouteMapView({ currentRoute }: RouteMapViewProps) {
   // Coordinates for the specified address: 37A, Jln BP 7/12, Bandar Bukit Puchong, 47120 Puchong, Selangor
   const destinationCoordinates = {
-    latitude: 3.0319,
-    longitude: 101.6841,
+    latitude: 3.0514,
+    longitude: 101.5487,
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
   };
 
   // Mock current location (nearby location for demonstration)
   const currentLocation = {
-    latitude: 3.0289,
-    longitude: 101.6801,
+    latitude: 3.0514,
+    longitude: 101.5487,
   };
 
   return (
