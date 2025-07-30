@@ -24,7 +24,7 @@ export default function NewBookingStep3WebScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
   const [showDriverModal, setShowDriverModal] = useState(false);
-  const [modalDriver, setModalDriver] = useState<Driver | null>(null);
+  const [modalDriver, setModalDriver] = useState<any>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successDriver, setSuccessDriver] = useState<any>(null);
@@ -104,7 +104,7 @@ export default function NewBookingStep3WebScreen() {
     setSelectedDriver(driverId);
   };
 
-  const handleDriverTap = (driver: Driver) => {
+  const handleDriverTap = (driver: any) => {
     setModalDriver(driver);
     setShowDriverModal(true);
   };
@@ -242,7 +242,7 @@ export default function NewBookingStep3WebScreen() {
                   <TextInput
                     className="flex-1 text-base text-text-primary"
                     value={searchQuery}
-                    onChangeText={handleSearch}
+                    onChangeText={setSearchQuery}
                     placeholder="Search drivers..."
                     placeholderTextColor="#8A8A8E"
                   />
@@ -294,29 +294,11 @@ export default function NewBookingStep3WebScreen() {
             {/* Driver List Card */}
             <View className="bg-white rounded-lg shadow-sm border border-gray-200">
               <View className="px-6 py-6">
-                {loading ? (
-                  <View className="items-center py-12">
-                    <MaterialIcons name="hourglass-empty" size={48} color="#8A8A8E" />
-                    <Text className="text-text-secondary mt-4 text-center">
-                      Loading drivers...
-                    </Text>
-                  </View>
-                ) : error ? (
-                  <View className="items-center py-12">
-                    <MaterialIcons name="error-outline" size={48} color="#EF4444" />
-                    <Text className="text-red-500 mt-4 text-center">{error}</Text>
-                    <TouchableOpacity 
-                      onPress={loadDrivers}
-                      className="mt-4 bg-red-500 px-4 py-2 rounded-lg"
-                    >
-                      <Text className="text-white font-medium">Retry</Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : drivers.length > 0 ? (
+                {filteredDrivers.length > 0 ? (
                   <View className="space-y-3">
-                    {drivers.map((driver) => (
+                    {filteredDrivers.map((driver) => (
                       <TouchableOpacity
-                        key={driver.driver_id}
+                        key={driver.id}
                         onPress={() => handleDriverTap(driver)}
                         className={`border rounded-lg p-4 flex-row items-center active:opacity-80 ${
                           selectedDriver === driver.id
@@ -326,7 +308,7 @@ export default function NewBookingStep3WebScreen() {
                       >
                         {/* Selection Radio */}
                         <TouchableOpacity
-                          onPress={() => handleDriverSelect(driver.driver_id)}
+                          onPress={() => handleDriverSelect(driver.id)}
                           className="mr-4"
                         >
                           <View
@@ -344,7 +326,7 @@ export default function NewBookingStep3WebScreen() {
 
                         {/* Driver Avatar */}
                         <View className="w-12 h-12 rounded-full bg-gray-200 items-center justify-center mr-4">
-                          <Text className="text-2xl">{getDriverAvatar(driver.name)}</Text>
+                          <Text className="text-2xl">{driver.avatar}</Text>
                         </View>
 
                         {/* Driver Info */}
@@ -461,7 +443,7 @@ export default function NewBookingStep3WebScreen() {
 
                   <View className="items-center">
                     <View className="w-16 h-16 rounded-full bg-gray-200 items-center justify-center mb-3">
-                      <Text className="text-3xl">{getDriverAvatar(modalDriver.name)}</Text>
+                      <Text className="text-3xl">{modalDriver.avatar}</Text>
                     </View>
                     <Text className="text-xl font-bold text-text-primary">
                       {modalDriver.name}
@@ -491,7 +473,7 @@ export default function NewBookingStep3WebScreen() {
                 </View>
               </View>
             ) : (
-              modalDriver && (
+              modalDriver?.currentJob && (
                 <View>
                   {/* Busy Driver Header */}
                   <View className="px-6 py-4 border-b border-gray-200 relative">
@@ -504,7 +486,7 @@ export default function NewBookingStep3WebScreen() {
 
                     <View className="flex-row items-center">
                       <View className="w-12 h-12 rounded-full bg-gray-200 items-center justify-center mr-3">
-                        <Text className="text-xl">{getDriverAvatar(modalDriver.name)}</Text>
+                        <Text className="text-xl">{modalDriver.avatar}</Text>
                       </View>
                       <View className="flex-1">
                         <Text className="text-lg font-bold text-text-primary">
@@ -517,12 +499,19 @@ export default function NewBookingStep3WebScreen() {
                     </View>
                   </View>
 
-                  {/* Driver Details */}
-                  <View className="px-6 py-4">
-                    <View className="bg-orange-50 rounded-lg p-4">
-                      <View className="flex-row items-center mb-3">
-                        <MaterialIcons name="work" size={20} color="#F59E0B" />
-                        <Text className="text-orange-700 font-semibold ml-2">Currently Busy</Text>
+                  {/* Route Section */}
+                  <View className="px-6 py-4 border-b border-gray-200">
+                    <View className="flex-row items-center justify-between">
+                      <View className="items-center">
+                        <Text className="text-2xl font-bold text-text-primary">
+                          {modalDriver.currentJob.origin}
+                        </Text>
+                        <Text className="text-xs text-text-secondary mt-1">
+                          {formatDate(modalDriver.currentJob.date)}
+                        </Text>
+                        <Text className="text-xs text-text-secondary">
+                          {formatTime(modalDriver.currentJob.time)}
+                        </Text>
                       </View>
 
                       <View className="flex-1 items-center mx-4">
