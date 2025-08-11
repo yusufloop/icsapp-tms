@@ -18,19 +18,18 @@ export default function NewBookingStep2WebScreen() {
     items: ['Electronics', 'Computer Parts'],
     totalGrossWeight: '',
     totalVolume: '',
-    demurrageLocation: '',
+  
     daysExpected: '',
     selectedCompliance: [] as string[],
   });
 
   const [showShipmentTypePicker, setShowShipmentTypePicker] = useState(false);
   const [showContainerSizePicker, setShowContainerSizePicker] = useState(false);
-  const [showDemurrageLocationPicker, setShowDemurrageLocationPicker] = useState(false);
+
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
   
   // State for demurrage data from Supabase
-  const [demurrageLocations, setDemurrageLocations] = useState<DemurrageCharge[]>([]);
-  const [demurrageLoading, setDemurrageLoading] = useState(true);
+
 
   // State for compliance charges from Supabase
   const [complianceCharges, setComplianceCharges] = useState<ComplianceCharge[]>([]);
@@ -42,22 +41,11 @@ export default function NewBookingStep2WebScreen() {
 
   // Fetch both demurrage locations and compliance charges from Supabase
   useEffect(() => {
-    fetchDemurrageLocations();
+  
     fetchComplianceCharges();
   }, []);
 
-  const fetchDemurrageLocations = async () => {
-    try {
-      setDemurrageLoading(true);
-      const data = await getDemurrageCharges();
-      setDemurrageLocations(data);
-    } catch (error) {
-      console.error('Error fetching demurrage locations:', error);
-      Alert.alert('Error', 'Failed to load demurrage locations. Please try again.');
-    } finally {
-      setDemurrageLoading(false);
-    }
-  };
+  
 
   const fetchComplianceCharges = async () => {
     try {
@@ -82,10 +70,7 @@ export default function NewBookingStep2WebScreen() {
     setShowContainerSizePicker(false);
   };
 
-  const handleDemurrageLocationSelect = (location: string) => {
-    setFormData({ ...formData, demurrageLocation: location });
-    setShowDemurrageLocationPicker(false);
-  };
+  
 
   const handleComplianceToggle = (complianceId: string) => {
     const isSelected = formData.selectedCompliance.includes(complianceId);
@@ -161,15 +146,7 @@ export default function NewBookingStep2WebScreen() {
     }
     
     // Demurrage calculation using real Supabase data
-    let demurrageCost = 0;
-    if (formData.demurrageLocation && formData.daysExpected) {
-      const selectedLocation = demurrageLocations.find(loc => loc.location === formData.demurrageLocation);
-      const days = parseFloat(formData.daysExpected) || 0;
-      if (selectedLocation && selectedLocation.daily_rate && days > 0) {
-        demurrageCost = selectedLocation.daily_rate * days;
-      }
-    }
-    
+   
     // Compliance charges calculation using real Supabase data
     let complianceCost = 0;
     if (formData.selectedCompliance.length > 0) {
@@ -179,7 +156,7 @@ export default function NewBookingStep2WebScreen() {
       }, 0);
     }
     
-    const subtotal = (baseRate + weightCost + volumeCost + itemHandlingFee) * containerMultiplier + demurrageCost + complianceCost;
+    const subtotal = (baseRate + weightCost + volumeCost + itemHandlingFee) * containerMultiplier + complianceCost;
     
     // Add service tax (6%)
     const serviceTax = subtotal * 0.06;
@@ -187,14 +164,7 @@ export default function NewBookingStep2WebScreen() {
     return Math.round(subtotal + serviceTax);
   };
 
-  const getDemurrageRate = () => {
-    if (formData.demurrageLocation) {
-      const selectedLocation = demurrageLocations.find(loc => loc.location === formData.demurrageLocation);
-      return selectedLocation?.daily_rate || 0;
-    }
-    return 0;
-  };
-
+  
   const handleContinue = () => {
     // Optional validation - allow empty fields for now
     // User can continue with incomplete data
@@ -474,81 +444,7 @@ onPress={() => router.push('/threejs-viewer')}
                   </View>
                 </View>
 
-                {/* Demurrage */}
-                <View className="mb-6">
-                  <Text className="text-lg font-bold text-text-primary mb-4">
-                    Demurrage
-                  </Text>
-                  
-                  <View className="flex-row space-x-4">
-                    {/* Demurrage Location */}
-                    <View className="flex-1">
-                      <Text className="text-sm font-semibold text-text-primary mb-2">
-                        Location
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => {
-                          if (!demurrageLoading && demurrageLocations.length > 0) {
-                            setShowDemurrageLocationPicker(!showDemurrageLocationPicker);
-                            setShowShipmentTypePicker(false);
-                            setShowContainerSizePicker(false);
-                          }
-                        }}
-                        className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
-                      >
-                        <Text className={`flex-1 text-base ${formData.demurrageLocation ? 'text-text-primary' : 'text-text-secondary'}`}>
-                          {demurrageLoading 
-                            ? 'Loading locations...' 
-                            : demurrageLocations.length === 0
-                            ? 'No locations available'
-                            : formData.demurrageLocation || 'Select location'
-                          }
-                        </Text>
-                        <MaterialIcons name="keyboard-arrow-down" size={20} color="#8A8A8E" />
-                      </TouchableOpacity>
-                    </View>
-
-                    {/* Days Expected */}
-                    <View className="flex-1">
-                      <Text className="text-sm font-semibold text-text-primary mb-2">
-                        Days Expected
-                      </Text>
-                      <View className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px]">
-                        <TextInput
-                          className="flex-1 text-base text-text-primary"
-                          value={formData.daysExpected}
-                          onChangeText={(text: string) => setFormData({ ...formData, daysExpected: text })}
-                          placeholder="0"
-                          placeholderTextColor="#8A8A8E"
-                          keyboardType="numeric"
-                        />
-                      </View>
-                    </View>
-                  </View>
-                  
-                  {/* Demurrage Location Picker - Uses real Supabase data */}
-                  {showDemurrageLocationPicker && demurrageLocations.length > 0 && (
-                    <View className="mt-4 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
-                      <Text className="text-sm font-semibold text-text-primary px-4 py-2 border-b border-gray-200">
-                        Select Demurrage Location
-                      </Text>
-                      {demurrageLocations.map((item, index) => (
-                        <TouchableOpacity
-                          key={item.demurrage_id || index}
-                          onPress={() => handleDemurrageLocationSelect(item.location || '')}
-                          className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
-                        >
-                          <View className="flex-row justify-between items-center">
-                            <Text className="text-text-primary">{item.location}</Text>
-                            <Text className="text-text-secondary text-sm">
-                              RM {item.daily_rate?.toFixed(2) || '0.00'}/day
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  )}
-                </View>
+              
 
                 {/* Other Charges - Now using dynamic compliance charges from Supabase */}
                 <View className="mb-6">
@@ -660,16 +556,7 @@ onPress={() => router.push('/threejs-viewer')}
                       </View>
                     )}
                     
-                    {formData.demurrageLocation && formData.daysExpected && parseFloat(formData.daysExpected) > 0 && (
-                      <View className="flex-row justify-between">
-                        <Text className="text-sm text-text-secondary">
-                          Demurrage ({formData.demurrageLocation}, {formData.daysExpected} days × RM {getDemurrageRate().toFixed(2)})
-                        </Text>
-                        <Text className="text-sm text-text-primary">
-                          RM {(getDemurrageRate() * parseFloat(formData.daysExpected)).toLocaleString()}
-                        </Text>
-                      </View>
-                    )}
+                   
                     
                     {formData.selectedCompliance.length > 0 && formData.selectedCompliance.map((complianceId) => {
                       const compliance = complianceCharges.find(c => c.id === complianceId);

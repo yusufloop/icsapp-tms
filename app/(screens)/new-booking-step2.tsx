@@ -14,10 +14,7 @@ import {
   ComplianceCharge,
   getComplianceCharges,
 } from "../../services/complianceService";
-import {
-  DemurrageCharge,
-  getDemurrageCharges,
-} from "../../services/demurrageService";
+
 
 export default function NewBookingStep2Screen() {
   // Mock data from Step 1 (in real implementation, this would come from navigation params or state management)
@@ -32,42 +29,21 @@ export default function NewBookingStep2Screen() {
     items: ["Electronics", "Computer Parts"],
     totalGrossWeight: "",
     totalVolume: "",
-    demurrageLocation: "",
+    // demurrageLocation: "",
     daysExpected: "",
     selectedCompliance: [] as string[],
   });
 
   const [showShipmentTypePicker, setShowShipmentTypePicker] = useState(false);
   const [showContainerSizePicker, setShowContainerSizePicker] = useState(false);
-  const [showDemurrageLocationPicker, setShowDemurrageLocationPicker] =
-    useState(false);
+
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
 
   // Updated shipment types to only FCL and LCL
   const shipmentTypes = ["FCL", "LCL"];
   const containerSizes = ["20ft", "40ft", "40ft HC"];
 
-  // Demurrage locations from Supabase
-  const [demurrageLocations, setDemurrageLocations] = useState<
-    DemurrageCharge[]
-  >([]);
-  const [demurrageLoading, setDemurrageLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDemurrageLocations();
-  }, []);
-
-  const fetchDemurrageLocations = async () => {
-    try {
-      setDemurrageLoading(true);
-      const data = await getDemurrageCharges();
-      setDemurrageLocations(data);
-    } catch (error) {
-      console.error("Error fetching demurrage locations:", error);
-    } finally {
-      setDemurrageLoading(false);
-    }
-  };
 
   const [complianceCharges, setComplianceCharges] = useState<
     ComplianceCharge[]
@@ -75,7 +51,7 @@ export default function NewBookingStep2Screen() {
   const [complianceLoading, setComplianceLoading] = useState(true);
 
   useEffect(() => {
-    fetchDemurrageLocations();
+
     fetchComplianceCharges();
   }, []);
 
@@ -103,10 +79,7 @@ export default function NewBookingStep2Screen() {
     setShowContainerSizePicker(false);
   };
 
-  const handleDemurrageLocationSelect = (location: string) => {
-    setFormData({ ...formData, demurrageLocation: location });
-    setShowDemurrageLocationPicker(false);
-  };
+  
 
   const handleComplianceToggle = (complianceId: string) => {
     const isSelected = formData.selectedCompliance.includes(complianceId);
@@ -199,17 +172,7 @@ export default function NewBookingStep2Screen() {
       containerMultiplier = 1.8;
     }
 
-    // Demurrage calculation
-    let demurrageCost = 0;
-    if (formData.demurrageLocation && formData.daysExpected) {
-      const selectedLocation = demurrageLocations.find(
-        (loc) => loc.location === formData.demurrageLocation
-      );
-      const days = parseFloat(formData.daysExpected) || 0;
-      if (selectedLocation && selectedLocation.daily_rate && days > 0) {
-        demurrageCost = selectedLocation.daily_rate * days;
-      }
-    }
+  
 
     // Compliance charges calculation
     let complianceCost = 0;
@@ -228,7 +191,7 @@ export default function NewBookingStep2Screen() {
     const subtotal =
       (baseRate + weightCost + volumeCost + itemHandlingFee) *
         containerMultiplier +
-      demurrageCost +
+     
       complianceCost;
 
     // Add service tax (6%)
@@ -237,15 +200,7 @@ export default function NewBookingStep2Screen() {
     return Math.round(subtotal + serviceTax);
   };
 
-  const getDemurrageRate = () => {
-    if (formData.demurrageLocation) {
-      const selectedLocation = demurrageLocations.find(
-        (loc) => loc.location === formData.demurrageLocation
-      );
-      return selectedLocation?.daily_rate || 0;
-    }
-    return 0;
-  };
+
 
   const handleContinue = () => {
     // Optional validation - allow empty fields for now
@@ -535,79 +490,7 @@ export default function NewBookingStep2Screen() {
             </View>
           </View>
 
-          {/* Demurrage */}
-          <View className="mb-6">
-            <Text className="text-lg font-bold text-text-primary mb-4">
-              Demurrage
-            </Text>
-
-            {/* Demurrage Location */}
-            <View className="mb-4">
-              <Text className="text-sm font-semibold text-text-primary mb-2">
-                Location
-              </Text>
-              <TouchableOpacity
-                onPress={() =>
-                  setShowDemurrageLocationPicker(!showDemurrageLocationPicker)
-                }
-                className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
-              >
-                <Text
-                  className={`flex-1 text-base ${formData.demurrageLocation ? "text-text-primary" : "text-text-secondary"}`}
-                >
-                  {formData.demurrageLocation || "Select location"}
-                </Text>
-                <MaterialIcons
-                  name="keyboard-arrow-down"
-                  size={20}
-                  color="#8A8A8E"
-                />
-              </TouchableOpacity>
-
-              {/* Demurrage Location Picker */}
-              {showDemurrageLocationPicker && demurrageLocations.length > 0 && (
-                <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
-                  {demurrageLocations.map((item, index) => (
-                    <TouchableOpacity
-                      key={item.demurrage_id || index}
-                      onPress={() =>
-                        handleDemurrageLocationSelect(item.location || "")
-                      }
-                      className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
-                    >
-                      <View className="flex-row justify-between items-center">
-                        <Text className="text-text-primary">
-                          {item.location}
-                        </Text>
-                        <Text className="text-text-secondary text-sm">
-                          RM {item.daily_rate?.toFixed(2)}/day
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
-
-            {/* Days Expected */}
-            <View>
-              <Text className="text-sm font-semibold text-text-primary mb-2">
-                Days Expected
-              </Text>
-              <View className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px]">
-                <TextInput
-                  className="flex-1 text-base text-text-primary"
-                  value={formData.daysExpected}
-                  onChangeText={(text: string) =>
-                    setFormData({ ...formData, daysExpected: text })
-                  }
-                  placeholder="0"
-                  placeholderTextColor="#8A8A8E"
-                  keyboardType="numeric"
-                />
-              </View>
-            </View>
-          </View>
+        
 
           <View className="mb-6">
             <Text className="text-lg font-bold text-text-primary mb-4">
@@ -727,23 +610,7 @@ export default function NewBookingStep2Screen() {
                 </View>
               )}
 
-              {formData.demurrageLocation &&
-                formData.daysExpected &&
-                parseFloat(formData.daysExpected) > 0 && (
-                  <View className="flex-row justify-between">
-                    <Text className="text-sm text-text-secondary">
-                      Demurrage ({formData.demurrageLocation},{" "}
-                      {formData.daysExpected} days × RM{" "}
-                      {getDemurrageRate().toFixed(2)})
-                    </Text>
-                    <Text className="text-sm text-text-primary">
-                      RM{" "}
-                      {(
-                        getDemurrageRate() * parseFloat(formData.daysExpected)
-                      ).toLocaleString()}
-                    </Text>
-                  </View>
-                )}
+              
 
               {formData.selectedCompliance.length > 0 && formData.selectedCompliance.map((complianceId) => {
   const compliance = complianceCharges.find(c => c.id === complianceId);
