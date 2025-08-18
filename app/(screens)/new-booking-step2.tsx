@@ -733,9 +733,9 @@ export default function NewBookingStep2Screen() {
                       >
                         <View className="flex-row justify-between items-center">
                           <Text className="text-text-primary">{tariff.area_name}</Text>
-                          <Text className="text-text-secondary text-sm">
+                          {/* <Text className="text-text-secondary text-sm">
                             RM {tariff.grand_total?.toFixed(2)}
-                          </Text>
+                          </Text> */}
                         </View>
                       </TouchableOpacity>
                     ))}
@@ -777,9 +777,9 @@ export default function NewBookingStep2Screen() {
                       >
                         <View className="flex-row justify-between items-center">
                           <Text className="text-text-primary">{tariff.area_name}</Text>
-                          <Text className="text-text-secondary text-sm">
+                          {/* <Text className="text-text-secondary text-sm">
                             RM {tariff.grand_total?.toFixed(2)}
-                          </Text>
+                          </Text> */}
                         </View>
                       </TouchableOpacity>
                     ))}
@@ -838,153 +838,153 @@ export default function NewBookingStep2Screen() {
           </View>
 
           {/* Estimated Total */}
-          <View className="bg-bg-secondary border border-gray-300 rounded-lg p-6 mb-6">
-            <Text className="text-lg font-bold text-text-primary mb-4">
-              Cost Breakdown
-            </Text>
+<View className="bg-bg-secondary border border-gray-300 rounded-lg p-4 mb-6">
+  <Text className="text-lg font-bold text-text-primary mb-4">
+    Cost Breakdown
+  </Text>
 
-            {/* Breakdown Details */}
-            <View className="space-y-2 mb-4">
-              {formData.shipmentType && (
-                <View className="flex-row justify-between">
-                  <Text className="text-sm text-text-secondary">
-                    Base Rate ({formData.shipmentType})
-                  </Text>
-                  <Text className="text-sm text-text-primary">
-                    RM{" "}
-                    {formData.shipmentType === "FCL"
-                      ? "2,500"
-                      : formData.shipmentType === "LCL"
-                        ? "4,500"
-                        : "0"}
-                  </Text>
-                </View>
-              )}
+  {/* Breakdown Details */}
+  <View className="mb-4">
+    {formData.shipmentType && (
+      <View className="flex-row justify-between items-start mb-2">
+        <Text className="text-sm text-text-secondary flex-1 mr-2" numberOfLines={2}>
+          Base Rate ({formData.shipmentType})
+        </Text>
+        <Text className="text-sm text-text-primary font-medium">
+          RM{" "}
+          {formData.shipmentType === "FCL"
+            ? "2,500"
+            : formData.shipmentType === "LCL"
+              ? "4,500"
+              : "0"}
+        </Text>
+      </View>
+    )}
 
-              {parseFloat(formData.totalGrossWeight) > 0 && (
-                <View className="flex-row justify-between">
-                  <Text className="text-sm text-text-secondary">
-                    Weight ({formData.totalGrossWeight} KG × RM 3.50)
-                  </Text>
-                  <Text className="text-sm text-text-primary">
-                    RM{" "}
-                    {(
-                      parseFloat(formData.totalGrossWeight) * 3.5
-                    ).toLocaleString()}
-                  </Text>
-                </View>
-              )}
+    {parseFloat(formData.totalGrossWeight) > 0 && (
+      <View className="flex-row justify-between items-start mb-2">
+        <Text className="text-sm text-text-secondary flex-1 mr-2" numberOfLines={2}>
+          Weight ({formData.totalGrossWeight} KG × RM 3.50)
+        </Text>
+        <Text className="text-sm text-text-primary font-medium">
+          RM{" "}
+          {(
+            parseFloat(formData.totalGrossWeight) * 3.5
+          ).toLocaleString()}
+        </Text>
+      </View>
+    )}
 
-              {parseFloat(formData.totalVolume) > 0 && (
-                <View className="flex-row justify-between">
-                  <Text className="text-sm text-text-secondary">
-                    Volume ({formData.totalVolume} CBM × RM 85)
-                  </Text>
-                  <Text className="text-sm text-text-primary">
-                    RM{" "}
-                    {(parseFloat(formData.totalVolume) * 85).toLocaleString()}
-                  </Text>
-                </View>
-              )}
+    {parseFloat(formData.totalVolume) > 0 && (
+      <View className="flex-row justify-between items-start mb-2">
+        <Text className="text-sm text-text-secondary flex-1 mr-2" numberOfLines={2}>
+          Volume ({formData.totalVolume} CBM × RM 85)
+        </Text>
+        <Text className="text-sm text-text-primary font-medium">
+          RM{" "}
+          {(parseFloat(formData.totalVolume) * 85).toLocaleString()}
+        </Text>
+      </View>
+    )}
 
-              {formData.items.filter((item) => item.trim() !== "").length >
-                0 && (
-                <View className="flex-row justify-between">
-                  <Text className="text-sm text-text-secondary">
-                    Item Handling (
-                    {formData.items.filter((item) => item.trim() !== "").length}{" "}
-                    items × RM 150)
-                  </Text>
-                  <Text className="text-sm text-text-primary">
-                    RM{" "}
-                    {(
-                      formData.items.filter((item) => item.trim() !== "")
-                        .length * 150
-                    ).toLocaleString()}
-                  </Text>
-                </View>
-              )}
+    {formData.items.filter((item) => item.trim() !== "").length > 0 && (
+      <View className="flex-row justify-between items-start mb-2">
+        <Text className="text-sm text-text-secondary flex-1 mr-2" numberOfLines={2}>
+          Item Handling (
+          {formData.items.filter((item) => item.trim() !== "").length}{" "}
+          items × RM 150)
+        </Text>
+        <Text className="text-sm text-text-primary font-medium">
+          RM{" "}
+          {(
+            formData.items.filter((item) => item.trim() !== "")
+              .length * 150
+          ).toLocaleString()}
+        </Text>
+      </View>
+    )}
 
-              {formData.containerSize && formData.containerSize !== "20ft" && (
-                <View className="flex-row justify-between">
-                  <Text className="text-sm text-text-secondary">
-                    Container Size Adjustment ({formData.containerSize})
-                  </Text>
-                  <Text className="text-sm text-text-primary">
-                    {formData.containerSize === "40ft" ||
-                    formData.containerSize === "40ft HC"
-                      ? "+50%"
-                      : "+80%"}
-                  </Text>
-                </View>
-              )}
+    {formData.containerSize && formData.containerSize !== "20ft" && (
+      <View className="flex-row justify-between items-start mb-2">
+        <Text className="text-sm text-text-secondary flex-1 mr-2" numberOfLines={2}>
+          Container Size Adjustment ({formData.containerSize})
+        </Text>
+        <Text className="text-sm text-text-primary font-medium">
+          {formData.containerSize === "40ft" ||
+          formData.containerSize === "40ft HC"
+            ? "+50%"
+            : "+80%"}
+        </Text>
+      </View>
+    )}
 
-              {formData.demurrageLocation &&
-                formData.daysExpected &&
-                parseFloat(formData.daysExpected) > 0 && (
-                  <View className="flex-row justify-between">
-                    <Text className="text-sm text-text-secondary">
-                      Demurrage ({formData.demurrageLocation},{" "}
-                      {formData.daysExpected} days × RM{" "}
-                      {getDemurrageRate().toFixed(2)})
-                    </Text>
-                    <Text className="text-sm text-text-primary">
-                      RM{" "}
-                      {(
-                        getDemurrageRate() * parseFloat(formData.daysExpected)
-                      ).toLocaleString()}
-                    </Text>
-                  </View>
-                )}
+    {formData.demurrageLocation &&
+      formData.daysExpected &&
+      parseFloat(formData.daysExpected) > 0 && (
+        <View className="flex-row justify-between items-start mb-2">
+          <Text className="text-sm text-text-secondary flex-1 mr-2" numberOfLines={3}>
+            Demurrage ({formData.demurrageLocation},{" "}
+            {formData.daysExpected} days × RM{" "}
+            {getDemurrageRate().toFixed(2)})
+          </Text>
+          <Text className="text-sm text-text-primary font-medium">
+            RM{" "}
+            {(
+              getDemurrageRate() * parseFloat(formData.daysExpected)
+            ).toLocaleString()}
+          </Text>
+        </View>
+      )}
 
-                {formData.selectedHaulageRate && (
-                  <View className="flex-row justify-between">
-                    <Text className="text-sm text-text-secondary">
-                      Haulage ({formData.pickupArea})
-                    </Text>
-                    <Text className="text-sm text-text-primary">
-                      RM {formData.selectedHaulageRate.grand_total?.toFixed(2) || '0.00'}
-                    </Text>
-                  </View>
-                )}
+    {formData.selectedHaulageRate && (
+      <View className="flex-row justify-between items-start mb-2">
+        <Text className="text-sm text-text-secondary flex-1 mr-2" numberOfLines={2}>
+          Haulage ({formData.pickupArea})
+        </Text>
+        <Text className="text-sm text-text-primary font-medium">
+          RM {formData.selectedHaulageRate.grand_total?.toFixed(2) || '0.00'}
+        </Text>
+      </View>
+    )}
 
-              {formData.selectedCompliance.length > 0 && formData.selectedCompliance.map((complianceId) => {
-  const compliance = complianceCharges.find(c => c.id === complianceId);
-  return compliance ? (
-    <View key={complianceId} className="flex-row justify-between">
-      <Text className="text-sm text-text-secondary">
-        {compliance.name_compliance}
+    {formData.selectedCompliance.length > 0 && formData.selectedCompliance.map((complianceId) => {
+      const compliance = complianceCharges.find(c => c.id === complianceId);
+      return compliance ? (
+        <View key={complianceId} className="flex-row justify-between items-start mb-2">
+          <Text className="text-sm text-text-secondary flex-1 mr-2" numberOfLines={2}>
+            {compliance.name_compliance}
+          </Text>
+          <Text className="text-sm text-text-primary font-medium">
+            RM {compliance.price.toFixed(2)}
+          </Text>
+        </View>
+      ) : null;
+    })}
+
+    <View className="flex-row justify-between items-start mb-2">
+      <Text className="text-sm text-text-secondary flex-1 mr-2">
+        Service Tax (6%)
       </Text>
-      <Text className="text-sm text-text-primary">
-        RM {compliance.price.toFixed(2)}
+      <Text className="text-sm text-text-primary font-medium">Included</Text>
+    </View>
+  </View>
+
+  {/* Total */}
+  <View className="border-t border-gray-300 pt-4">
+    <View className="flex-row justify-between items-center mb-2">
+      <Text className="text-lg font-bold text-text-primary">
+        Estimated Total
+      </Text>
+      <Text className="text-2xl font-bold text-primary">
+        RM {calculateEstimatedTotal().toLocaleString()}
       </Text>
     </View>
-  ) : null;
-})}
-              <View className="flex-row justify-between">
-                <Text className="text-sm text-text-secondary">
-                  Service Tax (6%)
-                </Text>
-                <Text className="text-sm text-text-primary">Included</Text>
-              </View>
-            </View>
-
-            {/* Total */}
-            <View className="border-t border-gray-300 pt-4">
-              <View className="flex-row justify-between items-center">
-                <Text className="text-lg font-bold text-text-primary">
-                  Estimated Total
-                </Text>
-                <Text className="text-2xl font-bold text-primary">
-                  RM {calculateEstimatedTotal().toLocaleString()}
-                </Text>
-              </View>
-              <Text className="text-xs text-text-secondary mt-1">
-                *Final cost may vary based on actual measurements and additional
-                services
-              </Text>
-            </View>
-          </View>
+    <Text className="text-xs text-text-secondary leading-4">
+      *Final cost may vary based on actual measurements and additional
+      services
+    </Text>
+  </View>
+</View>
         </View>
       </ScrollView>
 
