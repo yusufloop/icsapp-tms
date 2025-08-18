@@ -346,7 +346,7 @@ export default function NewBookingStep2WebScreen() {
                 {/* 3D Object Placeholder */}
                 <TouchableOpacity 
                   className="mb-6"
-                  onPress={() => router.push('/threejs-viewer')}
+                  onPress={() => router.push('/container-viewer')}
                   activeOpacity={0.8}
                 >
                   <View className="h-48 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200 items-center justify-center shadow-lg hover:shadow-xl transition-shadow">
