@@ -314,6 +314,28 @@ export default function MoreScreen() {
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
+
+          <View style={styles.separator} />
+
+          {/* Haulage Companies */}
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/haulage-companies')}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="business-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>Haulage Companies</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+
+          <View style={styles.separator} />
+
+          {/* Haulage Tariffs */}
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/haulage-tariffs')}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="pricetag-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>Haulage Tariffs</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
         </View>
 
         {/* Reports Section */}

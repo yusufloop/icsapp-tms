@@ -72,6 +72,8 @@ export default function WebMoreScreen() {
     // Configuration
     { id: 'demurrage', title: 'Demurrage Management', description: 'Manage demurrage charges for different locations', icon: 'local-shipping', route: '/demurrage', category: 'Configuration' },
     { id: 'compliance', title: 'Other Charges Management', description: 'Manage other charges and requirements', icon: 'shield', route: '/compliance', category: 'Configuration' },
+    { id: 'haulage-companies', title: 'Haulage Companies', description: 'Manage haulage company partners', icon: 'business', route: '/haulage-companies', category: 'Configuration' },
+    { id: 'haulage-tariffs', title: 'Haulage Tariffs', description: 'Manage haulage rates by area', icon: 'local-offer', route: '/haulage-tariffs', category: 'Configuration' },
     
     // Reports
     { id: 'summary', title: 'Summary Report', description: 'View comprehensive system reports', icon: 'assessment', route: '/summary', category: 'Reports' },
