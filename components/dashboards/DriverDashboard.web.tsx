@@ -75,7 +75,7 @@ export function DriverDashboard({ userRole }: DriverDashboardProps) {
           {/* Top Section - Two Columns */}
           <View className="flex-row gap-6 mb-8">
             {/* Left Column - RouteMapView as background with glassmorphism route info overlay */}
-            <View className="flex-1">
+            <View className="w-3/4">
               <View className="relative rounded-xl overflow-hidden h-80">
                 {/* RouteMapView as background */}
                 <RouteMapView currentRoute={currentRoute} />
@@ -114,7 +114,7 @@ export function DriverDashboard({ userRole }: DriverDashboardProps) {
             </View>
 
             {/* Right Column - Upcoming Routes - Using simple View instead of PremiumCard */}
-            <View className="flex-1">
+            <View className="w-1/4">
               <View className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 h-64">
                 <Text className="text-lg font-bold text-gray-900 mb-4">Upcoming Routes</Text>
                 <ScrollView showsVerticalScrollIndicator={false}>
