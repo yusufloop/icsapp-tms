@@ -13,6 +13,10 @@ import {
 
 export default function HaulageCompaniesWebScreen() {
   const [haulageCompanies, setHaulageCompanies] = useState<HaulageCompany[]>([]);
+  const [allCompanies, setAllCompanies] = useState<HaulageCompany[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingCompany, setEditingCompany] = useState<HaulageCompany | null>(null);
   const [formData, setFormData] = useState({
@@ -35,13 +39,26 @@ export default function HaulageCompaniesWebScreen() {
     try {
       setFetchLoading(true);
       const data = await getAllHaulageCompanies();
-      setHaulageCompanies(data);
+      setAllCompanies(data);
+      setTotalPages(Math.ceil(data.length / itemsPerPage));
+      updateDisplayedCompanies(data, 1);
     } catch (error) {
       console.error('Error fetching haulage companies:', error);
       Alert.alert('Error', 'Failed to fetch haulage companies');
     } finally {
       setFetchLoading(false);
     }
+  };
+
+  const updateDisplayedCompanies = (companies: HaulageCompany[], page: number) => {
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    setHaulageCompanies(companies.slice(startIndex, endIndex));
+    setCurrentPage(page);
+  };
+
+  const handlePageChange = (page: number) => {
+    updateDisplayedCompanies(allCompanies, page);
   };
 
   const resetForm = () => {
@@ -192,14 +209,19 @@ export default function HaulageCompaniesWebScreen() {
             {/* Current Haulage Companies Table */}
             <View className="bg-white rounded-lg shadow-sm border border-gray-200">
               <View className="px-6 py-4 border-b border-gray-200">
-                <Text className="text-xl font-bold text-text-primary">Current Haulage Companies</Text>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-xl font-bold text-text-primary">Current Haulage Companies</Text>
+                  <Text className="text-sm text-text-secondary">
+                    Page {currentPage} of {totalPages} • {allCompanies.length} total companies
+                  </Text>
+                </View>
               </View>
               
               {fetchLoading ? (
                 <View className="px-6 py-12 text-center">
                   <Text className="text-text-secondary text-center">Loading haulage companies...</Text>
                 </View>
-              ) : haulageCompanies.length === 0 ? (
+              ) : allCompanies.length === 0 ? (
                 <View className="px-6 py-12 text-center">
                   <Text className="text-text-secondary text-center">No haulage companies configured</Text>
                 </View>
@@ -263,6 +285,66 @@ export default function HaulageCompaniesWebScreen() {
                       </View>
                     </View>
                   ))}
+                </View>
+              )}
+              
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <View className="px-6 py-4 border-t border-gray-200 flex-row items-center justify-between">
+                  <TouchableOpacity
+                    onPress={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className={`px-4 py-2 rounded-lg ${
+                      currentPage === 1 
+                        ? 'bg-gray-100 opacity-50' 
+                        : 'bg-primary active:opacity-80'
+                    }`}
+                  >
+                    <Text className={`text-sm font-medium ${
+                      currentPage === 1 ? 'text-gray-400' : 'text-white'
+                    }`}>
+                      Previous
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <View className="flex-row items-center space-x-2">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const pageNum = i + 1;
+                      return (
+                        <TouchableOpacity
+                          key={pageNum}
+                          onPress={() => handlePageChange(pageNum)}
+                          className={`w-8 h-8 rounded-lg items-center justify-center ${
+                            currentPage === pageNum 
+                              ? 'bg-primary' 
+                              : 'bg-gray-100 active:opacity-80'
+                          }`}
+                        >
+                          <Text className={`text-sm font-medium ${
+                            currentPage === pageNum ? 'text-white' : 'text-gray-600'
+                          }`}>
+                            {pageNum}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                  
+                  <TouchableOpacity
+                    onPress={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className={`px-4 py-2 rounded-lg ${
+                      currentPage === totalPages 
+                        ? 'bg-gray-100 opacity-50' 
+                        : 'bg-primary active:opacity-80'
+                    }`}
+                  >
+                    <Text className={`text-sm font-medium ${
+                      currentPage === totalPages ? 'text-gray-400' : 'text-white'
+                    }`}>
+                      Next
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               )}
             </View>

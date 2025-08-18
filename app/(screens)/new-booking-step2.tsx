@@ -794,21 +794,23 @@ export default function NewBookingStep2Screen() {
 
               {/* Pickup Area Picker */}
               {showPickupAreaPicker && haulageTariffs.length > 0 && (
-                <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
-                  {haulageTariffs.map((tariff, index) => (
-                    <TouchableOpacity
-                      key={tariff.tariff_id || index}
-                      onPress={() => handlePickupAreaSelect(tariff.area_name || "")}
-                      className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
-                    >
-                      <View className="flex-row justify-between items-center">
-                        <Text className="text-text-primary">{tariff.area_name}</Text>
-                        <Text className="text-text-secondary text-sm">
-                          RM {tariff.grand_total?.toFixed(2)}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
+                <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg max-h-48">
+                  <ScrollView showsVerticalScrollIndicator={true} nestedScrollEnabled={true}>
+                    {haulageTariffs.map((tariff, index) => (
+                      <TouchableOpacity
+                        key={tariff.tariff_id || index}
+                        onPress={() => handlePickupAreaSelect(tariff.area_name || "")}
+                        className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
+                      >
+                        <View className="flex-row justify-between items-center">
+                          <Text className="text-text-primary">{tariff.area_name}</Text>
+                          <Text className="text-text-secondary text-sm">
+                            RM {tariff.grand_total?.toFixed(2)}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
                 </View>
               )}
             </View>
@@ -836,21 +838,23 @@ export default function NewBookingStep2Screen() {
 
               {/* Delivery Area Picker */}
               {showDeliveryAreaPicker && haulageTariffs.length > 0 && (
-                <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
-                  {haulageTariffs.map((tariff, index) => (
-                    <TouchableOpacity
-                      key={tariff.tariff_id || index}
-                      onPress={() => handleDeliveryAreaSelect(tariff.area_name || "")}
-                      className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
-                    >
-                      <View className="flex-row justify-between items-center">
-                        <Text className="text-text-primary">{tariff.area_name}</Text>
-                        <Text className="text-text-secondary text-sm">
-                          RM {tariff.grand_total?.toFixed(2)}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
+                <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg max-h-48">
+                  <ScrollView showsVerticalScrollIndicator={true} nestedScrollEnabled={true}>
+                    {haulageTariffs.map((tariff, index) => (
+                      <TouchableOpacity
+                        key={tariff.tariff_id || index}
+                        onPress={() => handleDeliveryAreaSelect(tariff.area_name || "")}
+                        className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
+                      >
+                        <View className="flex-row justify-between items-center">
+                          <Text className="text-text-primary">{tariff.area_name}</Text>
+                          <Text className="text-text-secondary text-sm">
+                            RM {tariff.grand_total?.toFixed(2)}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
                 </View>
               )}
             </View>
@@ -880,23 +884,25 @@ export default function NewBookingStep2Screen() {
 
               {/* Haulage Company Picker */}
               {showHaulageCompanyPicker && haulageCompanies.length > 0 && (
-                <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
-                  {haulageCompanies.map((company, index) => (
-                    <TouchableOpacity
-                      key={company.company_id || index}
-                      onPress={() => handleHaulageCompanySelect(company.company_id || "")}
-                      className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
-                    >
-                      <View className="flex-row justify-between items-center">
-                        <View className="flex-1">
-                          <Text className="text-text-primary">{company.company_name}</Text>
-                          <Text className="text-text-secondary text-sm">
-                            Rank #{company.annual_rank} • {company.market_share_percentage}% market share
-                          </Text>
+                <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg max-h-48">
+                  <ScrollView showsVerticalScrollIndicator={true} nestedScrollEnabled={true}>
+                    {haulageCompanies.map((company, index) => (
+                      <TouchableOpacity
+                        key={company.company_id || index}
+                        onPress={() => handleHaulageCompanySelect(company.company_id || "")}
+                        className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
+                      >
+                        <View className="flex-row justify-between items-center">
+                          <View className="flex-1">
+                            <Text className="text-text-primary">{company.company_name}</Text>
+                            <Text className="text-text-secondary text-sm">
+                              Rank #{company.annual_rank} • {company.market_share_percentage}% market share
+                            </Text>
+                          </View>
                         </View>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
                 </View>
               )}
             </View>

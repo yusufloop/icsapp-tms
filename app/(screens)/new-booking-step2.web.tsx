@@ -740,10 +740,11 @@ onPress={() => router.push('/threejs-viewer')}
                   
                   {/* Pickup Area Picker - Uses real Supabase data */}
                   {showPickupAreaPicker && haulageTariffs.length > 0 && (
-                    <View className="mt-4 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
+                    <View className="mt-4 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg max-h-48">
                       <Text className="text-sm font-semibold text-text-primary px-4 py-2 border-b border-gray-200">
                         Select Pickup Area
                       </Text>
+                      <ScrollView showsVerticalScrollIndicator={true} nestedScrollEnabled={true}>
                       {haulageTariffs.map((tariff, index) => (
                         <TouchableOpacity
                           key={tariff.tariff_id || index}
@@ -766,10 +767,11 @@ onPress={() => router.push('/threejs-viewer')}
                   
                   {/* Delivery Area Picker - Uses real Supabase data */}
                   {showDeliveryAreaPicker && haulageTariffs.length > 0 && (
-                    <View className="mt-4 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
+                    <View className="mt-4 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg max-h-48">
                       <Text className="text-sm font-semibold text-text-primary px-4 py-2 border-b border-gray-200">
                         Select Delivery Area
                       </Text>
+                      <ScrollView showsVerticalScrollIndicator={true} nestedScrollEnabled={true}>
                       {haulageTariffs.map((tariff, index) => (
                         <TouchableOpacity
                           key={tariff.tariff_id || index}
@@ -842,6 +844,8 @@ onPress={() => router.push('/threejs-viewer')}
                             </View>
                           </TouchableOpacity>
                         ))}
+                      </ScrollView>
+                      </ScrollView>
                       </View>
                     )}
                   </View>
@@ -1170,10 +1174,11 @@ onPress={() => router.push('/threejs-viewer')}
                   
                   {/* Haulage Company Picker - Uses real Supabase data */}
                   {showHaulageCompanyPicker && haulageCompanies.length > 0 && (
-                    <View className="mt-4 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
+                    <View className="mt-4 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg max-h-48">
                       <Text className="text-sm font-semibold text-text-primary px-4 py-2 border-b border-gray-200">
                         Select Haulage Company
                       </Text>
+                      <ScrollView showsVerticalScrollIndicator={true} nestedScrollEnabled={true}>
                       {haulageCompanies.map((company, index) => (
                         <TouchableOpacity
                           key={company.company_id || index}
@@ -1190,6 +1195,7 @@ onPress={() => router.push('/threejs-viewer')}
                           </View>
                         </TouchableOpacity>
                       ))}
+                      </ScrollView>
                     </View>
                   )}
                 </View>
