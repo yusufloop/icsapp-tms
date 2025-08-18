@@ -18,6 +18,12 @@ import {
   DemurrageCharge,
   getDemurrageCharges,
 } from "../../services/demurrageService";
+import {
+  getHaulageCompanies,
+  getHaulageTariffs,
+  HaulageCompany,
+  HaulageTariff,
+} from "../../services/haulageCompanyService";
 
 export default function NewBookingStep2Screen() {
   // Mock data from Step 1 (in real implementation, this would come from navigation params or state management)
@@ -35,6 +41,10 @@ export default function NewBookingStep2Screen() {
     demurrageLocation: "",
     daysExpected: "",
     selectedCompliance: [] as string[],
+    haulageCompany: "",
+    pickupArea: "",
+    deliveryArea: "",
+    selectedHaulageRate: null as HaulageTariff | null,
   });
 
   const [showShipmentTypePicker, setShowShipmentTypePicker] = useState(false);
@@ -42,6 +52,9 @@ export default function NewBookingStep2Screen() {
   const [showDemurrageLocationPicker, setShowDemurrageLocationPicker] =
     useState(false);
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
+  const [showHaulageCompanyPicker, setShowHaulageCompanyPicker] = useState(false);
+  const [showPickupAreaPicker, setShowPickupAreaPicker] = useState(false);
+  const [showDeliveryAreaPicker, setShowDeliveryAreaPicker] = useState(false);
 
   // Updated shipment types to only FCL and LCL
   const shipmentTypes = ["FCL", "LCL"];
@@ -74,9 +87,15 @@ export default function NewBookingStep2Screen() {
   >([]);
   const [complianceLoading, setComplianceLoading] = useState(true);
 
+  // Haulage data from Supabase
+  const [haulageCompanies, setHaulageCompanies] = useState<HaulageCompany[]>([]);
+  const [haulageTariffs, setHaulageTariffs] = useState<HaulageTariff[]>([]);
+  const [haulageLoading, setHaulageLoading] = useState(true);
+
   useEffect(() => {
     fetchDemurrageLocations();
     fetchComplianceCharges();
+    fetchHaulageData();
   }, []);
 
   const fetchComplianceCharges = async () => {
@@ -91,6 +110,21 @@ export default function NewBookingStep2Screen() {
     }
   };
 
+  const fetchHaulageData = async () => {
+    try {
+      setHaulageLoading(true);
+      const [companies, tariffs] = await Promise.all([
+        getHaulageCompanies(),
+        getHaulageTariffs()
+      ]);
+      setHaulageCompanies(companies);
+      setHaulageTariffs(tariffs);
+    } catch (error) {
+      console.error("Error fetching haulage data:", error);
+    } finally {
+      setHaulageLoading(false);
+    }
+  };
 
 
   const handleShipmentTypeSelect = (type: string) => {
@@ -125,6 +159,26 @@ export default function NewBookingStep2Screen() {
         selectedCompliance: [...formData.selectedCompliance, complianceId],
       });
     }
+  };
+
+  const handleHaulageCompanySelect = (companyId: string) => {
+    setFormData({ ...formData, haulageCompany: companyId });
+    setShowHaulageCompanyPicker(false);
+  };
+
+  const handlePickupAreaSelect = (areaName: string) => {
+    const selectedTariff = haulageTariffs.find(t => t.area_name === areaName);
+    setFormData({ 
+      ...formData, 
+      pickupArea: areaName,
+      selectedHaulageRate: selectedTariff || null
+    });
+    setShowPickupAreaPicker(false);
+  };
+
+  const handleDeliveryAreaSelect = (areaName: string) => {
+    setFormData({ ...formData, deliveryArea: areaName });
+    setShowDeliveryAreaPicker(false);
   };
   let complianceCost = 0;
   if (formData.selectedCompliance.length > 0) {
@@ -225,11 +279,18 @@ export default function NewBookingStep2Screen() {
       );
     }
 
+    // Haulage calculation
+    let haulageCost = 0;
+    if (formData.selectedHaulageRate) {
+      haulageCost = formData.selectedHaulageRate.grand_total || 0;
+    }
+
     const subtotal =
       (baseRate + weightCost + volumeCost + itemHandlingFee) *
         containerMultiplier +
       demurrageCost +
-      complianceCost;
+      complianceCost +
+      haulageCost;
 
     // Add service tax (6%)
     const serviceTax = subtotal * 0.06;
@@ -644,6 +705,142 @@ export default function NewBookingStep2Screen() {
               ))}
           </View>
 
+          {/* Haulage Information */}
+          <View className="mb-6">
+            <Text className="text-lg font-bold text-text-primary mb-4">
+              Haulage Information
+            </Text>
+
+            {/* Pickup Area */}
+            <View className="mb-4">
+              <Text className="text-sm font-semibold text-text-primary mb-2">
+                Pickup Area
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowPickupAreaPicker(!showPickupAreaPicker)}
+                className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
+              >
+                <Text
+                  className={`flex-1 text-base ${formData.pickupArea ? "text-text-primary" : "text-text-secondary"}`}
+                >
+                  {formData.pickupArea || "Select pickup area"}
+                </Text>
+                <MaterialIcons
+                  name="keyboard-arrow-down"
+                  size={20}
+                  color="#8A8A8E"
+                />
+              </TouchableOpacity>
+
+              {/* Pickup Area Picker */}
+              {showPickupAreaPicker && haulageTariffs.length > 0 && (
+                <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
+                  {haulageTariffs.map((tariff, index) => (
+                    <TouchableOpacity
+                      key={tariff.tariff_id || index}
+                      onPress={() => handlePickupAreaSelect(tariff.area_name || "")}
+                      className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
+                    >
+                      <View className="flex-row justify-between items-center">
+                        <Text className="text-text-primary">{tariff.area_name}</Text>
+                        <Text className="text-text-secondary text-sm">
+                          RM {tariff.grand_total?.toFixed(2)}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+
+            {/* Delivery Area */}
+            <View className="mb-4">
+              <Text className="text-sm font-semibold text-text-primary mb-2">
+                Delivery Area
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowDeliveryAreaPicker(!showDeliveryAreaPicker)}
+                className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
+              >
+                <Text
+                  className={`flex-1 text-base ${formData.deliveryArea ? "text-text-primary" : "text-text-secondary"}`}
+                >
+                  {formData.deliveryArea || "Select delivery area"}
+                </Text>
+                <MaterialIcons
+                  name="keyboard-arrow-down"
+                  size={20}
+                  color="#8A8A8E"
+                />
+              </TouchableOpacity>
+
+              {/* Delivery Area Picker */}
+              {showDeliveryAreaPicker && haulageTariffs.length > 0 && (
+                <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
+                  {haulageTariffs.map((tariff, index) => (
+                    <TouchableOpacity
+                      key={tariff.tariff_id || index}
+                      onPress={() => handleDeliveryAreaSelect(tariff.area_name || "")}
+                      className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
+                    >
+                      <View className="flex-row justify-between items-center">
+                        <Text className="text-text-primary">{tariff.area_name}</Text>
+                        <Text className="text-text-secondary text-sm">
+                          RM {tariff.grand_total?.toFixed(2)}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+
+            {/* Preferred Haulage Company */}
+            <View className="mb-4">
+              <Text className="text-sm font-semibold text-text-primary mb-2">
+                Preferred Haulage Company (Optional)
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowHaulageCompanyPicker(!showHaulageCompanyPicker)}
+                className="rounded-lg bg-bg-secondary border border-gray-300 flex-row items-center px-4 py-3 min-h-[44px] active:opacity-80"
+              >
+                <Text
+                  className={`flex-1 text-base ${formData.haulageCompany ? "text-text-primary" : "text-text-secondary"}`}
+                >
+                  {formData.haulageCompany 
+                    ? haulageCompanies.find(c => c.company_id === formData.haulageCompany)?.company_name 
+                    : "Select haulage company"}
+                </Text>
+                <MaterialIcons
+                  name="keyboard-arrow-down"
+                  size={20}
+                  color="#8A8A8E"
+                />
+              </TouchableOpacity>
+
+              {/* Haulage Company Picker */}
+              {showHaulageCompanyPicker && haulageCompanies.length > 0 && (
+                <View className="mt-1 bg-bg-secondary border border-gray-300 rounded-lg shadow-lg">
+                  {haulageCompanies.map((company, index) => (
+                    <TouchableOpacity
+                      key={company.company_id || index}
+                      onPress={() => handleHaulageCompanySelect(company.company_id || "")}
+                      className="px-4 py-3 border-b border-gray-200 last:border-b-0 active:bg-gray-100"
+                    >
+                      <View className="flex-row justify-between items-center">
+                        <View className="flex-1">
+                          <Text className="text-text-primary">{company.company_name}</Text>
+                          <Text className="text-text-secondary text-sm">
+                            Rank #{company.annual_rank} • {company.market_share_percentage}% market share
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          </View>
 
           {/* Estimated Total */}
           <View className="bg-bg-secondary border border-gray-300 rounded-lg p-6 mb-6">
@@ -741,6 +938,17 @@ export default function NewBookingStep2Screen() {
                       {(
                         getDemurrageRate() * parseFloat(formData.daysExpected)
                       ).toLocaleString()}
+                    </Text>
+                  </View>
+                )}
+
+                {formData.selectedHaulageRate && (
+                  <View className="flex-row justify-between">
+                    <Text className="text-sm text-text-secondary">
+                      Haulage ({formData.pickupArea})
+                    </Text>
+                    <Text className="text-sm text-text-primary">
+                      RM {formData.selectedHaulageRate.grand_total?.toFixed(2) || '0.00'}
                     </Text>
                   </View>
                 )}
