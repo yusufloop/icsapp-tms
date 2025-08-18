@@ -85,6 +85,9 @@ export default function MoreScreen() {
   const handleDemurrage = () => router.push('/demurrage');
   const handleCompliance = () => router.push('/compliance');
  
+  const handleHaulageCompanies = () => router.push('/haulage-companies');
+  const handleHaulageTariffs = () => router.push('/haulage-tariffs');
+
   // Remove compliance/help if those screens do not exist
 
   return (
@@ -311,6 +314,28 @@ export default function MoreScreen() {
             <View style={styles.menuItemLeft}>
               <Ionicons name="shield-checkmark-outline" size={20} color="#666" style={styles.menuIcon} />
               <Text style={styles.menuItemText}>Other Charges Management</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+
+          <View style={styles.separator} />
+
+          {/* Haulage Companies */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleHaulageCompanies}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="business-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>Haulage Companies</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+
+          <View style={styles.separator} />
+
+          {/* Haulage Tariffs */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleHaulageTariffs}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="pricetag-outline" size={20} color="#666" style={styles.menuIcon} />
+              <Text style={styles.menuItemText}>Haulage Tariffs</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>

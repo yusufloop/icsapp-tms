@@ -570,7 +570,7 @@ export default function HaulageTariffsWebScreen() {
                 </View>
               </View>
             )}
-          </div>
+          </View>
         </View>
       </ScrollView>
     </View>
