@@ -6,10 +6,12 @@ import { ComplianceCharge, getComplianceCharges } from '../../services/complianc
 import { DemurrageCharge, getDemurrageCharges } from '../../services/demurrageService';
 import {
   getHaulageCompanies,
-  getHaulageTariffs,
   HaulageCompany,
-  HaulageTariff,
 } from '../../services/haulageCompanyService';
+import {
+  getHaulageTariffs,
+  HaulageTariff,
+} from "../../services/haulageTariffService";
 
 export default function NewBookingStep2WebScreen() {
   // Mock data from Step 1 (in real implementation, this would come from navigation params or state management)
