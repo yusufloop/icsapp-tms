@@ -83,7 +83,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
         case 'ADMIN': roleSpecificItems.push({ id: 'users', title: 'Users', icon: 'people', route: '/user' }, { id: 'notifications', title: 'Notifications', icon: 'notifications', route: '/notifications' }); break;
         default: roleSpecificItems.push({ id: 'scan', title: 'QR Scan', icon: 'qr-code-scanner', route: '/scan' });
     }
-    return [...baseNavigation, ...roleSpecificItems, { id: 'more', title: 'More', icon: 'more-horiz', route: '/more' }];
+    return [...baseNavigation, ...roleSpecificItems, { id: 'more', title: 'Settings', icon: 'more-horiz', route: '/more' }];
   };
 
   const mainNavigation = getRoleBasedNavigation();

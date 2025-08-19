@@ -119,7 +119,7 @@ export default function WebMoreScreen() {
       <View className="bg-white border-b border-gray-200 px-6 py-4">
         <View className="flex-row items-center">
           <MaterialIcons name="more-horiz" size={28} color={DesignSystem.colors.primary[500]} />
-          <Text className="text-2xl font-bold text-gray-900 ml-4">More Options</Text>
+          <Text className="text-2xl font-bold text-gray-900 ml-4">Settings</Text>
         </View>
       </View>
 
