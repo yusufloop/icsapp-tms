@@ -1,10 +1,10 @@
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { PremiumCard } from '../ui/PremiumCard';
+import { RouteMapView } from '../dashboard/RouteMapView.web';
 
 interface DriverDashboardProps {
-  userRole: string;
+  userRole?: string;
 }
 
 export function DriverDashboard({ userRole }: DriverDashboardProps) {
@@ -24,6 +24,20 @@ export function DriverDashboard({ userRole }: DriverDashboardProps) {
     { id: 'schedule', title: 'My Schedule', icon: 'time', bgColor: 'bg-purple-100' },
     { id: 'support', title: 'Contact Support', icon: 'call', bgColor: 'bg-orange-100' },
   ];
+
+  const currentRoute = {
+    routeId: 'TMS-5678',
+    startTime: '2025-04-8 0800',
+    estimatedCompletion: '2025-04-8 1600',
+    totalStops: 5,
+    completedStops: 2,
+    nextStop: {
+      address: '37A, Jln BP 7/12, Bandar Bukit Puchong, 47120 Puchong, Selangor',
+      customerName: 'Ali Bin Abu',
+      package: 'Box',
+      estimatedArrival: '09:30',
+    },
+  };
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -60,23 +74,12 @@ export function DriverDashboard({ userRole }: DriverDashboardProps) {
         <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
           {/* Top Section - Two Columns */}
           <View className="flex-row gap-6 mb-8">
-            {/* Left Column - Your Current Route */}
-            <View className="flex-1">
+            {/* Left Column - RouteMapView as background with glassmorphism route info overlay */}
+            <View className="w-3/4">
               <View className="relative rounded-xl overflow-hidden h-80">
-                {/* Map Background */}
-                <View className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-800">
-                  {/* Map texture overlay */}
-                  <View className="absolute inset-0 opacity-20">
-                    <View className="w-full h-full bg-gray-900/30" />
-                  </View>
-                </View>
-
-                {/* Map Icon Button */}
-                <TouchableOpacity className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg items-center justify-center">
-                  <Ionicons name="map" size={20} color="white" />
-                </TouchableOpacity>
-
-                {/* Glassmorphism Route Info */}
+                {/* RouteMapView as background */}
+                <RouteMapView currentRoute={currentRoute} />
+                {/* Glassmorphism Route Info Overlay */}
                 <View className="absolute bottom-4 self-center bg-white/80 backdrop-blur-lg rounded-xl px-8 py-4">
                   <Text className="text-blue-600 font-semibold mb-8">Your Current Route</Text>
                   <View className="flex-row items-center ">
@@ -86,7 +89,6 @@ export function DriverDashboard({ userRole }: DriverDashboardProps) {
                       <Text className="text-sm text-gray-600">2025-04-8 </Text>
                       <Text className="text-sm text-gray-600">0800</Text>
                     </View>
-
                     {/* Truck Icon */}
                     <View className="flex-1 relative mx-2">
                       <View className="absolute -top-8 left-1/2 -translate-x-1/2">
@@ -100,7 +102,6 @@ export function DriverDashboard({ userRole }: DriverDashboardProps) {
                         <Ionicons name="caret-forward" size={12} color="black" />
                       </View>
                     </View>
-
                     {/* Destination */}
                     <View className="items-center">
                       <Text className="text-2xl font-bold text-gray-900 mx-8">KLG</Text>
@@ -112,9 +113,9 @@ export function DriverDashboard({ userRole }: DriverDashboardProps) {
               </View>
             </View>
 
-            {/* Right Column - Upcoming Routes */}
-            <View className="flex-1">
-              <PremiumCard className="h-64">
+            {/* Right Column - Upcoming Routes - Using simple View instead of PremiumCard */}
+            <View className="w-1/4">
+              <View className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 h-64">
                 <Text className="text-lg font-bold text-gray-900 mb-4">Upcoming Routes</Text>
                 <ScrollView showsVerticalScrollIndicator={false}>
                   <View className="space-y-3">
@@ -139,7 +140,7 @@ export function DriverDashboard({ userRole }: DriverDashboardProps) {
                     ))}
                   </View>
                 </ScrollView>
-              </PremiumCard>
+              </View>
             </View>
           </View>
 

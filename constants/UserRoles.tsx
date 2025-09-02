@@ -90,7 +90,7 @@ let _currentUserRole: UserRole = (() => {
       return storedRole as UserRole;
     }
   }
-  return 'DRIVER';
+  return 'ADMIN';
 })();
 
 // Listeners for role changes

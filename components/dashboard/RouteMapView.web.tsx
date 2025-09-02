@@ -2,7 +2,7 @@ import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumStatusBadge } from '@/components/ui/PremiumStatusBadge';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Dimensions, Text, View, ImageBackground, Image} from 'react-native';
+import { Dimensions, ImageBackground, Linking, Text, TouchableOpacity, View } from 'react-native';
 //import MapView, { Marker } from 'react-native-maps';
 
 
@@ -25,7 +25,7 @@ interface RouteMapViewProps {
 }
 
 export function RouteMapView({ currentRoute }: RouteMapViewProps) {
-  // Coordinates for the specified address: 37A, Jln BP 7/12, Bandar Bukit Puchong, 47120 Puchong, Selangor
+  // Coordinates for the specified address: Maple Tree (3.0514° N, 101.5487° E)
   const destinationCoordinates = {
     latitude: 3.0514,
     longitude: 101.5487,
@@ -35,9 +35,12 @@ export function RouteMapView({ currentRoute }: RouteMapViewProps) {
 
   // Mock current location (nearby location for demonstration)
   const currentLocation = {
-    latitude: 3.0514,
+    latitude: 3.0289,
     longitude: 101.5487,
   };
+
+  // Google Maps embed link for the next stop address
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentRoute.nextStop.address)}`;
 
   return (
     <View>
@@ -46,32 +49,20 @@ export function RouteMapView({ currentRoute }: RouteMapViewProps) {
       </Text>
 
       <PremiumCard className="mb-4">
-        {/* Real Map using react-native-maps */}
-        
-          {/*<MapView
-            style={{ flex: 1 }}
-            initialRegion={destinationCoordinates}
-            showsUserLocation={true}
-            showsMyLocationButton={true}
-            showsCompass={true}
-          >
-            <Marker
-              coordinate={{
-                latitude: destinationCoordinates.latitude,
-                longitude: destinationCoordinates.longitude,
-              }}
-              title={currentRoute.nextStop.customerName}
-              description={currentRoute.nextStop.address}
-            />
-          </MapView>*/}
-
+        {/* Make the whole map clickable by wrapping ImageBackground with TouchableOpacity */}
+        <TouchableOpacity onPress={() => Linking.openURL(mapsUrl)} activeOpacity={0.85}>
           <ImageBackground
-          source={require("@/assets/images/Screenshot 2025-07-15 221221.png")} 
-          resizeMode="cover" // This makes the image cover the whole area, like a map would
-          className="rounded-lg mb-4 overflow-hidden"
-          style={{ height: 350 }}
-        >
-        </ImageBackground>
+            source={require("@/assets/images/Screenshot 2025-07-15 221221.png")}
+            resizeMode="cover"
+            className="rounded-lg mb-4 overflow-hidden"
+            style={{ height: 350 }}
+          >
+            {/* Optionally, you can keep the button overlay for visual cue */}
+            <View className="absolute bottom-4 right-4 bg-blue-600 rounded-lg px-4 py-2 items-center">
+              <Text className="text-white font-semibold">Open in Google Maps</Text>
+            </View>
+          </ImageBackground>
+        </TouchableOpacity>
           
 
       
