@@ -22,7 +22,7 @@ export function LoginForm({
   const [rememberMe, setRememberMe] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   
-  const { login, isLoading, error } = useAuth();
+  const { signIn, loading, error } = useAuth();
 
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
@@ -44,14 +44,11 @@ export function LoginForm({
   const handleLogin = async () => {
     if (!validateForm()) return;
     
-    const result = await login({ 
-      email: email.trim(), 
-      password,
-      rememberMe 
-    });
+    const result = await signIn(email.trim(), password);
 
-    if (!result.success && result.data?.requiresVerification) {
-      onNavigateToVerification(email.trim());
+    if (result.error) {
+      // Error is handled by the auth context
+      return;
     }
   };
 
@@ -123,7 +120,7 @@ export function LoginForm({
       <AuthButton
         title="Sign In"
         onPress={handleLogin}
-        loading={isLoading}
+        loading={loading}
         style={{ marginBottom: 24 }}
       />
 

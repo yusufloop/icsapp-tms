@@ -27,7 +27,7 @@ export default function SignUpScreen() {
     confirmPassword?: string;
   }>({});
 
-  const { signUp } = useAuth();
+  const { signUp, loading: authLoading } = useAuth();
 
   const validateForm = () => {
     const newErrors: {
@@ -66,16 +66,14 @@ export default function SignUpScreen() {
   const handleSignUp = async () => {
     if (!validateForm()) return;
 
-    setLoading(true);
-    const { error } = await signUp(email.trim(), password, fullName.trim());
-    setLoading(false);
+    const result = await signUp(email.trim(), password, fullName.trim());
 
-    if (error) {
-      Alert.alert('Sign Up Error', error);
+    if (result.error) {
+      Alert.alert('Sign Up Error', result.error);
     } else {
       Alert.alert(
         'Success',
-        'Account created successfully! Please check your email to verify your account.',
+        result.message || 'Account created successfully! Please check your email to verify your account.',
         [{ text: 'OK' }]
       );
     }
@@ -148,7 +146,7 @@ export default function SignUpScreen() {
               <AuthButton
                 title="Create Account"
                 onPress={handleSignUp}
-                loading={loading}
+                loading={authLoading}
                 className="mb-4"
               />
 

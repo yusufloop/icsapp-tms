@@ -23,7 +23,7 @@ export function RegisterForm({ onNavigateToLogin, onNavigateToVerification }: Re
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const [successMessage, setSuccessMessage] = useState('');
   
-  const { register, isLoading, error } = useAuth();
+  const { signUp, loading, error } = useAuth();
 
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
@@ -63,13 +63,13 @@ export function RegisterForm({ onNavigateToLogin, onNavigateToVerification }: Re
   const handleRegister = async () => {
     if (!validateForm()) return;
     
-    const result = await register({
-      firstName: formData.firstName.trim(),
-      lastName: formData.lastName.trim(),
-      email: formData.email.trim(),
-      password: formData.password,
-      confirmPassword: formData.confirmPassword,
-    });
+    const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`;
+    const result = await signUp(
+      formData.email.trim(), 
+      formData.password, 
+      fullName,
+      'client' // Default role
+    );
 
     if (result.success) {
       setSuccessMessage(result.message || '');
@@ -157,7 +157,7 @@ export function RegisterForm({ onNavigateToLogin, onNavigateToVerification }: Re
       <AuthButton
         title="Create Account"
         onPress={handleRegister}
-        loading={isLoading}
+        loading={loading}
         style={{ marginBottom: 24 }}
       />
 
