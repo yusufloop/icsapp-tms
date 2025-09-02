@@ -23,7 +23,7 @@ export default function SignInScreen() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  const { signIn } = useAuth();
+  const { signIn, loading: authLoading } = useAuth();
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -45,12 +45,10 @@ export default function SignInScreen() {
   const handleSignIn = async () => {
     if (!validateForm()) return;
 
-    setLoading(true);
-    const { error } = await signIn(email.trim(), password);
-    setLoading(false);
+    const result = await signIn(email.trim(), password);
 
-    if (error) {
-      Alert.alert('Sign In Error', error);
+    if (result.error) {
+      Alert.alert('Sign In Error', result.error);
     }
   };
 
@@ -129,7 +127,7 @@ export default function SignInScreen() {
                 <AuthButton
                   title="Sign In"
                   onPress={handleSignIn}
-                  loading={loading}
+                  loading={authLoading}
                   className="mb-4"
                 />
 
